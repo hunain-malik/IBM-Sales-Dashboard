@@ -1,0 +1,273 @@
+@use '@carbon/react' with (
+  $use-akamai-cdn: true
+);
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+}
+
+html[data-carbon-theme='g100'] body {
+  background: #161616;
+}
+
+.app-theme {
+  margin-top: 3rem; /* clear the fixed UI-shell header */
+  min-height: calc(100vh - 3rem);
+  background: var(--cds-background);
+}
+
+.app-content {
+  max-width: 88rem;
+  margin: 0 auto;
+  padding: 2rem;
+  background: transparent;
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 1.25;
+    margin: 0 0 0.25rem;
+  }
+
+  p {
+    color: var(--cds-text-secondary);
+    max-width: 40rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin: 0;
+  }
+}
+
+.page-header--actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* KPI row of stat tiles */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1px;
+  margin-bottom: 1.5rem;
+}
+
+.kpi-tile {
+  background: var(--cds-layer-01);
+  padding: 1rem;
+  min-height: 8.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.kpi-tile__label {
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  color: var(--cds-text-secondary);
+}
+
+.kpi-tile__value {
+  font-size: 2.625rem;
+  font-weight: 300;
+  line-height: 1.1;
+  color: var(--cds-text-primary);
+}
+
+.kpi-tile__detail {
+  font-size: 0.75rem;
+  color: var(--cds-text-helper);
+}
+
+/* Chart cards */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.chart-card {
+  background: var(--cds-layer-01);
+  padding: 1rem;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.chart-card--full {
+  grid-column: 1 / -1;
+}
+
+/* Use-case identity swatch — color + text, never color alone */
+.uc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.uc-chip__dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 2px;
+  flex: none;
+}
+
+/* Month calendar */
+.cal {
+  background: var(--cds-layer-01);
+  padding: 1rem;
+}
+
+.cal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--cds-border-subtle-01);
+  border: 1px solid var(--cds-border-subtle-01);
+}
+
+.cal__dow {
+  background: var(--cds-layer-01);
+  padding: 0.375rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--cds-text-secondary);
+  text-align: left;
+}
+
+.cal__day {
+  position: relative;
+  background: var(--cds-layer-01);
+  min-height: 4.75rem;
+  padding: 0.375rem 0.5rem;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: var(--cds-text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: stretch;
+
+  &:hover {
+    background: var(--cds-layer-hover-01);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--cds-focus);
+    outline-offset: -2px;
+  }
+}
+
+.cal__day--pad {
+  background: var(--cds-layer-02);
+  cursor: default;
+
+  &:hover {
+    background: var(--cds-layer-02);
+  }
+}
+
+.cal__daynum {
+  font-size: 0.75rem;
+  color: var(--cds-text-secondary);
+}
+
+.cal__day--today .cal__daynum {
+  font-weight: 700;
+  color: var(--cds-link-primary);
+}
+
+.cal__event {
+  font-size: 0.6875rem;
+  line-height: 1.3;
+  padding: 0.125rem 0.375rem;
+  border-left: 3px solid;
+  background: var(--cds-layer-02);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-top: 0.75rem;
+}
+
+/* two-column layout on the enablements page */
+.split-2 {
+  display: grid;
+  grid-template-columns: minmax(24rem, 3fr) minmax(20rem, 2fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 66rem) {
+  .split-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.table-card {
+  background: var(--cds-layer-01);
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.empty-state {
+  background: var(--cds-layer-01);
+  padding: 3rem;
+  text-align: center;
+  color: var(--cds-text-secondary);
+
+  h3 {
+    font-weight: 400;
+    margin: 0 0 0.5rem;
+    color: var(--cds-text-primary);
+  }
+
+  p {
+    margin: 0 0 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+.impact-note {
+  font-size: 0.75rem;
+  color: var(--cds-text-helper);
+  margin-top: 0.5rem;
+}
+
+.form-stack > * + * {
+  margin-top: 1rem;
+}

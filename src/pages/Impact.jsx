@@ -1,0 +1,152 @@
+import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  Button,
+  Table,
+  TableHead,
+  TableRow,
+  TableHeader,
+  TableBody,
+  TableCell,
+  Tag,
+} from '@carbon/react'
+import { AlluvialChart } from '@carbon/charts-react'
+import { useStore } from '../data/store.jsx'
+import { impactSummary, alluvialGraph } from '../data/attribution.js'
+import { USE_CASES, getUseCase, getUseCaseColor, fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
+import KpiTile from '../components/KpiTile.jsx'
+import UseCaseChip from '../components/UseCaseChip.jsx'
+
+const DAY_MS = 24 * 60 * 60 * 1000
+const lagDays = (fromIso, toIso) =>
+  Math.round((new Date(`${toIso}T00:00:00`) - new Date(`${fromIso}T00:00:00`)) / DAY_MS)
+
+export default function Impact() {
+  const { deals, enablements, theme } = useStore()
+  const summary = useMemo(() => impactSummary(deals, enablements), [deals, enablements])
+
+  const graph = useMemo(
+    () => alluvialGraph(deals, enablements, (id) => getUseCase(id).label),
+    [deals, enablements],
+  )
+
+  // every node inherits its use case's validated color (node.useCase is the use-case label)
+  const nodeColors = useMemo(() => {
+    const byLabel = Object.fromEntries(USE_CASES.map((u) => [u.label, getUseCaseColor(u.id, theme)]))
+    return Object.fromEntries(graph.nodes.map((n) => [n.name, byLabel[n.useCase] ?? byLabel.Other]))
+  }, [graph, theme])
+
+  const influenced = [...summary.influenced].sort((a, b) => b.value - a.value)
+
+  return (
+    <div>
+      <div className="page-header">
+        <h1>Enablement impact summary</h1>
+        <p>
+          Executive view of the pipeline our enablement work created: each flow starts at a session
+          the team delivered, passes through the use case it enabled, and ends at a customer deal
+          opened after that session.
+        </p>
+      </div>
+
+      <div className="kpi-row">
+        <KpiTile
+          label="Deals driven by enablement"
+          value={`${summary.influencedCount} of ${summary.totalDeals}`}
+          detail={
+            summary.totalDeals
+              ? `${Math.round((summary.influencedCount / summary.totalDeals) * 100)}% of all tracked deals`
+              : 'No deals tracked yet'
+          }
+        />
+        <KpiTile
+          label="Influenced revenue (closed won)"
+          value={fmtUSDCompact(summary.wonRevenue)}
+          detail="Closed-won value preceded by our sessions"
+        />
+        <KpiTile
+          label="Influenced open pipeline"
+          value={fmtUSDCompact(summary.pipelineRevenue)}
+          detail="Still-open value preceded by our sessions"
+        />
+        <KpiTile
+          label="Sessions delivered"
+          value={summary.sessionCount}
+          detail={`${summary.attendeeCount} attendees enabled`}
+        />
+      </div>
+
+      {influenced.length ? (
+        <>
+          <div className="chart-card chart-card--full" style={{ marginBottom: '1.5rem' }}>
+            <AlluvialChart
+              data={graph.links}
+              options={{
+                title: 'From enablement session to customer deal',
+                alluvial: {
+                  nodes: graph.nodes,
+                  nodeAlignment: 'left',
+                  units: 'USD',
+                },
+                color: { scale: nodeColors },
+                toolbar: { enabled: false },
+                height: `${Math.max(360, graph.nodes.length * 30)}px`,
+                theme,
+              }}
+            />
+            <p className="impact-note">
+              Flow width is deal revenue. A deal counts as influenced when the customer&apos;s use case
+              matches a session we delivered before the deal opened; revenue is split evenly when
+              several sessions preceded the deal.
+            </p>
+          </div>
+
+          <div className="table-card">
+            <Table size="md" aria-label="Influenced deals">
+              <TableHead>
+                <TableRow>
+                  <TableHeader>Customer</TableHeader>
+                  <TableHeader>Use case</TableHeader>
+                  <TableHeader>Revenue</TableHeader>
+                  <TableHeader>Stage</TableHeader>
+                  <TableHeader>First matching session</TableHeader>
+                  <TableHeader>Sessions before deal</TableHeader>
+                  <TableHeader>Days from session to deal</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {influenced.map((d) => (
+                  <TableRow key={d.id}>
+                    <TableCell>{d.customer}</TableCell>
+                    <TableCell><UseCaseChip id={d.useCase} /></TableCell>
+                    <TableCell>{fmtUSD(d.value)}</TableCell>
+                    <TableCell>
+                      <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
+                    </TableCell>
+                    <TableCell>
+                      {d.matched[0].title}
+                      <div style={{ fontSize: '0.75rem', color: 'var(--cds-text-helper)' }}>
+                        {fmtDate(d.matched[0].date)}
+                      </div>
+                    </TableCell>
+                    <TableCell>{d.matched.length}</TableCell>
+                    <TableCell>{lagDays(d.matched[0].date, d.date)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      ) : (
+        <div className="empty-state">
+          <h3>No influenced deals yet</h3>
+          <p>
+            When a customer deal matches a use case we enabled on — and opened after that session —
+            it will appear here automatically.
+          </p>
+          <Button as={Link} to="/enablements" kind="tertiary">Log an enablement</Button>
+        </div>
+      )}
+    </div>
+  )
+}
