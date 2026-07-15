@@ -1,27 +1,21 @@
-name: Deploy dashboard to GitHub Pages
+name: Build, deploy and release the dashboard
 
 on:
   push:
     branches: [claude/determined-turing-d1ieij]
   workflow_dispatch:
 
-# Allow the workflow to publish Pages and create a release with the live link.
+# Push the built site to the `site` branch and create the release.
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
-# Only one Pages deployment at a time; let a newer run supersede an in-flight one.
 concurrency:
-  group: pages
+  group: deploy-dashboard
   cancel-in-progress: true
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,43 +32,45 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Configure Pages (auto-enable if needed)
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
-      - name: Upload site artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-      - name: Deploy to GitHub Pages
-        id: deploy
-        uses: actions/deploy-pages@v4
+      # Publish the static build to a `site` branch. No GitHub Pages / domain /
+      # settings needed: raw.githack.com serves those public files as a live page.
+      - name: Publish build to the site branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd dist
+          git init -q
+          git checkout -q -b site
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add -A
+          git commit -qm "Deploy dashboard build ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" site
 
       - name: Publish release with live dashboard link
         env:
           GH_TOKEN: ${{ github.token }}
-          PAGE_URL: ${{ steps.deploy.outputs.page_url }}
         run: |
           set -euo pipefail
+          url="https://raw.githack.com/${GITHUB_REPOSITORY}/site/index.html"
           notes=$(cat <<EOF
           ## 🚀 Live dashboard
 
-          **[▶ Open the Enablement Impact Dashboard]($PAGE_URL)**
+          ### ▶ [Open the Enablement Impact Dashboard]($url)
 
-          The link above opens the running dashboard (hosted on GitHub Pages).
+          The link above opens the running dashboard live in your browser — no install, no login.
 
-          ### What's inside
+          **What's inside**
           - **Overview** — impact KPIs, influenced revenue by use case, cumulative influenced revenue
           - **Enablements** — month calendar + table; click any day to log a session
           - **Pipeline** — manual deal entry with automatic "Influenced" tagging
           - **Impact summary** — Sankey flow from enablement session → use case → customer deal
 
           v1 data is manual input, stored in your browser (localStorage) and seeded with a demo dataset.
-          Use the moon/sun icon to toggle the IBM dark theme and the refresh icon to reset the demo data.
+          Toggle the IBM dark theme with the moon/sun icon; reset the demo data with the refresh icon.
 
-          _Deployed from \`${GITHUB_SHA}\`._
+          _Built from \`${GITHUB_SHA}\`. The link always serves the latest build on the \`site\` branch._
           EOF
           )
           # Recreate the tag/release each run so the link always points at the latest build.
@@ -83,4 +79,4 @@ jobs:
             --title "Enablement Impact Dashboard v0.1.0" \
             --notes "$notes" \
             --target "$GITHUB_SHA"
-          echo "Release published: $PAGE_URL"
+          echo "Release published, dashboard at: $url"

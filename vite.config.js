@@ -1,11 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// On GitHub Pages the app is served from https://<user>.github.io/ibm-sales-dashboard/,
-// so assets must resolve under that sub-path. Locally we keep the root base so
-// `npm run dev` / `npm run preview` still serve from http://localhost:<port>/.
+// Build with relative asset paths ('./') so the bundle works when served from
+// any sub-path — the `site` branch via raw.githack.com, GitHub Pages, or a
+// plain static host — without knowing the host prefix ahead of time. Routing is
+// hash-based (HashRouter), so no server rewrites are needed either.
+// Dev server keeps root base so `npm run dev` works normally.
 // https://vite.dev/config/
-export default defineConfig({
-  base: process.env.GITHUB_ACTIONS ? '/ibm-sales-dashboard/' : '/',
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? './' : '/',
   plugins: [react()],
-})
+}))
