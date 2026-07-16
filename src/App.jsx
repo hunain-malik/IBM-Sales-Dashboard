@@ -20,7 +20,7 @@ import OnePager from './pages/OnePager.jsx'
 // Impact summary IS the landing page — one unambiguous page to show
 // leadership; the other two tabs feed it.
 const NAV = [
-  { path: '/', label: 'Impact summary' },
+  { path: '/', label: 'Command Center' },
   { path: '/enablements', label: 'Enablements' },
   { path: '/pipeline', label: 'Pipeline' },
 ]

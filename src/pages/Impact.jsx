@@ -36,7 +36,7 @@ export default function Impact() {
     <div>
       <div className="page-header page-header--actions">
         <div>
-          <h1>Enablement impact</h1>
+          <h1>Enablement Impact</h1>
           <p>All figures year to date, from the start of FY{new Date().getFullYear()}.</p>
         </div>
         <Button as={Link} to="/onepager" kind="tertiary" size="md" renderIcon={Document}>
