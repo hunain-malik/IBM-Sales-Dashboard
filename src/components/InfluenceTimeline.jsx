@@ -136,7 +136,6 @@ export default function InfluenceTimeline({ deals, enablements }) {
           const dealY = top + 64 // labels sit at dealY-22, clear of the lane header band
           const sessionY = top + 106
           const color = getUseCaseColor(lane.u.id, theme)
-          const influencedTotal = lane.deals.filter((d) => d.influenced).reduce((s, d) => s + d.value, 0)
 
           return (
             <g key={lane.u.id}>
@@ -144,9 +143,6 @@ export default function InfluenceTimeline({ deals, enablements }) {
               <rect x={PAD_L} y={top + 12} width="10" height="10" rx="2" fill={color} />
               <text x={PAD_L + 16} y={top + 21} fontSize="12" fontWeight="600" style={{ fill: ink.primary }}>
                 {lane.u.label}
-              </text>
-              <text x={PAD_L + 16 + lane.u.label.length * 7.2 + 8} y={top + 21} fontSize="11" style={{ fill: ink.helper }}>
-                {influencedTotal > 0 ? `${fmtUSDCompact(influencedTotal)} influenced` : 'no influenced deals'}
               </text>
 
               {/* session baseline */}
