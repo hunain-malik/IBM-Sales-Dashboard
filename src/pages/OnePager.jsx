@@ -99,7 +99,7 @@ export default function OnePager() {
           </section>
 
           <section>
-            <h2>Where to invest next</h2>
+            <h2>Demand vs. coverage by use case</h2>
             <table className="op__table">
               <thead>
                 <tr>

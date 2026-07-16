@@ -30,23 +30,20 @@ export default function Enablements() {
 
   return (
     <div>
-      <div className="page-header page-header--actions">
-        <div>
-          <h1>Enablement sessions</h1>
-          <p>
-            Log every session the team delivers and the use case it enables on. Click a calendar day
-            to add a session on that date.
-          </p>
-        </div>
+      <div className="page-header">
+        <h1>Enablement sessions</h1>
+        <p>Click a calendar day to log a session on that date.</p>
+      </div>
+
+      <MonthCalendar sessions={enablements} onPickDay={openForDate} />
+
+      <div className="cal-actions">
         <Button renderIcon={Add} onClick={() => openForDate('')}>
           Add enablement
         </Button>
       </div>
 
-      <div className="split-2">
-        <MonthCalendar sessions={enablements} onPickDay={openForDate} />
-
-        <div className="table-card">
+      <div className="table-card">
           {sorted.length ? (
             <Table size="md" aria-label="Enablement sessions">
               <TableHead>
@@ -92,7 +89,6 @@ export default function Enablements() {
               <p>Add the first enablement session to start tracking impact.</p>
             </div>
           )}
-        </div>
       </div>
 
       <EnablementModal open={modalOpen} onClose={() => setModalOpen(false)} initialDate={pickedDate} />

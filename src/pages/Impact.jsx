@@ -38,10 +38,9 @@ export default function Impact() {
     <div>
       <div className="page-header page-header--actions">
         <div>
-          <h1>Enablement impact summary</h1>
+          <h1>Enablement impact</h1>
           <p>
-            Executive view of the pipeline our enablement work created: sessions the team delivered,
-            and the customer deals that opened after them on the same use case.
+            Enablement sessions and the customer deals that opened after them on the same use case.
           </p>
         </div>
         <Button as={Link} to="/onepager" kind="tertiary" size="md" renderIcon={Document}>
@@ -89,7 +88,7 @@ export default function Impact() {
           proof → mechanism → momentum → the ask → the receipts */}
       <div className="card-stack">
         <div className="chart-card">
-          <h4 className="section-title">Do enablement-influenced deals perform better?</h4>
+          <h4 className="section-title">Deal performance: influenced vs. not influenced</h4>
           {/* the answer is generated from the data — it changes when the data does */}
           <p className="cmp__verdict">{insights.headline}</p>
           {insights.caveat && <p className="impact-note" style={{ marginTop: 0 }}>{insights.caveat}</p>}
@@ -98,7 +97,7 @@ export default function Impact() {
 
         {influenced.length > 0 && (
           <div className="chart-card">
-            <h4 className="section-title">From enablement session to customer deal</h4>
+            <h4 className="section-title">Session-to-deal timeline</h4>
             <InfluenceTimeline deals={deals} enablements={enablements} />
             <p className="impact-note">
               A deal counts as influenced only when a matching session came first; curves link each
@@ -129,7 +128,7 @@ export default function Impact() {
         )}
 
         <div className="chart-card">
-          <h4 className="section-title">Where to invest next</h4>
+          <h4 className="section-title">Customer demand vs. enablement coverage</h4>
           <CoveragePanel rows={coverage} />
         </div>
       </div>
