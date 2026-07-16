@@ -17,6 +17,23 @@ html[data-carbon-theme='g100'] body {
   background: #161616;
 }
 
+/* header brand: 8-bar mark + product name (HeaderName nests children in a span) */
+.cds--header__name > span {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  white-space: nowrap;
+}
+
+.ibm-logo {
+  display: block;
+  flex: none;
+}
+
+.brand-name {
+  font-weight: 400;
+}
+
 .app-theme {
   margin-top: 3rem; /* clear the fixed UI-shell header */
   min-height: calc(100vh - 3rem);

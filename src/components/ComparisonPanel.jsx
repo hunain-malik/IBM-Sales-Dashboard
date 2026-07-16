@@ -10,7 +10,6 @@ const METRICS = [
   {
     key: 'winRate',
     label: 'Win rate',
-    hint: 'Closed won ÷ all closed deals',
     fmt: fmtPct,
     delta: (a, b) => {
       const pts = Math.round((a - b) * 100)
@@ -21,7 +20,6 @@ const METRICS = [
   {
     key: 'avgSize',
     label: 'Average deal size',
-    hint: 'Mean value across the group',
     fmt: fmtUSDCompact,
     delta: (a, b) => {
       if (!(a > 0) || !(b > 0) || Math.abs(a - b) <= b * 0.05) return null
@@ -33,7 +31,6 @@ const METRICS = [
   {
     key: 'cycleDays',
     label: 'Average sales cycle',
-    hint: 'Days from open to close',
     fmt: (v) => `${Math.round(v)} days`,
     delta: (a, b) => {
       const d = Math.round(a - b)
@@ -70,10 +67,7 @@ export default function ComparisonPanel({ stats }) {
         const delta = a != null && b != null ? m.delta(a, b) : null
         return (
           <div key={m.key} className="cmp__row">
-            <div className="cmp__label">
-              {m.label}
-              <span className="cmp__hint">{m.hint}</span>
-            </div>
+            <div className="cmp__label">{m.label}</div>
             <div className="cmp__bars">
               {[
                 { v: a, color: accent, name: 'Influenced' },

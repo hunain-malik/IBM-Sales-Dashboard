@@ -32,7 +32,7 @@ export default function Enablements() {
     <div>
       <div className="page-header">
         <h1>Enablement sessions</h1>
-        <p>Click a calendar day to log a session on that date.</p>
+        <p>Click a day to log a session.</p>
       </div>
 
       <MonthCalendar sessions={enablements} onPickDay={openForDate} />

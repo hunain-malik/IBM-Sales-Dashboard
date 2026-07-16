@@ -37,12 +37,7 @@ export default function Impact() {
   return (
     <div>
       <div className="page-header page-header--actions">
-        <div>
-          <h1>Enablement impact</h1>
-          <p>
-            Enablement sessions and the customer deals that opened after them on the same use case.
-          </p>
-        </div>
+        <h1>Enablement impact</h1>
         <Button as={Link} to="/onepager" kind="tertiary" size="md" renderIcon={Document}>
           Executive one-pager
         </Button>
@@ -58,16 +53,8 @@ export default function Impact() {
               : 'No deals tracked yet'
           }
         />
-        <KpiTile
-          label="Influenced revenue (closed won)"
-          value={fmtUSDCompact(summary.wonRevenue)}
-          detail="Closed-won value preceded by our sessions"
-        />
-        <KpiTile
-          label="Influenced open pipeline"
-          value={fmtUSDCompact(summary.pipelineRevenue)}
-          detail="Still-open value preceded by our sessions"
-        />
+        <KpiTile label="Influenced revenue (closed won)" value={fmtUSDCompact(summary.wonRevenue)} />
+        <KpiTile label="Influenced open pipeline" value={fmtUSDCompact(summary.pipelineRevenue)} />
         <KpiTile
           label="Sessions delivered"
           value={summary.sessionCount}
@@ -99,10 +86,6 @@ export default function Impact() {
           <div className="chart-card">
             <h4 className="section-title">Session-to-deal timeline</h4>
             <InfluenceTimeline deals={deals} enablements={enablements} />
-            <p className="impact-note">
-              A deal counts as influenced only when a matching session came first; curves link each
-              deal to that session.
-            </p>
           </div>
         )}
 
