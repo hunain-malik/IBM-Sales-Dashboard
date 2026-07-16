@@ -137,12 +137,13 @@ export default function OnePager() {
         <section>
           <h2>Top enablement-influenced deals</h2>
           <table className="op__table op__table--deals">
+            {/* sized so the whitespace between every pair of columns reads evenly */}
             <colgroup>
-              <col style={{ width: '19%' }} />
-              <col style={{ width: '12%' }} />
-              <col style={{ width: '25%' }} />
-              <col style={{ width: '14%' }} />
-              <col style={{ width: '30%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '13%' }} />
+              <col style={{ width: '27%' }} />
+              <col style={{ width: '16%' }} />
+              <col style={{ width: '24%' }} />
             </colgroup>
             <thead>
               <tr>
