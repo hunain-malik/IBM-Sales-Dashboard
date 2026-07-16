@@ -220,13 +220,6 @@ html[data-carbon-theme='g100'] body {
   margin-top: 0.75rem;
 }
 
-/* add-session button row between the calendar and the sessions table */
-.cal-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin: 1rem 0 1.5rem;
-}
-
 .table-card {
   background: var(--cds-layer-01);
   min-width: 0;
@@ -265,6 +258,12 @@ html[data-carbon-theme='g100'] body {
   font-size: 1rem;
   font-weight: 600;
   margin: 0 0 1rem;
+}
+
+/* title inside a flush table card */
+.section-title--table {
+  padding: 1rem 1rem 0.25rem;
+  margin: 0;
 }
 
 /* Comparison / coverage stat rows (shared by both panels) */

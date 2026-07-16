@@ -30,20 +30,14 @@ export default function Enablements() {
 
   return (
     <div>
-      <div className="page-header">
+      <div className="page-header page-header--actions">
         <h1>Enablement sessions</h1>
-        <p>Click a day to log a session.</p>
-      </div>
-
-      <MonthCalendar sessions={enablements} onPickDay={openForDate} />
-
-      <div className="cal-actions">
         <Button renderIcon={Add} onClick={() => openForDate('')}>
           Add enablement
         </Button>
       </div>
 
-      <div className="table-card">
+      <div className="table-card" style={{ marginBottom: '1rem' }}>
           {sorted.length ? (
             <Table size="md" aria-label="Enablement sessions">
               <TableHead>
@@ -90,6 +84,8 @@ export default function Enablements() {
             </div>
           )}
       </div>
+
+      <MonthCalendar sessions={enablements} onPickDay={openForDate} />
 
       <EnablementModal open={modalOpen} onClose={() => setModalOpen(false)} initialDate={pickedDate} />
     </div>

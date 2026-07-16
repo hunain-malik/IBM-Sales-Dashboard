@@ -117,6 +117,7 @@ export default function Impact() {
       {influenced.length ? (
         <>
           <div className="table-card">
+            <h4 className="section-title section-title--table">Influenced deals</h4>
             <Table size="md" aria-label="Influenced deals">
               <TableHead>
                 <TableRow>
