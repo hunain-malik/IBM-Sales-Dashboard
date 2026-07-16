@@ -1,0 +1,43 @@
+# For use after migrating this repo to github.ibm.com (GitHub Enterprise).
+#
+# 1. Repo Settings → Pages → Source: "GitHub Actions"
+# 2. Run this workflow from the Actions tab (or change `on:` to
+#    `push: { branches: [main] }` for deploy-on-push)
+# 3. The dashboard serves at https://pages.github.ibm.com/<owner>/<repo>/
+#
+# It is manual-trigger only so it never runs (or fails) on github.com,
+# where the site is instead published by deploy.yml.
+name: Deploy to GitHub Enterprise Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deploy
+        uses: actions/deploy-pages@v4
