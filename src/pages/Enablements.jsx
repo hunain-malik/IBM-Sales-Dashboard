@@ -28,7 +28,7 @@ export default function Enablements() {
   return (
     <div>
       <div className="page-header page-header--actions">
-        <h1>Enablement sessions</h1>
+        <h1>Enablement Sessions</h1>
         <Button renderIcon={Add} onClick={() => openForDate('')}>
           Add enablement
         </Button>

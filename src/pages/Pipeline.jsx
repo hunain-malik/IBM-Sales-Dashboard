@@ -31,7 +31,7 @@ export default function Pipeline() {
   return (
     <div>
       <div className="page-header page-header--actions">
-        <h1>Customer pipeline</h1>
+        <h1>Customer Pipeline</h1>
         <Button renderIcon={Add} onClick={() => setModal('new')}>
           Add deal
         </Button>

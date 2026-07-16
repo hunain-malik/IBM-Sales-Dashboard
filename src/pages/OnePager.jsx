@@ -45,7 +45,7 @@ export default function OnePager() {
         <header className="op__head">
           <div>
             <div className="op__brand">IBM · Enablement Impact</div>
-            <h1>Executive summary</h1>
+            <h1>Executive Summary</h1>
           </div>
           <div className="op__date">FY{new Date().getFullYear()} year to date · {today}</div>
         </header>
