@@ -361,6 +361,37 @@ html[data-carbon-theme='g100'] body {
   }
 }
 
+/* Influence timeline: legend + quarter navigation */
+.tl-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.tl-head__nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: none;
+}
+
+.tl-head__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  min-width: 4.5rem;
+  text-align: center;
+}
+
+.tl-empty {
+  color: var(--cds-text-secondary);
+  font-size: 0.875rem;
+  padding: 2rem 0;
+  text-align: center;
+}
+
 /* Influence timeline tooltip */
 .tl-tip {
   position: absolute;
