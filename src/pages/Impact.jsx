@@ -10,36 +10,25 @@ import {
   TableCell,
   Tag,
 } from '@carbon/react'
-import { AlluvialChart } from '@carbon/charts-react'
 import { Document } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
-import { impactSummary, alluvialGraph, comparisonStats, coverageGaps } from '../data/attribution.js'
-import { USE_CASES, getUseCase, getUseCaseColor, fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
+import { impactSummary, comparisonStats, coverageGaps } from '../data/attribution.js'
+import { USE_CASES, fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
 import KpiTile from '../components/KpiTile.jsx'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import ComparisonPanel from '../components/ComparisonPanel.jsx'
 import CoveragePanel from '../components/CoveragePanel.jsx'
+import InfluenceTimeline from '../components/InfluenceTimeline.jsx'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const lagDays = (fromIso, toIso) =>
   Math.round((new Date(`${toIso}T00:00:00`) - new Date(`${fromIso}T00:00:00`)) / DAY_MS)
 
 export default function Impact() {
-  const { deals, enablements, theme } = useStore()
+  const { deals, enablements } = useStore()
   const summary = useMemo(() => impactSummary(deals, enablements), [deals, enablements])
   const comparison = useMemo(() => comparisonStats(deals, enablements), [deals, enablements])
   const coverage = useMemo(() => coverageGaps(deals, enablements, USE_CASES), [deals, enablements])
-
-  const graph = useMemo(
-    () => alluvialGraph(deals, enablements, (id) => getUseCase(id).label),
-    [deals, enablements],
-  )
-
-  // every node inherits its use case's validated color (node.useCase is the use-case label)
-  const nodeColors = useMemo(() => {
-    const byLabel = Object.fromEntries(USE_CASES.map((u) => [u.label, getUseCaseColor(u.id, theme)]))
-    return Object.fromEntries(graph.nodes.map((n) => [n.name, byLabel[n.useCase] ?? byLabel.Other]))
-  }, [graph, theme])
 
   const influenced = [...summary.influenced].sort((a, b) => b.value - a.value)
 
@@ -49,9 +38,8 @@ export default function Impact() {
         <div>
           <h1>Enablement impact summary</h1>
           <p>
-            Executive view of the pipeline our enablement work created: each flow starts at a session
-            the team delivered, passes through the use case it enabled, and ends at a customer deal
-            opened after that session.
+            Executive view of the pipeline our enablement work created: sessions the team delivered,
+            and the customer deals that opened after them on the same use case.
           </p>
         </div>
         <Button as={Link} to="/onepager" kind="tertiary" size="md" renderIcon={Document}>
@@ -117,25 +105,13 @@ export default function Impact() {
       {influenced.length ? (
         <>
           <div className="chart-card chart-card--full" style={{ marginBottom: '1.5rem' }}>
-            <AlluvialChart
-              data={graph.links}
-              options={{
-                title: 'From enablement session to customer deal',
-                alluvial: {
-                  nodes: graph.nodes,
-                  nodeAlignment: 'left',
-                  units: 'USD',
-                },
-                color: { scale: nodeColors },
-                toolbar: { enabled: false },
-                height: `${Math.max(360, graph.nodes.length * 30)}px`,
-                theme,
-              }}
-            />
+            <h4 className="section-title">From enablement session to customer deal</h4>
+            <InfluenceTimeline deals={deals} enablements={enablements} />
             <p className="impact-note">
-              Flow width is deal revenue. A deal counts as influenced when the customer&apos;s use case
-              matches a session we delivered before the deal opened; revenue is split evenly when
-              several sessions preceded the deal.
+              Each lane is a use case on a real time axis: diamonds are the sessions we delivered,
+              dots are customer deals at their actual value. A deal counts as influenced only when a
+              matching session came first — deals left of every diamond in their lane are visibly
+              excluded. Curves link each influenced deal to the first session that preceded it.
             </p>
           </div>
 

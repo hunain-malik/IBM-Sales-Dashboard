@@ -98,40 +98,6 @@ export function coverageGaps(deals, enablements, useCases) {
     .sort((a, b) => b.gap - a.gap)
 }
 
-// Sankey/alluvial rows: session → use case → customer. Each influenced deal's
-// value flows through its use case and is split evenly across the sessions
-// that preceded it, so link widths stay balanced through the middle nodes.
-export function alluvialGraph(deals, enablements, labelFor) {
-  const attributed = attributeDeals(deals, enablements).filter((d) => d.influenced)
-  const nodes = new Map()
-  const links = []
-
-  // `useCase` is kept off Carbon's `category` field on purpose — the chart
-  // draws category headings above each column, which mislabels mixed columns.
-  const addNode = (name, useCase) => {
-    if (!nodes.has(name)) nodes.set(name, { name, useCase })
-  }
-
-  const sessionFlow = new Map() // session id → summed split value
-
-  for (const deal of attributed) {
-    const label = labelFor(deal.useCase)
-    addNode(label, label)
-    addNode(deal.customer, label)
-    links.push({ source: label, target: deal.customer, value: deal.value })
-    const split = deal.value / deal.matched.length
-    for (const session of deal.matched) {
-      sessionFlow.set(session.id, (sessionFlow.get(session.id) ?? 0) + split)
-    }
-  }
-
-  for (const session of enablements) {
-    const flow = sessionFlow.get(session.id)
-    if (!flow) continue
-    const label = labelFor(session.useCase)
-    addNode(session.title, label)
-    links.push({ source: session.title, target: label, value: Math.round(flow) })
-  }
-
-  return { nodes: [...nodes.values()], links }
-}
+// (The earlier Sankey/alluvial graph was removed: its per-session revenue
+// splits were fabricated allocations, and the session→deal pairing is shown
+// honestly by InfluenceTimeline and the attribution table instead.)

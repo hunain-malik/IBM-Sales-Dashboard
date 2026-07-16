@@ -17,9 +17,11 @@ and [Carbon Charts](https://charts.carbondesignsystem.com/) (`@carbon/charts-rea
 - **Attribution** — a deal is automatically marked **enablement-influenced** when the customer's
   use case matches at least one session delivered *on or before* the deal's open date.
 - **Impact summary** — the executive page: KPI tiles (deals driven, influenced closed-won revenue,
-  influenced open pipeline, sessions delivered, influenced value per team hour) plus a
-  Sankey/alluvial flow drawn from each enablement session → its use case → the customer deals it
-  influenced. Flow width is deal revenue, split evenly when several sessions preceded a deal.
+  influenced open pipeline, sessions delivered, influenced value per team hour) plus an
+  **influence timeline**: one lane per use case on a real time axis, sessions as diamonds, deals as
+  dots at their actual value, and curves linking each influenced deal back to the first session
+  that preceded it. Deals with no prior session are drawn hollow — visibly excluded, so the
+  attribution rule is itself on display.
 - **Influenced vs. not influenced** — win rate, average deal size, and sales-cycle length compared
   between deals preceded by enablement and the rest (uses each deal's optional close date).
 - **Where to invest next** — per use case, customer demand share (deal value) vs. enablement

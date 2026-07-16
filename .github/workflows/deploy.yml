@@ -65,7 +65,7 @@ jobs:
           - **Overview** — impact KPIs, influenced revenue by use case, cumulative influenced revenue
           - **Enablements** — month calendar + table; click any day to log a session
           - **Pipeline** — manual deal entry with automatic "Influenced" tagging
-          - **Impact summary** — Sankey flow from enablement session → use case → customer deal
+          - **Impact summary** — influence timeline from enablement session → customer deal, plus influenced-vs-not comparison and where-to-invest view
 
           v1 data is manual input, stored in your browser (localStorage) and seeded with a demo dataset.
           Toggle the IBM dark theme with the moon/sun icon; reset the demo data with the refresh icon.
