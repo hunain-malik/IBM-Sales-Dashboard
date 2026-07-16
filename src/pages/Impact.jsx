@@ -29,8 +29,10 @@ export default function Impact() {
   const insights = useMemo(() => buildInsights(deals, enablements), [deals, enablements])
   const { summary, comparison, coverage } = insights
 
-  // newest first — same ordering as the Pipeline tab's list
-  const influenced = [...summary.influenced].sort((a, b) => b.date.localeCompare(a.date))
+  // most recently closed first; open deals slot in by their open date
+  const influenced = [...summary.influenced].sort((a, b) =>
+    (b.closeDate ?? b.date).localeCompare(a.closeDate ?? a.date),
+  )
 
   return (
     <div>
