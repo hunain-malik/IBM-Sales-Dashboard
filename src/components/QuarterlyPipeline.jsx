@@ -32,6 +32,7 @@ export default function QuarterlyPipeline({ deals, enablements }) {
     const influenced = attributeDeals(deals, enablements).filter((d) => d.influenced)
     const qEnd = nextQuarter(qCursor)
 
+    const today = new Date()
     const months = []
     let m = new Date(qCursor)
     while (m < qEnd) {
@@ -45,11 +46,12 @@ export default function QuarterlyPipeline({ deals, enablements }) {
       months.push({
         label: m.toLocaleDateString('en-US', { month: 'short', year: months.length === 0 ? 'numeric' : undefined }),
         total,
+        // a month that hasn't started yet has no number to report
+        status: m > today ? 'future' : end > today ? 'current' : 'past',
       })
       m = end
     }
 
-    const today = new Date()
     const currentQ = quarterStart(today)
     const allDates = [...deals.map((d) => toDate(d.date)), ...enablements.map((e) => toDate(e.date))]
     const earliestQ = allDates.length ? quarterStart(new Date(Math.min(...allDates))) : currentQ
@@ -96,6 +98,11 @@ export default function QuarterlyPipeline({ deals, enablements }) {
               {i === months.length - 1 && (
                 <line x1={x1 + bandW} y1={TOP - 16} x2={x1 + bandW} y2={baseY} stroke={grid} strokeWidth="1" />
               )}
+              {mo.status === 'current' && (
+                <text x={cx} y={10} fontSize="11" fontWeight="600" textAnchor="middle" style={{ fill: 'var(--cds-link-primary)' }}>
+                  Current month
+                </text>
+              )}
               {mo.total > 0 && (
                 <rect x={cx - BAR_W / 2} y={baseY - h} width={BAR_W} height={h} rx="2" fill={accent} />
               )}
@@ -103,13 +110,14 @@ export default function QuarterlyPipeline({ deals, enablements }) {
                 x={cx}
                 y={baseY - h - 8}
                 fontSize="12"
-                fontWeight="600"
+                fontWeight={mo.status === 'future' ? '400' : '600'}
+                fontStyle={mo.status === 'future' ? 'italic' : undefined}
                 textAnchor="middle"
                 style={{ fill: mo.total > 0 ? ink.secondary : ink.helper }}
               >
-                {mo.total > 0 ? fmtUSDCompact(mo.total) : '$0'}
+                {mo.status === 'future' ? 'Coming soon' : mo.total > 0 ? fmtUSDCompact(mo.total) : '$0'}
               </text>
-              <text x={cx} y={baseY + 22} fontSize="11" textAnchor="middle" style={{ fill: ink.helper }}>
+              <text x={cx} y={baseY + 22} fontSize="11" textAnchor="middle" style={{ fill: mo.status === 'current' ? ink.secondary : ink.helper }} fontWeight={mo.status === 'current' ? '600' : '400'}>
                 {mo.label}
               </text>
             </g>
