@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import { USE_CASES, getUseCase, getUseCaseColor, fmtUSDCompact, fmtDate } from '../data/constants.js'
+import { useMemo, useRef, useState } from 'react'
+import { USE_CASES, getUseCase, getUseCaseColor, fmtUSD, fmtUSDCompact, fmtDate } from '../data/constants.js'
 import { attributeDeals } from '../data/attribution.js'
 import { useStore } from '../data/store.jsx'
 
@@ -20,10 +20,24 @@ const toDate = (iso) => new Date(`${iso}T00:00:00`)
 
 export default function InfluenceTimeline({ deals, enablements }) {
   const { theme } = useStore()
-  const dark = theme === 'g100'
   const ink = { primary: 'var(--cds-text-primary)', secondary: 'var(--cds-text-secondary)', helper: 'var(--cds-text-helper)' }
   const grid = 'var(--cds-border-subtle-01)'
-  const gray = dark ? '#8d8d8d' : '#8d8d8d'
+  const gray = '#8d8d8d'
+
+  // custom hover tooltip — native SVG <title> is too slow and unreliable
+  const wrapRef = useRef(null)
+  const [tip, setTip] = useState(null)
+  const showTip = (e, lines) => {
+    const wrap = wrapRef.current
+    if (!wrap) return
+    const r = wrap.getBoundingClientRect()
+    setTip({
+      x: Math.min(e.clientX - r.left + wrap.scrollLeft, wrap.scrollWidth - 20),
+      y: e.clientY - r.top,
+      lines,
+    })
+  }
+  const hideTip = () => setTip(null)
 
   const { lanes, x, months, todayX, height } = useMemo(() => {
     const attributed = attributeDeals(deals, enablements)
@@ -64,7 +78,26 @@ export default function InfluenceTimeline({ deals, enablements }) {
   const clampX = (px) => Math.max(52, Math.min(W - 52, px))
 
   return (
-    <div style={{ overflowX: 'auto' }}>
+    <div ref={wrapRef} style={{ overflowX: 'auto', position: 'relative' }}>
+      {tip && (
+        <div
+          className="tl-tip"
+          style={{
+            left: tip.x,
+            top: tip.y,
+            // flip below the cursor near the container top (overflow clips upward),
+            // and to the left of the cursor near the right edge
+            transform: `translate(${tip.x > W - 300 ? 'calc(-100% - 12px)' : '12px'}, ${
+              tip.y < 140 ? '16px' : 'calc(-100% - 10px)'
+            })`,
+          }}
+        >
+          <strong>{tip.lines[0]}</strong>
+          {tip.lines.slice(1).map((l, i) => (
+            <div key={i}>{l}</div>
+          ))}
+        </div>
+      )}
       <div className="cmp__legend" style={{ marginBottom: '0.5rem' }}>
         <span className="uc-chip">
           <svg width="12" height="12" aria-hidden="true"><rect x="6" y="0" width="8" height="8" transform="rotate(45 6 1)" fill="currentColor" opacity="0.75" /></svg>
@@ -95,8 +128,8 @@ export default function InfluenceTimeline({ deals, enablements }) {
         ))}
 
         {/* today marker */}
-        <line x1={todayX} y1={0} x2={todayX} y2={height - AXIS_H + 8} stroke={ink.helper} strokeWidth="1" strokeDasharray="3 4" style={{ stroke: 'var(--cds-text-helper)' }} />
-        <text x={todayX - 4} y={12} fontSize="10" textAnchor="end" style={{ fill: ink.helper }}>Today</text>
+        <line x1={todayX} y1={14} x2={todayX} y2={height - AXIS_H + 8} strokeWidth="1.5" strokeDasharray="4 4" style={{ stroke: 'var(--cds-link-primary)' }} />
+        <text x={todayX} y={10} fontSize="11" fontWeight="600" textAnchor="middle" style={{ fill: 'var(--cds-link-primary)' }}>Today</text>
 
         {lanes.map((lane, i) => {
           const top = i * LANE_H
@@ -137,12 +170,27 @@ export default function InfluenceTimeline({ deals, enablements }) {
               })}
 
               {/* sessions */}
-              {lane.sessions.map((s) => (
-                <g key={s.id} transform={`translate(${x(s.date)} ${sessionY})`}>
-                  <rect x="-5" y="-5" width="10" height="10" transform="rotate(45)" fill={color} />
-                  <title>{`${s.title} — ${fmtDate(s.date)}${s.presenter ? ` · ${s.presenter}` : ''}`}</title>
-                </g>
-              ))}
+              {lane.sessions.map((s) => {
+                const lines = [
+                  s.title,
+                  `${fmtDate(s.date)}${s.presenter ? ` · ${s.presenter}` : ''}`,
+                  `${s.attendees || 0} attendees · ${Number(s.hours) || 0}h invested`,
+                ]
+                return (
+                  <g
+                    key={s.id}
+                    data-hover="session"
+                    transform={`translate(${x(s.date)} ${sessionY})`}
+                    onMouseEnter={(e) => showTip(e, lines)}
+                    onMouseMove={(e) => showTip(e, lines)}
+                    onMouseLeave={hideTip}
+                  >
+                    {/* oversized invisible hit target */}
+                    <circle r="16" fill="transparent" />
+                    <rect x="-5" y="-5" width="10" height="10" transform="rotate(45)" fill={color} />
+                  </g>
+                )
+              })}
 
               {/* deals */}
               {lane.deals.map((d) => {
@@ -150,8 +198,24 @@ export default function InfluenceTimeline({ deals, enablements }) {
                 const lx = clampX(px)
                 const closed = d.stage.startsWith('Closed')
                 const stageNote = closed ? (d.stage === 'Closed Won' ? ' · won' : ' · lost') : ''
+                const lines = [
+                  d.customer,
+                  `${fmtUSD(d.value)} · ${d.stage}`,
+                  `Opened ${fmtDate(d.date)}`,
+                  d.influenced
+                    ? `Influenced — first session: ${d.matched[0].title} (${fmtDate(d.matched[0].date)})${d.matched.length > 1 ? ` +${d.matched.length - 1} more` : ''}`
+                    : `Not counted — no ${getUseCase(d.useCase).label} session before this deal`,
+                ]
                 return (
-                  <g key={d.id}>
+                  <g
+                    key={d.id}
+                    data-hover="deal"
+                    onMouseEnter={(e) => showTip(e, lines)}
+                    onMouseMove={(e) => showTip(e, lines)}
+                    onMouseLeave={hideTip}
+                  >
+                    {/* oversized invisible hit target */}
+                    <circle cx={px} cy={dealY} r="18" fill="transparent" />
                     {d.influenced ? (
                       <circle cx={px} cy={dealY} r="7" fill={color} />
                     ) : (
@@ -163,12 +227,6 @@ export default function InfluenceTimeline({ deals, enablements }) {
                     <text x={lx} y={dealY - 10} fontSize="10" textAnchor="middle" style={{ fill: ink.secondary }}>
                       {fmtUSDCompact(d.value)}{stageNote}
                     </text>
-                    <title>
-                      {`${d.customer} — ${fmtUSDCompact(d.value)} · ${d.stage} · opened ${fmtDate(d.date)}` +
-                        (d.influenced
-                          ? `\nInfluenced: ${d.matched.length} session(s) preceded it, first: ${d.matched[0].title} (${fmtDate(d.matched[0].date)})`
-                          : `\nNot counted: no ${getUseCase(d.useCase).label} session before this deal`)}
-                    </title>
                   </g>
                 )
               })}

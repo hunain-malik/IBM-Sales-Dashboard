@@ -55,6 +55,7 @@ export default function Enablements() {
                   <TableHeader>Use case</TableHeader>
                   <TableHeader>Date</TableHeader>
                   <TableHeader>Attendees</TableHeader>
+                  <TableHeader>Hours</TableHeader>
                   <TableHeader aria-label="Actions" />
                 </TableRow>
               </TableHead>
@@ -70,6 +71,7 @@ export default function Enablements() {
                     <TableCell><UseCaseChip id={e.useCase} /></TableCell>
                     <TableCell>{fmtDate(e.date)}</TableCell>
                     <TableCell>{e.attendees}</TableCell>
+                    <TableCell>{Number(e.hours) || 0}</TableCell>
                     <TableCell>
                       <IconButton
                         kind="ghost"
