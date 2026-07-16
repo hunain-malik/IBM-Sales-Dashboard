@@ -60,6 +60,13 @@ export default function EnablementModal({ open, onClose, initialDate }) {
           invalidText="A session title is required."
           onChange={(e) => setForm({ ...form, title: e.target.value })}
         />
+        <TextInput
+          id="en-presenter"
+          labelText="Presenter (optional)"
+          placeholder="Who from the team delivered it"
+          value={form.presenter}
+          onChange={(e) => setForm({ ...form, presenter: e.target.value })}
+        />
         <Dropdown
           id="en-usecase"
           titleText="Use case"
@@ -91,13 +98,6 @@ export default function EnablementModal({ open, onClose, initialDate }) {
             invalidText="A session date is required."
           />
         </DatePicker>
-        <TextInput
-          id="en-presenter"
-          labelText="Presenter (optional)"
-          placeholder="Who from the team delivered it"
-          value={form.presenter}
-          onChange={(e) => setForm({ ...form, presenter: e.target.value })}
-        />
         <NumberInput
           id="en-attendees"
           label="Attendees"

@@ -42,11 +42,12 @@ export default function Pipeline() {
           <Table size="md" aria-label="Customer deals">
             <TableHead>
               <TableRow>
+                {/* column order mirrors the add/edit form's field order */}
                 <TableHeader>Customer</TableHeader>
-                <TableHeader>Use case</TableHeader>
                 <TableHeader>Revenue</TableHeader>
-                <TableHeader>Stage</TableHeader>
+                <TableHeader>Use case</TableHeader>
                 <TableHeader>Open date</TableHeader>
+                <TableHeader>Stage</TableHeader>
                 <TableHeader>Owner</TableHeader>
                 <TableHeader>Enablement</TableHeader>
                 <TableHeader aria-label="Actions" />
@@ -56,12 +57,12 @@ export default function Pipeline() {
               {rows.map((d) => (
                 <TableRow key={d.id}>
                   <TableCell>{d.customer}</TableCell>
-                  <TableCell><UseCaseChip id={d.useCase} /></TableCell>
                   <TableCell>{fmtUSD(d.value)}</TableCell>
+                  <TableCell><UseCaseChip id={d.useCase} /></TableCell>
+                  <TableCell>{fmtDate(d.date)}</TableCell>
                   <TableCell>
                     <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
                   </TableCell>
-                  <TableCell>{fmtDate(d.date)}</TableCell>
                   <TableCell>{d.owner || '—'}</TableCell>
                   <TableCell>
                     {d.influenced ? (

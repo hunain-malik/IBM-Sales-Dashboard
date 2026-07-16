@@ -139,16 +139,16 @@ export default function OnePager() {
           <table className="op__table op__table--deals">
             <colgroup>
               <col style={{ width: '18%' }} />
-              <col style={{ width: '20%' }} />
               <col style={{ width: '13%' }} />
+              <col style={{ width: '20%' }} />
               <col style={{ width: '13%' }} />
               <col style={{ width: '36%' }} />
             </colgroup>
             <thead>
               <tr>
                 <th>Customer</th>
-                <th>Use case</th>
                 <th className="op__num--right">Revenue</th>
+                <th>Use case</th>
                 <th>Stage</th>
                 <th>First matching session</th>
               </tr>
@@ -157,8 +157,8 @@ export default function OnePager() {
               {topWins.map((d) => (
                 <tr key={d.id}>
                   <td>{d.customer}</td>
-                  <td>{getUseCase(d.useCase).label}</td>
                   <td className="op__num op__num--right">{fmtUSD(d.value)}</td>
+                  <td>{getUseCase(d.useCase).label}</td>
                   <td>
                     <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
                   </td>

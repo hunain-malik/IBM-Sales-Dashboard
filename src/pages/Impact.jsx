@@ -29,7 +29,8 @@ export default function Impact() {
   const insights = useMemo(() => buildInsights(deals, enablements), [deals, enablements])
   const { summary, comparison, coverage } = insights
 
-  const influenced = [...summary.influenced].sort((a, b) => b.value - a.value)
+  // newest first — same ordering as the Pipeline tab's list
+  const influenced = [...summary.influenced].sort((a, b) => b.date.localeCompare(a.date))
 
   return (
     <div>
@@ -100,8 +101,8 @@ export default function Impact() {
             <TableHead>
               <TableRow>
                 <TableHeader>Customer</TableHeader>
-                <TableHeader>Use case</TableHeader>
                 <TableHeader>Revenue</TableHeader>
+                <TableHeader>Use case</TableHeader>
                 <TableHeader>Stage</TableHeader>
                 <TableHeader>First matching session</TableHeader>
                 <TableHeader>Days from session to deal</TableHeader>
@@ -111,8 +112,8 @@ export default function Impact() {
               {influenced.map((d) => (
                 <TableRow key={d.id}>
                   <TableCell>{d.customer}</TableCell>
-                  <TableCell><UseCaseChip id={d.useCase} /></TableCell>
                   <TableCell>{fmtUSD(d.value)}</TableCell>
+                  <TableCell><UseCaseChip id={d.useCase} /></TableCell>
                   <TableCell>
                     <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
                   </TableCell>
