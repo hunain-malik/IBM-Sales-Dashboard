@@ -16,6 +16,7 @@ import Overview from './pages/Overview.jsx'
 import Enablements from './pages/Enablements.jsx'
 import Pipeline from './pages/Pipeline.jsx'
 import Impact from './pages/Impact.jsx'
+import OnePager from './pages/OnePager.jsx'
 
 const NAV = [
   { path: '/', label: 'Overview' },
@@ -78,6 +79,7 @@ export default function App() {
             <Route path="/enablements" element={<Enablements />} />
             <Route path="/pipeline" element={<Pipeline />} />
             <Route path="/impact" element={<Impact />} />
+            <Route path="/onepager" element={<OnePager />} />
           </Routes>
         </Content>
       </Theme>

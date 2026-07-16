@@ -10,7 +10,7 @@ import {
 import { USE_CASES } from '../data/constants.js'
 import { useStore } from '../data/store.jsx'
 
-const blank = { title: '', useCase: null, date: '', presenter: '', attendees: 10 }
+const blank = { title: '', useCase: null, date: '', presenter: '', attendees: 10, hours: 4 }
 
 export default function EnablementModal({ open, onClose, initialDate }) {
   const { addEnablement } = useStore()
@@ -35,6 +35,7 @@ export default function EnablementModal({ open, onClose, initialDate }) {
       date: form.date,
       presenter: form.presenter.trim(),
       attendees: Number(form.attendees) || 0,
+      hours: Number(form.hours) || 0,
     })
     onClose()
   }
@@ -103,6 +104,14 @@ export default function EnablementModal({ open, onClose, initialDate }) {
           min={0}
           value={form.attendees}
           onChange={(_e, { value }) => setForm({ ...form, attendees: value })}
+        />
+        <NumberInput
+          id="en-hours"
+          label="Team hours invested (prep + delivery)"
+          helperText="Feeds the value-per-enablement-hour and coverage views"
+          min={0}
+          value={form.hours}
+          onChange={(_e, { value }) => setForm({ ...form, hours: value })}
         />
       </div>
     </Modal>

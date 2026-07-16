@@ -271,3 +271,263 @@ html[data-carbon-theme='g100'] body {
 .form-stack > * + * {
   margin-top: 1rem;
 }
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+}
+
+/* Comparison / coverage stat rows (shared by both panels) */
+.cmp__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.75rem;
+  color: var(--cds-text-secondary);
+
+  .uc-chip {
+    font-size: 0.75rem;
+  }
+}
+
+.cmp__row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) minmax(10rem, 2fr) minmax(6rem, auto);
+  gap: 0.5rem 1rem;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--cds-border-subtle-01);
+}
+
+.cmp__label {
+  font-size: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+
+  /* long use-case names wrap inside their column instead of overlapping bars */
+  .uc-chip {
+    white-space: normal;
+  }
+}
+
+.cmp__hint {
+  font-size: 0.6875rem;
+  color: var(--cds-text-helper);
+}
+
+.cmp__bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.cmp__barline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cmp__bar {
+  display: inline-block;
+  height: 0.625rem;
+  border-radius: 0 2px 2px 0;
+  flex: none;
+  max-width: calc(100% - 6rem);
+}
+
+.cmp__value {
+  font-size: 0.75rem;
+  color: var(--cds-text-secondary);
+  white-space: nowrap;
+}
+
+.cmp__delta {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--cds-link-primary);
+  text-align: right;
+}
+
+@media (max-width: 42rem) {
+  .cmp__row {
+    grid-template-columns: 1fr;
+  }
+
+  .cmp__delta {
+    text-align: left;
+  }
+}
+
+/* Executive one-pager */
+.op-wrap {
+  min-height: calc(100vh - 3rem);
+  background: var(--cds-layer-02);
+  padding: 1.5rem 1rem 3rem;
+}
+
+.op-toolbar {
+  max-width: 52rem;
+  margin: 0 auto 1rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.op {
+  max-width: 52rem;
+  margin: 0 auto;
+  background: #ffffff;
+  color: #161616;
+  padding: 2.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 400;
+    margin: 0.25rem 0 0;
+  }
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1.75rem 0 0.75rem;
+    border-bottom: 2px solid #0f62fe;
+    padding-bottom: 0.375rem;
+  }
+}
+
+.op__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 1.25rem;
+}
+
+.op__brand {
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #525252;
+}
+
+.op__date {
+  font-size: 0.875rem;
+  color: #525252;
+}
+
+.op__kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.op__kpi-value {
+  font-size: 1.75rem;
+  font-weight: 300;
+  line-height: 1.15;
+}
+
+.op__kpi-label {
+  font-size: 0.75rem;
+  color: #525252;
+  margin-top: 0.25rem;
+}
+
+.op__cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 2rem;
+}
+
+@media (max-width: 42rem) {
+  .op__cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.op__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+
+  th {
+    text-align: left;
+    font-weight: 600;
+    padding: 0.375rem 0.5rem 0.375rem 0;
+    border-bottom: 1px solid #c6c6c6;
+    color: #525252;
+  }
+
+  td {
+    padding: 0.4375rem 0.5rem 0.4375rem 0;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: top;
+  }
+}
+
+.op__num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.op__num--accent {
+  color: #0f62fe;
+  font-weight: 600;
+}
+
+.op__callout {
+  font-size: 0.8125rem;
+  background: #edf5ff;
+  border-left: 3px solid #0f62fe;
+  padding: 0.625rem 0.75rem;
+  margin: 0.75rem 0 0;
+}
+
+.op__foot {
+  margin-top: 2rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.6875rem;
+  color: #525252;
+  line-height: 1.5;
+}
+
+/* Print: only the one-pager sheet, exact colors, no app chrome */
+@media print {
+  .cds--header,
+  .no-print {
+    display: none !important;
+  }
+
+  .app-theme,
+  .app-content,
+  .op-wrap {
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    background: #ffffff;
+    min-height: 0;
+  }
+
+  .op {
+    max-width: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}

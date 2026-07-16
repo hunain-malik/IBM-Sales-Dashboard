@@ -11,11 +11,14 @@ import {
   Tag,
 } from '@carbon/react'
 import { AlluvialChart } from '@carbon/charts-react'
+import { Document } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
-import { impactSummary, alluvialGraph } from '../data/attribution.js'
+import { impactSummary, alluvialGraph, comparisonStats, coverageGaps } from '../data/attribution.js'
 import { USE_CASES, getUseCase, getUseCaseColor, fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
 import KpiTile from '../components/KpiTile.jsx'
 import UseCaseChip from '../components/UseCaseChip.jsx'
+import ComparisonPanel from '../components/ComparisonPanel.jsx'
+import CoveragePanel from '../components/CoveragePanel.jsx'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const lagDays = (fromIso, toIso) =>
@@ -24,6 +27,8 @@ const lagDays = (fromIso, toIso) =>
 export default function Impact() {
   const { deals, enablements, theme } = useStore()
   const summary = useMemo(() => impactSummary(deals, enablements), [deals, enablements])
+  const comparison = useMemo(() => comparisonStats(deals, enablements), [deals, enablements])
+  const coverage = useMemo(() => coverageGaps(deals, enablements, USE_CASES), [deals, enablements])
 
   const graph = useMemo(
     () => alluvialGraph(deals, enablements, (id) => getUseCase(id).label),
@@ -40,13 +45,18 @@ export default function Impact() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1>Enablement impact summary</h1>
-        <p>
-          Executive view of the pipeline our enablement work created: each flow starts at a session
-          the team delivered, passes through the use case it enabled, and ends at a customer deal
-          opened after that session.
-        </p>
+      <div className="page-header page-header--actions">
+        <div>
+          <h1>Enablement impact summary</h1>
+          <p>
+            Executive view of the pipeline our enablement work created: each flow starts at a session
+            the team delivered, passes through the use case it enabled, and ends at a customer deal
+            opened after that session.
+          </p>
+        </div>
+        <Button as={Link} to="/onepager" kind="tertiary" size="md" renderIcon={Document}>
+          Executive one-pager
+        </Button>
       </div>
 
       <div className="kpi-row">
@@ -74,6 +84,34 @@ export default function Impact() {
           value={summary.sessionCount}
           detail={`${summary.attendeeCount} attendees enabled`}
         />
+        <KpiTile
+          label="Influenced value per team hour"
+          value={summary.valuePerHour != null ? fmtUSDCompact(summary.valuePerHour) : '—'}
+          detail={
+            summary.valuePerHour != null
+              ? `${summary.totalHours} enablement hours invested`
+              : 'Add hours to sessions to compute ROI'
+          }
+        />
+      </div>
+
+      <div className="chart-grid">
+        <div className="chart-card">
+          <h4 className="section-title">Do enablement-influenced deals perform better?</h4>
+          <ComparisonPanel stats={comparison} />
+          <p className="impact-note">
+            Same tracking, split by whether an enablement preceded the deal. Small samples move these
+            numbers — read them as direction, not decimals.
+          </p>
+        </div>
+        <div className="chart-card">
+          <h4 className="section-title">Where to invest next</h4>
+          <CoveragePanel rows={coverage} />
+          <p className="impact-note">
+            Use cases where customer demand outruns our enablement coverage are the highest-leverage
+            place to add sessions — and the concrete ask for more support.
+          </p>
+        </div>
       </div>
 
       {influenced.length ? (

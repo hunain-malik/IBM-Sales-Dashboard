@@ -49,5 +49,7 @@ const usdCompact = new Intl.NumberFormat('en-US', {
 export const fmtUSD = (n) => usd.format(n)
 export const fmtUSDCompact = (n) => usdCompact.format(n)
 
+export const fmtPct = (ratio) => `${Math.round(ratio * 100)}%`
+
 export const fmtDate = (iso) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })

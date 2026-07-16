@@ -10,7 +10,7 @@ import {
 import { USE_CASES, DEAL_STAGES } from '../data/constants.js'
 import { useStore } from '../data/store.jsx'
 
-const blank = { customer: '', useCase: null, value: 100000, date: '', stage: 'Prospecting', owner: '' }
+const blank = { customer: '', useCase: null, value: 100000, date: '', stage: 'Prospecting', owner: '', closeDate: '' }
 
 export default function DealModal({ open, onClose }) {
   const { addDeal } = useStore()
@@ -36,6 +36,7 @@ export default function DealModal({ open, onClose }) {
       date: form.date,
       stage: form.stage,
       owner: form.owner.trim(),
+      ...(form.closeDate ? { closeDate: form.closeDate } : {}),
     })
     onClose()
   }
@@ -109,6 +110,26 @@ export default function DealModal({ open, onClose }) {
           selectedItem={form.stage}
           onChange={({ selectedItem }) => setForm({ ...form, stage: selectedItem })}
         />
+        {form.stage?.startsWith('Closed') && (
+          <DatePicker
+            datePickerType="single"
+            dateFormat="Y-m-d"
+            value={form.closeDate ? [form.closeDate] : []}
+            onChange={(dates) => {
+              const d = dates[0]
+              if (d) {
+                const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                setForm((f) => ({ ...f, closeDate: iso }))
+              }
+            }}
+          >
+            <DatePickerInput
+              id="deal-close-date"
+              labelText="Close date"
+              placeholder="yyyy-mm-dd"
+            />
+          </DatePicker>
+        )}
         <TextInput
           id="deal-owner"
           labelText="Deal owner (optional)"

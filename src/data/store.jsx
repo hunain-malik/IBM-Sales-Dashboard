@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { seedEnablements, seedDeals } from './seed.js'
 
-const DATA_KEY = 'enablement-dashboard-data-v1'
+// v2: enablements gained `hours`, deals gained `closeDate`.
+const DATA_KEY = 'enablement-dashboard-data-v2'
 const THEME_KEY = 'enablement-dashboard-theme'
 
 const StoreContext = createContext(null)

@@ -17,9 +17,16 @@ and [Carbon Charts](https://charts.carbondesignsystem.com/) (`@carbon/charts-rea
 - **Attribution** — a deal is automatically marked **enablement-influenced** when the customer's
   use case matches at least one session delivered *on or before* the deal's open date.
 - **Impact summary** — the executive page: KPI tiles (deals driven, influenced closed-won revenue,
-  influenced open pipeline, sessions delivered) plus a Sankey/alluvial flow drawn from each
-  enablement session → its use case → the customer deals it influenced. Flow width is deal
-  revenue, split evenly when several sessions preceded a deal.
+  influenced open pipeline, sessions delivered, influenced value per team hour) plus a
+  Sankey/alluvial flow drawn from each enablement session → its use case → the customer deals it
+  influenced. Flow width is deal revenue, split evenly when several sessions preceded a deal.
+- **Influenced vs. not influenced** — win rate, average deal size, and sales-cycle length compared
+  between deals preceded by enablement and the rest (uses each deal's optional close date).
+- **Where to invest next** — per use case, customer demand share (deal value) vs. enablement
+  coverage share (team hours); use cases where demand outruns coverage are flagged *Invest here*.
+- **Executive one-pager** — a print-optimized summary (`Impact summary → Executive one-pager →
+  Print / save as PDF`) with the headline KPIs, the comparison, the coverage gaps, and the top
+  influenced deals on a single page.
 
 Data is stored in the browser's `localStorage`. The app seeds a demo dataset on first load;
 use the reset action in the header to restore it, and delete rows to clear records.
