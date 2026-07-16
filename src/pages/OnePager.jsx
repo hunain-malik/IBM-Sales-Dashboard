@@ -138,11 +138,11 @@ export default function OnePager() {
           <h2>Top enablement-influenced deals</h2>
           <table className="op__table op__table--deals">
             <colgroup>
-              <col style={{ width: '18%' }} />
-              <col style={{ width: '13%' }} />
-              <col style={{ width: '20%' }} />
-              <col style={{ width: '13%' }} />
-              <col style={{ width: '36%' }} />
+              <col style={{ width: '19%' }} />
+              <col style={{ width: '12%' }} />
+              <col style={{ width: '25%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '30%' }} />
             </colgroup>
             <thead>
               <tr>
