@@ -85,25 +85,28 @@ export default function Impact() {
         />
       </div>
 
-      <div className="chart-grid">
+      {/* full-width sections, ordered by how the impact story is argued:
+          proof → mechanism → momentum → the ask → the receipts */}
+      <div className="card-stack">
         <div className="chart-card">
           <h4 className="section-title">Do enablement-influenced deals perform better?</h4>
           {/* the answer is generated from the data — it changes when the data does */}
           <p className="cmp__verdict">{insights.headline}</p>
           {insights.caveat && <p className="impact-note" style={{ marginTop: 0 }}>{insights.caveat}</p>}
           <ComparisonPanel stats={comparison} />
-          <p className="impact-note">
-            Same tracking, split by whether an enablement preceded the deal.
-          </p>
         </div>
-        <div className="chart-card">
-          <h4 className="section-title">Where to invest next</h4>
-          <CoveragePanel rows={coverage} />
-          <p className="impact-note">
-            Use cases where customer demand outruns our enablement coverage are the highest-leverage
-            place to add sessions — and the concrete ask for more support.
-          </p>
-        </div>
+
+        {influenced.length > 0 && (
+          <div className="chart-card">
+            <h4 className="section-title">From enablement session to customer deal</h4>
+            <InfluenceTimeline deals={deals} enablements={enablements} />
+            <p className="impact-note">
+              A deal counts as influenced only when a matching session came first; curves link each
+              deal to that session.
+            </p>
+          </div>
+        )}
+
         {monthly.length > 0 && (
           <div className="chart-card">
             <SimpleBarChart
@@ -118,31 +121,21 @@ export default function Impact() {
                 legend: { enabled: false },
                 toolbar: { enabled: false },
                 tooltip: { valueFormatter: (v) => (typeof v === 'number' ? fmtUSD(v) : v) },
-                height: '300px',
+                height: '280px',
                 theme,
               }}
             />
-            <p className="impact-note">
-              Value of influenced deals by the month they opened — flat months show honestly instead
-              of being smoothed away by a cumulative curve.
-            </p>
           </div>
         )}
+
+        <div className="chart-card">
+          <h4 className="section-title">Where to invest next</h4>
+          <CoveragePanel rows={coverage} />
+        </div>
       </div>
 
       {influenced.length ? (
         <>
-          <div className="chart-card chart-card--full" style={{ marginBottom: '1.5rem' }}>
-            <h4 className="section-title">From enablement session to customer deal</h4>
-            <InfluenceTimeline deals={deals} enablements={enablements} />
-            <p className="impact-note">
-              Each lane is a use case on a real time axis: diamonds are the sessions we delivered,
-              dots are customer deals at their actual value. A deal counts as influenced only when a
-              matching session came first — deals left of every diamond in their lane are visibly
-              excluded. Curves link each influenced deal to the first session that preceded it.
-            </p>
-          </div>
-
           <div className="table-card">
             <Table size="md" aria-label="Influenced deals">
               <TableHead>

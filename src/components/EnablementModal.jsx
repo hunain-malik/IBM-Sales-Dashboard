@@ -108,7 +108,6 @@ export default function EnablementModal({ open, onClose, initialDate }) {
         <NumberInput
           id="en-hours"
           label="Team hours invested (prep + delivery)"
-          helperText="Feeds the value-per-enablement-hour and coverage views"
           min={0}
           value={form.hours}
           onChange={(_e, { value }) => setForm({ ...form, hours: value })}
