@@ -102,8 +102,8 @@ export default function Impact() {
               <TableRow>
                 <TableHeader>Customer</TableHeader>
                 <TableHeader>Revenue</TableHeader>
-                <TableHeader>Stage</TableHeader>
                 <TableHeader>Use case</TableHeader>
+                <TableHeader>Stage</TableHeader>
                 <TableHeader>First matching session</TableHeader>
                 <TableHeader>Open date</TableHeader>
                 <TableHeader>Days from session to deal</TableHeader>
@@ -114,10 +114,10 @@ export default function Impact() {
                 <TableRow key={d.id}>
                   <TableCell>{d.customer}</TableCell>
                   <TableCell>{fmtUSD(d.value)}</TableCell>
+                  <TableCell><UseCaseChip id={d.useCase} /></TableCell>
                   <TableCell>
                     <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
                   </TableCell>
-                  <TableCell><UseCaseChip id={d.useCase} /></TableCell>
                   <TableCell>
                     {d.matched[0].title}
                     <div style={{ fontSize: '0.75rem', color: 'var(--cds-text-helper)' }}>
