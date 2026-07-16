@@ -100,14 +100,13 @@ export default function Impact() {
           <Table size="md" aria-label="Influenced deals">
             <TableHead>
               <TableRow>
-                {/* chronological: session delivered → deal opened → days between → stage */}
                 <TableHeader>Customer</TableHeader>
                 <TableHeader>Revenue</TableHeader>
+                <TableHeader>Stage</TableHeader>
                 <TableHeader>Use case</TableHeader>
                 <TableHeader>First matching session</TableHeader>
                 <TableHeader>Open date</TableHeader>
                 <TableHeader>Days from session to deal</TableHeader>
-                <TableHeader>Stage</TableHeader>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -115,6 +114,9 @@ export default function Impact() {
                 <TableRow key={d.id}>
                   <TableCell>{d.customer}</TableCell>
                   <TableCell>{fmtUSD(d.value)}</TableCell>
+                  <TableCell>
+                    <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
+                  </TableCell>
                   <TableCell><UseCaseChip id={d.useCase} /></TableCell>
                   <TableCell>
                     {d.matched[0].title}
@@ -124,9 +126,6 @@ export default function Impact() {
                   </TableCell>
                   <TableCell>{fmtDate(d.date)}</TableCell>
                   <TableCell>{lagDays(d.matched[0].date, d.date)}</TableCell>
-                  <TableCell>
-                    <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
