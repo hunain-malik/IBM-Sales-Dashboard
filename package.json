@@ -10,10 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@carbon/charts": "^1.27.16",
-    "@carbon/charts-react": "^1.27.16",
     "@carbon/react": "^1.112.0",
-    "d3": "^7.9.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1"

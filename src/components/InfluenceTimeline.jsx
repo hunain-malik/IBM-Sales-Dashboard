@@ -3,6 +3,7 @@ import { IconButton } from '@carbon/react'
 import { ChevronLeft, ChevronRight } from '@carbon/icons-react'
 import { USE_CASES, getUseCase, getUseCaseColor, fmtUSD, fmtUSDCompact, fmtDate } from '../data/constants.js'
 import { attributeDeals } from '../data/attribution.js'
+import { quarterStart, nextQuarter, prevQuarter, quarterLabel } from '../data/quarters.js'
 import { useStore } from '../data/store.jsx'
 
 // One fiscal quarter at a time (IBM's FY matches the calendar year): sessions
@@ -19,9 +20,6 @@ const PAD_R = 24
 const AXIS_H = 36
 
 const toDate = (iso) => new Date(`${iso}T00:00:00`)
-const quarterStart = (d) => new Date(d.getFullYear(), Math.floor(d.getMonth() / 3) * 3, 1)
-const nextQuarter = (q) => new Date(q.getFullYear(), q.getMonth() + 3, 1)
-const quarterLabel = (q) => `Q${Math.floor(q.getMonth() / 3) + 1} ${q.getFullYear()}`
 
 export default function InfluenceTimeline({ deals, enablements }) {
   const { theme } = useStore()
@@ -160,7 +158,7 @@ export default function InfluenceTimeline({ deals, enablements }) {
           )}
         </div>
         <div className="tl-head__nav">
-          <IconButton kind="ghost" size="sm" label="Previous quarter" disabled={!canPrev} onClick={() => setQCursor((q) => quarterStart(new Date(q.getFullYear(), q.getMonth() - 3, 1)))}>
+          <IconButton kind="ghost" size="sm" label="Previous quarter" disabled={!canPrev} onClick={() => setQCursor((q) => prevQuarter(q))}>
             <ChevronLeft />
           </IconButton>
           <span className="tl-head__label">{quarterLabel(qCursor)}</span>

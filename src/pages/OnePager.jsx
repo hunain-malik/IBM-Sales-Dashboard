@@ -50,7 +50,14 @@ export default function OnePager() {
           <div className="op__date">FY{new Date().getFullYear()} year to date · {today}</div>
         </header>
 
+        {/* same order as the dashboard KPI row */}
         <section className="op__kpis">
+          <div className="op__kpi">
+            <div className="op__kpi-value">
+              {summary.influencedCount} of {summary.totalDeals}
+            </div>
+            <div className="op__kpi-label">Deals driven by enablement</div>
+          </div>
           <div className="op__kpi">
             <div className="op__kpi-value">{fmtUSDCompact(summary.wonRevenue)}</div>
             <div className="op__kpi-label">Influenced revenue (closed won)</div>
@@ -58,12 +65,6 @@ export default function OnePager() {
           <div className="op__kpi">
             <div className="op__kpi-value">{fmtUSDCompact(summary.pipelineRevenue)}</div>
             <div className="op__kpi-label">Influenced open pipeline</div>
-          </div>
-          <div className="op__kpi">
-            <div className="op__kpi-value">
-              {summary.influencedCount} of {summary.totalDeals}
-            </div>
-            <div className="op__kpi-label">Deals preceded by our enablement</div>
           </div>
           <div className="op__kpi">
             <div className="op__kpi-value">

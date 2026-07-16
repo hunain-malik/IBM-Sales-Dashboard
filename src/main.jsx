@@ -1,7 +1,6 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
-import '@carbon/charts-react/styles.css'
 import './index.scss'
 import App from './App.jsx'
 import { StoreProvider } from './data/store.jsx'

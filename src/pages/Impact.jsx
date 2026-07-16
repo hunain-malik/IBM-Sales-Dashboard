@@ -11,25 +11,23 @@ import {
   Tag,
 } from '@carbon/react'
 import { Document } from '@carbon/icons-react'
-import { SimpleBarChart } from '@carbon/charts-react'
 import { useStore } from '../data/store.jsx'
-import { monthlyInfluenced } from '../data/attribution.js'
 import { buildInsights } from '../data/insights.js'
 import { fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
 import KpiTile from '../components/KpiTile.jsx'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import ComparisonPanel from '../components/ComparisonPanel.jsx'
 import CoveragePanel from '../components/CoveragePanel.jsx'
+import QuarterlyPipeline from '../components/QuarterlyPipeline.jsx'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const lagDays = (fromIso, toIso) =>
   Math.round((new Date(`${toIso}T00:00:00`) - new Date(`${fromIso}T00:00:00`)) / DAY_MS)
 
 export default function Impact() {
-  const { deals, enablements, theme } = useStore()
+  const { deals, enablements } = useStore()
   const insights = useMemo(() => buildInsights(deals, enablements), [deals, enablements])
   const { summary, comparison, coverage } = insights
-  const monthly = useMemo(() => monthlyInfluenced(deals, enablements), [deals, enablements])
 
   const influenced = [...summary.influenced].sort((a, b) => b.value - a.value)
 
@@ -82,24 +80,10 @@ export default function Impact() {
           <ComparisonPanel stats={comparison} />
         </div>
 
-        {monthly.length > 0 && (
+        {influenced.length > 0 && (
           <div className="chart-card">
-            <SimpleBarChart
-              data={monthly.map((m) => ({ group: 'Influenced pipeline', key: m.label, value: m.value }))}
-              options={{
-                title: 'Influenced pipeline opened by month',
-                axes: {
-                  bottom: { mapsTo: 'key', scaleType: 'labels' },
-                  left: { mapsTo: 'value', ticks: { formatter: fmtUSDCompact } },
-                },
-                color: { scale: { 'Influenced pipeline': theme === 'g100' ? '#4589ff' : '#0f62fe' } },
-                legend: { enabled: false },
-                toolbar: { enabled: false },
-                tooltip: { valueFormatter: (v) => (typeof v === 'number' ? fmtUSD(v) : v) },
-                height: '280px',
-                theme,
-              }}
-            />
+            <h4 className="section-title">Influenced pipeline opened by month</h4>
+            <QuarterlyPipeline deals={deals} enablements={enablements} />
           </div>
         )}
 

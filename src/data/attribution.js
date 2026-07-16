@@ -98,33 +98,6 @@ export function coverageGaps(deals, enablements, useCases) {
     .sort((a, b) => b.gap - a.gap)
 }
 
-// Influenced deal value bucketed by the month the deal opened, with zero
-// months kept in the sequence — gaps are part of the honest story.
-export function monthlyInfluenced(deals, enablements) {
-  const influenced = attributeDeals(deals, enablements).filter((d) => d.influenced)
-  if (!influenced.length) return []
-  const totals = new Map()
-  for (const d of influenced) {
-    const dt = new Date(`${d.date}T00:00:00`)
-    const k = `${dt.getFullYear()}-${dt.getMonth()}`
-    totals.set(k, (totals.get(k) ?? 0) + d.value)
-  }
-  const dates = influenced.map((d) => new Date(`${d.date}T00:00:00`))
-  const cursor = new Date(Math.min(...dates))
-  cursor.setDate(1)
-  const end = new Date(Math.max(...dates))
-  const out = []
-  while (cursor <= end) {
-    const k = `${cursor.getFullYear()}-${cursor.getMonth()}`
-    out.push({
-      label: cursor.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-      value: totals.get(k) ?? 0,
-    })
-    cursor.setMonth(cursor.getMonth() + 1)
-  }
-  return out
-}
-
-// (The earlier Sankey/alluvial graph was removed: its per-session revenue
-// splits were fabricated allocations, and the session→deal pairing is shown
-// honestly by InfluenceTimeline and the attribution table instead.)
+// (Monthly bucketing lives in QuarterlyPipeline; the earlier Sankey/alluvial
+// graph was removed because its per-session revenue splits were fabricated
+// allocations — InfluenceTimeline shows the session→deal pairing honestly.)
