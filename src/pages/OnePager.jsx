@@ -148,7 +148,7 @@ export default function OnePager() {
             <thead>
               <tr>
                 <th>Customer</th>
-                <th className="op__num--right">Revenue</th>
+                <th>Revenue</th>
                 <th>Use case</th>
                 <th>Stage</th>
                 <th>First matching session</th>
@@ -158,7 +158,7 @@ export default function OnePager() {
               {topWins.map((d) => (
                 <tr key={d.id}>
                   <td>{d.customer}</td>
-                  <td className="op__num op__num--right">{fmtUSD(d.value)}</td>
+                  <td className="op__num">{fmtUSD(d.value)}</td>
                   <td>{getUseCase(d.useCase).label}</td>
                   <td>
                     <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
