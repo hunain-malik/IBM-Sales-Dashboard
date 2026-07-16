@@ -16,12 +16,13 @@ const PLOT_L = 64 // plot area starts inset so markers/labels clear the lane hea
 const PAD_R = 24
 const AXIS_H = 36
 
+const DAY_MS = 24 * 60 * 60 * 1000
+
 const toDate = (iso) => new Date(`${iso}T00:00:00`)
 
-// IBM's fiscal year matches the calendar year, so fiscal quarters are
-// calendar quarters: Q1 = Jan–Mar, Q2 = Apr–Jun, Q3 = Jul–Sep, Q4 = Oct–Dec.
+// IBM's fiscal year matches the calendar year, so quarters are calendar
+// quarters — the axis starts on the quarter boundary and runs to today.
 const quarterStart = (d) => new Date(d.getFullYear(), Math.floor(d.getMonth() / 3) * 3, 1)
-const nextQuarter = (d) => new Date(d.getFullYear(), d.getMonth() + 3, 1)
 
 export default function InfluenceTimeline({ deals, enablements }) {
   const { theme } = useStore()
@@ -44,7 +45,7 @@ export default function InfluenceTimeline({ deals, enablements }) {
   }
   const hideTip = () => setTip(null)
 
-  const { lanes, x, quarters, todayX, height } = useMemo(() => {
+  const { lanes, x, months, todayX, height } = useMemo(() => {
     const attributed = attributeDeals(deals, enablements)
     const lanes = USE_CASES.map((u) => ({
       u,
@@ -57,28 +58,32 @@ export default function InfluenceTimeline({ deals, enablements }) {
       ...deals.map((d) => toDate(d.date)),
       new Date(),
     ]
-    // snap the domain to whole fiscal quarters
+    // domain: start of the earliest data's quarter → today
+    const today = new Date()
     const min = quarterStart(new Date(Math.min(...allDates)))
-    const max = nextQuarter(quarterStart(new Date(Math.max(...allDates))))
+    const max = new Date(Math.max(today.getTime(), Math.max(...allDates)) + 4 * DAY_MS)
     const span = max - min || 1
     const toPx = (date) => PLOT_L + ((date - min) / span) * (W - PLOT_L - PAD_R)
     const x = (iso) => toPx(toDate(iso))
 
-    const quarters = []
-    let q = new Date(min)
-    while (q < max) {
-      const end = nextQuarter(q)
-      quarters.push({
-        x1: toPx(q),
-        x2: toPx(end),
-        label: `Q${Math.floor(q.getMonth() / 3) + 1} ${q.getFullYear()}`,
+    const months = []
+    let m = new Date(min)
+    while (m < max) {
+      const end = new Date(m.getFullYear(), m.getMonth() + 1, 1)
+      months.push({
+        x1: toPx(m),
+        x2: toPx(end < max ? end : max),
+        label: m.toLocaleDateString('en-US', {
+          month: 'short',
+          year: months.length === 0 || m.getMonth() === 0 ? 'numeric' : undefined,
+        }),
       })
-      q = end
+      m = end
     }
 
-    const todayX = toPx(new Date())
+    const todayX = toPx(today)
 
-    return { lanes, x, quarters, todayX, height: lanes.length * LANE_H + AXIS_H }
+    return { lanes, x, months, todayX, height: lanes.length * LANE_H + AXIS_H }
   }, [deals, enablements])
 
   if (!lanes.length) return null
@@ -127,22 +132,18 @@ export default function InfluenceTimeline({ deals, enablements }) {
         role="img"
         aria-label="Timeline of enablement sessions and the customer deals that followed them, per use case"
       >
-        {/* fiscal-quarter gridlines, labels centered in each quarter */}
-        {quarters.map((q, i) => (
-          <g key={q.x1}>
-            <line x1={q.x1} y1={0} x2={q.x1} y2={height - AXIS_H + 8} stroke={grid} strokeWidth="1" />
-            {i === quarters.length - 1 && (
-              <line x1={q.x2} y1={0} x2={q.x2} y2={height - AXIS_H + 8} stroke={grid} strokeWidth="1" />
-            )}
+        {/* month gridlines from the quarter boundary to today, labels centered */}
+        {months.map((mo) => (
+          <g key={mo.x1}>
+            <line x1={mo.x1} y1={0} x2={mo.x1} y2={height - AXIS_H + 8} stroke={grid} strokeWidth="1" />
             <text
-              x={(q.x1 + q.x2) / 2}
+              x={(mo.x1 + mo.x2) / 2}
               y={height - AXIS_H + 24}
               fontSize="11"
-              fontWeight="600"
               textAnchor="middle"
               style={{ fill: ink.helper }}
             >
-              {q.label}
+              {mo.label}
             </text>
           </g>
         ))}
