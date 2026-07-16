@@ -16,6 +16,7 @@ import { attributeDeals } from '../data/attribution.js'
 import { fmtUSD, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import DealModal from '../components/DealModal.jsx'
+import InfluenceTimeline from '../components/InfluenceTimeline.jsx'
 
 export default function Pipeline() {
   const { deals, enablements, removeDeal } = useStore()
@@ -90,6 +91,13 @@ export default function Pipeline() {
           </div>
         )}
       </div>
+
+      {rows.length > 0 && (
+        <div className="chart-card" style={{ marginTop: '1rem' }}>
+          <h4 className="section-title">Session-to-deal timeline</h4>
+          <InfluenceTimeline deals={deals} enablements={enablements} />
+        </div>
+      )}
 
       <DealModal
         open={modal !== null}

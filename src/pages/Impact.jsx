@@ -8,18 +8,18 @@ import {
   TableHeader,
   TableBody,
   TableCell,
+  Tag,
 } from '@carbon/react'
 import { Document } from '@carbon/icons-react'
 import { SimpleBarChart } from '@carbon/charts-react'
 import { useStore } from '../data/store.jsx'
 import { monthlyInfluenced } from '../data/attribution.js'
 import { buildInsights } from '../data/insights.js'
-import { USE_CASES, OPEN_STAGES, fmtUSD, fmtUSDCompact } from '../data/constants.js'
+import { fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
 import KpiTile from '../components/KpiTile.jsx'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import ComparisonPanel from '../components/ComparisonPanel.jsx'
 import CoveragePanel from '../components/CoveragePanel.jsx'
-import InfluenceTimeline from '../components/InfluenceTimeline.jsx'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const lagDays = (fromIso, toIso) =>
@@ -31,30 +31,7 @@ export default function Impact() {
   const { summary, comparison, coverage } = insights
   const monthly = useMemo(() => monthlyInfluenced(deals, enablements), [deals, enablements])
 
-  const influenced = summary.influenced
-
-  // grouped rollup: the per-deal detail lives on the Pipeline tab; this page
-  // stays at the use-case altitude
-  const rollup = useMemo(
-    () =>
-      USE_CASES.map((u) => {
-        const ds = summary.influenced.filter((d) => d.useCase === u.id)
-        if (!ds.length) return null
-        const sessions = enablements.filter((e) => e.useCase === u.id)
-        return {
-          useCase: u.id,
-          count: ds.length,
-          won: ds.filter((d) => d.stage === 'Closed Won').reduce((s, d) => s + d.value, 0),
-          open: ds.filter((d) => OPEN_STAGES.includes(d.stage)).reduce((s, d) => s + d.value, 0),
-          sessions: sessions.length,
-          hours: sessions.reduce((s, e) => s + (Number(e.hours) || 0), 0),
-          avgLag: Math.round(ds.reduce((s, d) => s + lagDays(d.matched[0].date, d.date), 0) / ds.length),
-        }
-      })
-        .filter(Boolean)
-        .sort((a, b) => b.won + b.open - (a.won + a.open)),
-    [summary, enablements],
-  )
+  const influenced = [...summary.influenced].sort((a, b) => b.value - a.value)
 
   return (
     <div>
@@ -102,13 +79,6 @@ export default function Impact() {
           <ComparisonPanel stats={comparison} />
         </div>
 
-        {influenced.length > 0 && (
-          <div className="chart-card">
-            <h4 className="section-title">Session-to-deal timeline</h4>
-            <InfluenceTimeline deals={deals} enablements={enablements} />
-          </div>
-        )}
-
         {monthly.length > 0 && (
           <div className="chart-card">
             <SimpleBarChart
@@ -138,29 +108,34 @@ export default function Impact() {
 
       {influenced.length ? (
         <div className="table-card">
-          <h4 className="section-title section-title--table">Impact by use case</h4>
-          <Table size="md" aria-label="Impact by use case">
+          <h4 className="section-title section-title--table">Influenced deals</h4>
+          <Table size="md" aria-label="Influenced deals">
             <TableHead>
               <TableRow>
+                <TableHeader>Customer</TableHeader>
                 <TableHeader>Use case</TableHeader>
-                <TableHeader>Influenced deals</TableHeader>
-                <TableHeader>Revenue won</TableHeader>
-                <TableHeader>Open pipeline</TableHeader>
-                <TableHeader>Sessions delivered</TableHeader>
-                <TableHeader>Team hours</TableHeader>
-                <TableHeader>Avg days, session to deal</TableHeader>
+                <TableHeader>Revenue</TableHeader>
+                <TableHeader>Stage</TableHeader>
+                <TableHeader>First matching session</TableHeader>
+                <TableHeader>Days from session to deal</TableHeader>
               </TableRow>
             </TableHead>
             <TableBody>
-              {rollup.map((r) => (
-                <TableRow key={r.useCase}>
-                  <TableCell><UseCaseChip id={r.useCase} /></TableCell>
-                  <TableCell>{r.count}</TableCell>
-                  <TableCell>{r.won ? fmtUSD(r.won) : '—'}</TableCell>
-                  <TableCell>{r.open ? fmtUSD(r.open) : '—'}</TableCell>
-                  <TableCell>{r.sessions}</TableCell>
-                  <TableCell>{r.hours}</TableCell>
-                  <TableCell>{r.avgLag}</TableCell>
+              {influenced.map((d) => (
+                <TableRow key={d.id}>
+                  <TableCell>{d.customer}</TableCell>
+                  <TableCell><UseCaseChip id={d.useCase} /></TableCell>
+                  <TableCell>{fmtUSD(d.value)}</TableCell>
+                  <TableCell>
+                    <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
+                  </TableCell>
+                  <TableCell>
+                    {d.matched[0].title}
+                    <div style={{ fontSize: '0.75rem', color: 'var(--cds-text-helper)' }}>
+                      {fmtDate(d.matched[0].date)}
+                    </div>
+                  </TableCell>
+                  <TableCell>{lagDays(d.matched[0].date, d.date)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
