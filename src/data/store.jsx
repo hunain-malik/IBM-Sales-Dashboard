@@ -48,6 +48,11 @@ export function StoreProvider({ children }) {
         setData((d) => ({ ...d, enablements: d.enablements.filter((e) => e.id !== id) })),
       addDeal: (deal) =>
         setData((d) => ({ ...d, deals: [...d.deals, { ...deal, id: newId() }] })),
+      updateDeal: (id, patch) =>
+        setData((d) => ({
+          ...d,
+          deals: d.deals.map((x) => (x.id === id ? { ...x, ...patch } : x)),
+        })),
       removeDeal: (id) =>
         setData((d) => ({ ...d, deals: d.deals.filter((x) => x.id !== id) })),
       resetToDemo: () => setData({ enablements: seedEnablements, deals: seedDeals }),

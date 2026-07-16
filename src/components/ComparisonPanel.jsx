@@ -4,30 +4,44 @@ import { useStore } from '../data/store.jsx'
 // Influenced vs. not-influenced deals: win rate, average deal size, sales
 // cycle. Emphasis coloring — influenced carries the accent hue, the rest is
 // context gray — with every value direct-labeled so color never works alone.
+// Deltas are stated in BOTH directions: hiding an unfavorable number would
+// undermine the whole page the first time someone checks the math.
 const METRICS = [
   {
     key: 'winRate',
     label: 'Win rate',
     hint: 'Closed won ÷ all closed deals',
     fmt: fmtPct,
-    delta: (a, b) => `+${Math.round((a - b) * 100)} pts`,
-    better: (a, b) => a > b,
+    delta: (a, b) => {
+      const pts = Math.round((a - b) * 100)
+      if (Math.abs(pts) <= 2) return null
+      return { text: `${pts > 0 ? '+' : '−'}${Math.abs(pts)} pts`, favorable: pts > 0 }
+    },
   },
   {
     key: 'avgSize',
     label: 'Average deal size',
     hint: 'Mean value across the group',
     fmt: fmtUSDCompact,
-    delta: (a, b) => `${(a / b).toFixed(1)}× larger`,
-    better: (a, b) => a > b && b > 0, // ratio needs a non-zero baseline
+    delta: (a, b) => {
+      if (!(a > 0) || !(b > 0) || Math.abs(a - b) <= b * 0.05) return null
+      return a > b
+        ? { text: `${(a / b).toFixed(1)}× larger`, favorable: true }
+        : { text: `${(b / a).toFixed(1)}× smaller`, favorable: false }
+    },
   },
   {
     key: 'cycleDays',
     label: 'Average sales cycle',
     hint: 'Days from open to close',
     fmt: (v) => `${Math.round(v)} days`,
-    delta: (a, b) => `${Math.round(b - a)} days faster`,
-    better: (a, b) => a < b,
+    delta: (a, b) => {
+      const d = Math.round(a - b)
+      if (Math.abs(d) <= 2) return null
+      return d < 0
+        ? { text: `${-d} days faster`, favorable: true }
+        : { text: `${d} days slower`, favorable: false }
+    },
   },
 ]
 
@@ -53,7 +67,7 @@ export default function ComparisonPanel({ stats }) {
         const a = influenced[m.key]
         const b = rest[m.key]
         const max = Math.max(a ?? 0, b ?? 0) || 1
-        const showDelta = a != null && b != null && m.better(a, b)
+        const delta = a != null && b != null ? m.delta(a, b) : null
         return (
           <div key={m.key} className="cmp__row">
             <div className="cmp__label">
@@ -78,7 +92,9 @@ export default function ComparisonPanel({ stats }) {
                 </div>
               ))}
             </div>
-            <div className="cmp__delta">{showDelta ? m.delta(a, b) : ''}</div>
+            <div className={`cmp__delta${delta && !delta.favorable ? ' cmp__delta--adverse' : ''}`}>
+              {delta ? delta.text : ''}
+            </div>
           </div>
         )
       })}

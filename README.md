@@ -37,10 +37,14 @@ use the reset action in the header to restore it, and delete rows to clear recor
 
 | Page | Audience | What it shows |
 |---|---|---|
-| Overview | Everyone | KPI row, influenced revenue by use case, cumulative influenced revenue |
+| Impact summary (landing) | Sales + executives | KPIs, influenced-vs-not comparison, where-to-invest, monthly influenced pipeline, influence timeline, attribution detail |
 | Enablements | Team | Month calendar + table of sessions; click a day to log one |
-| Pipeline | Team + sales | All deals with an *Influenced* tag where enablement preceded the deal |
-| Impact summary | Sales + executives | Enablement → use case → deal flow and attribution detail |
+| Pipeline | Team + sales | All deals (add/edit) with an *Influenced* tag where enablement preceded the deal |
+
+The headline verdict and the one-pager's recommended actions are **generated from the data** by a
+small insights engine (`src/data/insights.js`): strong results read as strong, mixed as mixed,
+adverse deltas are stated rather than hidden, small samples carry a caveat, and missing data
+(hours, close dates) produces asks instead of claims.
 
 ## Run it
 

@@ -12,41 +12,59 @@ import { useStore } from '../data/store.jsx'
 
 const blank = { customer: '', useCase: null, value: 100000, date: '', stage: 'Prospecting', owner: '', closeDate: '' }
 
-export default function DealModal({ open, onClose }) {
-  const { addDeal } = useStore()
+// Create a new deal, or edit an existing one when `deal` is passed — stages
+// change over a deal's life, and stale stages silently corrupt the win-rate
+// comparison, so editing in place matters.
+export default function DealModal({ open, onClose, deal = null }) {
+  const { addDeal, updateDeal } = useStore()
   const [form, setForm] = useState(blank)
   const [invalid, setInvalid] = useState(false)
 
   useEffect(() => {
     if (open) {
-      setForm(blank)
+      setForm(
+        deal
+          ? {
+              customer: deal.customer,
+              useCase: USE_CASES.find((u) => u.id === deal.useCase) ?? null,
+              value: deal.value,
+              date: deal.date,
+              stage: deal.stage,
+              owner: deal.owner ?? '',
+              closeDate: deal.closeDate ?? '',
+            }
+          : blank,
+      )
       setInvalid(false)
     }
-  }, [open])
+  }, [open, deal])
 
   const submit = () => {
     if (!form.customer.trim() || !form.useCase || !form.date || !(Number(form.value) > 0)) {
       setInvalid(true)
       return
     }
-    addDeal({
+    const payload = {
       customer: form.customer.trim(),
       useCase: form.useCase.id,
       value: Number(form.value),
       date: form.date,
       stage: form.stage,
       owner: form.owner.trim(),
-      ...(form.closeDate ? { closeDate: form.closeDate } : {}),
-    })
+      // closeDate only makes sense on closed stages; clear it otherwise
+      closeDate: form.stage.startsWith('Closed') && form.closeDate ? form.closeDate : undefined,
+    }
+    if (deal) updateDeal(deal.id, payload)
+    else addDeal(payload)
     onClose()
   }
 
   return (
     <Modal
       open={open}
-      modalHeading="Add customer deal"
+      modalHeading={deal ? 'Edit customer deal' : 'Add customer deal'}
       modalLabel="Pipeline"
-      primaryButtonText="Add deal"
+      primaryButtonText={deal ? 'Save changes' : 'Add deal'}
       secondaryButtonText="Cancel"
       onRequestClose={onClose}
       onRequestSubmit={submit}

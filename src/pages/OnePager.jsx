@@ -3,22 +3,22 @@ import { Link } from 'react-router-dom'
 import { Button, Theme, Tag } from '@carbon/react'
 import { Printer, ArrowLeft } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
-import { impactSummary, comparisonStats, coverageGaps } from '../data/attribution.js'
-import { USE_CASES, getUseCase, fmtUSD, fmtUSDCompact, fmtPct, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
+import { buildInsights, toneHeading } from '../data/insights.js'
+import { getUseCase, fmtUSD, fmtUSDCompact, fmtPct, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
 
 const pct0 = (ratio) => `${Math.round(ratio * 100)}%`
 
 // A shareable, print-optimized executive summary. Use the Print button and
 // "Save as PDF" to produce a one-page hand-off — charts are deliberately
-// plain HTML/CSS so they print exactly as rendered.
+// plain HTML/CSS so they print exactly as rendered. The headline and the
+// recommended actions are generated from the data by the insights engine,
+// so the sheet never asserts a story the numbers don't support.
 export default function OnePager() {
   const { deals, enablements } = useStore()
-  const summary = useMemo(() => impactSummary(deals, enablements), [deals, enablements])
-  const comparison = useMemo(() => comparisonStats(deals, enablements), [deals, enablements])
-  const coverage = useMemo(() => coverageGaps(deals, enablements, USE_CASES), [deals, enablements])
+  const insights = useMemo(() => buildInsights(deals, enablements), [deals, enablements])
+  const { summary, comparison, coverage } = insights
 
   const topWins = [...summary.influenced].sort((a, b) => b.value - a.value).slice(0, 5)
-  const investIn = coverage.filter((r) => r.gap >= 0.05)
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
   const { influenced: inf, rest } = comparison
 
@@ -77,7 +77,11 @@ export default function OnePager() {
 
         <div className="op__cols">
           <section>
-            <h2>Influenced deals perform better</h2>
+            <h2>{toneHeading[insights.tone]}</h2>
+            <p className="op__verdict">
+              {insights.headline}
+              {insights.caveat ? <em> {insights.caveat}</em> : null}
+            </p>
             <table className="op__table">
               <thead>
                 <tr>
@@ -114,15 +118,19 @@ export default function OnePager() {
                 ))}
               </tbody>
             </table>
-            {investIn.length > 0 && (
-              <p className="op__callout">
-                Ask: add enablement capacity on{' '}
-                <strong>{investIn.map((r) => r.label).join(', ')}</strong> — customer demand there
-                outruns our current coverage.
-              </p>
-            )}
           </section>
         </div>
+
+        {insights.asks.length > 0 && (
+          <div className="op__callout">
+            <strong>Recommended actions</strong>
+            <ul>
+              {insights.asks.map((a, i) => (
+                <li key={i}>{a}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <section>
           <h2>Top enablement-influenced deals</h2>

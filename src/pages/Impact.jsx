@@ -11,9 +11,11 @@ import {
   Tag,
 } from '@carbon/react'
 import { Document } from '@carbon/icons-react'
+import { SimpleBarChart } from '@carbon/charts-react'
 import { useStore } from '../data/store.jsx'
-import { impactSummary, comparisonStats, coverageGaps } from '../data/attribution.js'
-import { USE_CASES, fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
+import { monthlyInfluenced } from '../data/attribution.js'
+import { buildInsights } from '../data/insights.js'
+import { fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
 import KpiTile from '../components/KpiTile.jsx'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import ComparisonPanel from '../components/ComparisonPanel.jsx'
@@ -25,10 +27,10 @@ const lagDays = (fromIso, toIso) =>
   Math.round((new Date(`${toIso}T00:00:00`) - new Date(`${fromIso}T00:00:00`)) / DAY_MS)
 
 export default function Impact() {
-  const { deals, enablements } = useStore()
-  const summary = useMemo(() => impactSummary(deals, enablements), [deals, enablements])
-  const comparison = useMemo(() => comparisonStats(deals, enablements), [deals, enablements])
-  const coverage = useMemo(() => coverageGaps(deals, enablements, USE_CASES), [deals, enablements])
+  const { deals, enablements, theme } = useStore()
+  const insights = useMemo(() => buildInsights(deals, enablements), [deals, enablements])
+  const { summary, comparison, coverage } = insights
+  const monthly = useMemo(() => monthlyInfluenced(deals, enablements), [deals, enablements])
 
   const influenced = [...summary.influenced].sort((a, b) => b.value - a.value)
 
@@ -86,10 +88,12 @@ export default function Impact() {
       <div className="chart-grid">
         <div className="chart-card">
           <h4 className="section-title">Do enablement-influenced deals perform better?</h4>
+          {/* the answer is generated from the data — it changes when the data does */}
+          <p className="cmp__verdict">{insights.headline}</p>
+          {insights.caveat && <p className="impact-note" style={{ marginTop: 0 }}>{insights.caveat}</p>}
           <ComparisonPanel stats={comparison} />
           <p className="impact-note">
-            Same tracking, split by whether an enablement preceded the deal. Small samples move these
-            numbers — read them as direction, not decimals.
+            Same tracking, split by whether an enablement preceded the deal.
           </p>
         </div>
         <div className="chart-card">
@@ -100,6 +104,30 @@ export default function Impact() {
             place to add sessions — and the concrete ask for more support.
           </p>
         </div>
+        {monthly.length > 0 && (
+          <div className="chart-card">
+            <SimpleBarChart
+              data={monthly.map((m) => ({ group: 'Influenced pipeline', key: m.label, value: m.value }))}
+              options={{
+                title: 'Influenced pipeline opened by month',
+                axes: {
+                  bottom: { mapsTo: 'key', scaleType: 'labels' },
+                  left: { mapsTo: 'value', ticks: { formatter: fmtUSDCompact } },
+                },
+                color: { scale: { 'Influenced pipeline': theme === 'g100' ? '#4589ff' : '#0f62fe' } },
+                legend: { enabled: false },
+                toolbar: { enabled: false },
+                tooltip: { valueFormatter: (v) => (typeof v === 'number' ? fmtUSD(v) : v) },
+                height: '300px',
+                theme,
+              }}
+            />
+            <p className="impact-note">
+              Value of influenced deals by the month they opened — flat months show honestly instead
+              of being smoothed away by a cumulative curve.
+            </p>
+          </div>
+        )}
       </div>
 
       {influenced.length ? (

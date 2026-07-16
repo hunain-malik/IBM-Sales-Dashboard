@@ -62,10 +62,10 @@ jobs:
           The link above opens the running dashboard live in your browser — no install, no login.
 
           **What's inside**
-          - **Overview** — impact KPIs, influenced revenue by use case, cumulative influenced revenue
+          - **Impact summary** (landing) — KPIs, influenced-vs-not comparison with a data-generated verdict, where-to-invest view, monthly influenced pipeline, and the influence timeline
           - **Enablements** — month calendar + table; click any day to log a session
-          - **Pipeline** — manual deal entry with automatic "Influenced" tagging
-          - **Impact summary** — influence timeline from enablement session → customer deal, plus influenced-vs-not comparison and where-to-invest view
+          - **Pipeline** — add and edit deals with automatic "Influenced" tagging
+          - **Executive one-pager** — print/PDF summary whose headline and recommended actions adapt to the data
 
           v1 data is manual input, stored in your browser (localStorage) and seeded with a demo dataset.
           Toggle the IBM dark theme with the moon/sun icon; reset the demo data with the refresh icon.

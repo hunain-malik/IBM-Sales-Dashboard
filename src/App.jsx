@@ -12,17 +12,17 @@ import {
 } from '@carbon/react'
 import { Asleep, Light, Renew } from '@carbon/icons-react'
 import { useStore } from './data/store.jsx'
-import Overview from './pages/Overview.jsx'
 import Enablements from './pages/Enablements.jsx'
 import Pipeline from './pages/Pipeline.jsx'
 import Impact from './pages/Impact.jsx'
 import OnePager from './pages/OnePager.jsx'
 
+// Impact summary IS the landing page — one unambiguous page to show
+// leadership; the other two tabs feed it.
 const NAV = [
-  { path: '/', label: 'Overview' },
+  { path: '/', label: 'Impact summary' },
   { path: '/enablements', label: 'Enablements' },
   { path: '/pipeline', label: 'Pipeline' },
-  { path: '/impact', label: 'Impact summary' },
 ]
 
 export default function App() {
@@ -75,9 +75,10 @@ export default function App() {
       <Theme theme={theme} className="app-theme">
         <Content className="app-content">
           <Routes>
-            <Route path="/" element={<Overview />} />
+            <Route path="/" element={<Impact />} />
             <Route path="/enablements" element={<Enablements />} />
             <Route path="/pipeline" element={<Pipeline />} />
+            {/* old bookmark support */}
             <Route path="/impact" element={<Impact />} />
             <Route path="/onepager" element={<OnePager />} />
           </Routes>

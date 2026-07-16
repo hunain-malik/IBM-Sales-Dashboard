@@ -10,7 +10,7 @@ import {
   Tag,
   IconButton,
 } from '@carbon/react'
-import { Add, TrashCan } from '@carbon/icons-react'
+import { Add, Edit, TrashCan } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { attributeDeals } from '../data/attribution.js'
 import { fmtUSD, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
@@ -19,7 +19,8 @@ import DealModal from '../components/DealModal.jsx'
 
 export default function Pipeline() {
   const { deals, enablements, removeDeal } = useStore()
-  const [modalOpen, setModalOpen] = useState(false)
+  // null = closed, 'new' = create, deal object = edit
+  const [modal, setModal] = useState(null)
 
   const rows = useMemo(
     () => attributeDeals(deals, enablements).sort((a, b) => b.date.localeCompare(a.date)),
@@ -36,7 +37,7 @@ export default function Pipeline() {
             our enablement work preceded the deal.
           </p>
         </div>
-        <Button renderIcon={Add} onClick={() => setModalOpen(true)}>
+        <Button renderIcon={Add} onClick={() => setModal('new')}>
           Add deal
         </Button>
       </div>
@@ -77,6 +78,9 @@ export default function Pipeline() {
                     )}
                   </TableCell>
                   <TableCell>
+                    <IconButton kind="ghost" size="sm" label="Edit deal" onClick={() => setModal(d)}>
+                      <Edit />
+                    </IconButton>
                     <IconButton kind="ghost" size="sm" label="Delete deal" onClick={() => removeDeal(d.id)}>
                       <TrashCan />
                     </IconButton>
@@ -93,7 +97,11 @@ export default function Pipeline() {
         )}
       </div>
 
-      <DealModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <DealModal
+        open={modal !== null}
+        deal={modal && modal !== 'new' ? modal : null}
+        onClose={() => setModal(null)}
+      />
     </div>
   )
 }
