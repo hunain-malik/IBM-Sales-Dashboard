@@ -11,12 +11,17 @@ import { useStore } from '../data/store.jsx'
 
 const W = 1160
 const LANE_H = 130
-const PAD_L = 16
-const PAD_R = 16
+const PAD_L = 16 // lane headers
+const PLOT_L = 64 // plot area starts inset so markers/labels clear the lane headers
+const PAD_R = 24
 const AXIS_H = 36
-const DAY_MS = 24 * 60 * 60 * 1000
 
 const toDate = (iso) => new Date(`${iso}T00:00:00`)
+
+// IBM's fiscal year matches the calendar year, so fiscal quarters are
+// calendar quarters: Q1 = Jan–Mar, Q2 = Apr–Jun, Q3 = Jul–Sep, Q4 = Oct–Dec.
+const quarterStart = (d) => new Date(d.getFullYear(), Math.floor(d.getMonth() / 3) * 3, 1)
+const nextQuarter = (d) => new Date(d.getFullYear(), d.getMonth() + 3, 1)
 
 export default function InfluenceTimeline({ deals, enablements }) {
   const { theme } = useStore()
@@ -39,7 +44,7 @@ export default function InfluenceTimeline({ deals, enablements }) {
   }
   const hideTip = () => setTip(null)
 
-  const { lanes, x, months, todayX, height } = useMemo(() => {
+  const { lanes, x, quarters, todayX, height } = useMemo(() => {
     const attributed = attributeDeals(deals, enablements)
     const lanes = USE_CASES.map((u) => ({
       u,
@@ -52,30 +57,33 @@ export default function InfluenceTimeline({ deals, enablements }) {
       ...deals.map((d) => toDate(d.date)),
       new Date(),
     ]
-    const min = new Date(Math.min(...allDates) - 12 * DAY_MS)
-    const max = new Date(Math.max(...allDates) + 12 * DAY_MS)
+    // snap the domain to whole fiscal quarters
+    const min = quarterStart(new Date(Math.min(...allDates)))
+    const max = nextQuarter(quarterStart(new Date(Math.max(...allDates))))
     const span = max - min || 1
-    const x = (iso) => PAD_L + ((toDate(iso) - min) / span) * (W - PAD_L - PAD_R)
+    const toPx = (date) => PLOT_L + ((date - min) / span) * (W - PLOT_L - PAD_R)
+    const x = (iso) => toPx(toDate(iso))
 
-    const months = []
-    const m = new Date(min.getFullYear(), min.getMonth() + 1, 1)
-    while (m <= max) {
-      months.push({
-        px: PAD_L + ((m - min) / span) * (W - PAD_L - PAD_R),
-        label: m.toLocaleDateString('en-US', { month: 'short', year: m.getMonth() === 0 ? 'numeric' : undefined }),
+    const quarters = []
+    let q = new Date(min)
+    while (q < max) {
+      const end = nextQuarter(q)
+      quarters.push({
+        x1: toPx(q),
+        x2: toPx(end),
+        label: `Q${Math.floor(q.getMonth() / 3) + 1} ${q.getFullYear()}`,
       })
-      m.setMonth(m.getMonth() + 1)
+      q = end
     }
 
-    const today = new Date()
-    const todayX = PAD_L + ((today - min) / span) * (W - PAD_L - PAD_R)
+    const todayX = toPx(new Date())
 
-    return { lanes, x, months, todayX, height: lanes.length * LANE_H + AXIS_H }
+    return { lanes, x, quarters, todayX, height: lanes.length * LANE_H + AXIS_H }
   }, [deals, enablements])
 
   if (!lanes.length) return null
 
-  const clampX = (px) => Math.max(52, Math.min(W - 52, px))
+  const clampX = (px) => Math.max(PLOT_L + 12, Math.min(W - 60, px))
 
   return (
     <div ref={wrapRef} style={{ overflowX: 'auto', position: 'relative' }}>
@@ -119,11 +127,23 @@ export default function InfluenceTimeline({ deals, enablements }) {
         role="img"
         aria-label="Timeline of enablement sessions and the customer deals that followed them, per use case"
       >
-        {/* month gridlines */}
-        {months.map((mo) => (
-          <g key={mo.px}>
-            <line x1={mo.px} y1={0} x2={mo.px} y2={height - AXIS_H + 8} stroke={grid} strokeWidth="1" />
-            <text x={mo.px + 4} y={height - AXIS_H + 22} fontSize="11" style={{ fill: ink.helper }}>{mo.label}</text>
+        {/* fiscal-quarter gridlines, labels centered in each quarter */}
+        {quarters.map((q, i) => (
+          <g key={q.x1}>
+            <line x1={q.x1} y1={0} x2={q.x1} y2={height - AXIS_H + 8} stroke={grid} strokeWidth="1" />
+            {i === quarters.length - 1 && (
+              <line x1={q.x2} y1={0} x2={q.x2} y2={height - AXIS_H + 8} stroke={grid} strokeWidth="1" />
+            )}
+            <text
+              x={(q.x1 + q.x2) / 2}
+              y={height - AXIS_H + 24}
+              fontSize="11"
+              fontWeight="600"
+              textAnchor="middle"
+              style={{ fill: ink.helper }}
+            >
+              {q.label}
+            </text>
           </g>
         ))}
 
@@ -146,7 +166,7 @@ export default function InfluenceTimeline({ deals, enablements }) {
               </text>
 
               {/* session baseline */}
-              <line x1={PAD_L} y1={sessionY} x2={W - PAD_R} y2={sessionY} stroke={grid} strokeWidth="1" />
+              <line x1={PLOT_L} y1={sessionY} x2={W - PAD_R} y2={sessionY} stroke={grid} strokeWidth="1" />
 
               {/* influence curves: deal ← its first preceding session */}
               {lane.deals.filter((d) => d.influenced).map((d) => {
@@ -188,10 +208,24 @@ export default function InfluenceTimeline({ deals, enablements }) {
                 )
               })}
 
-              {/* deals */}
-              {lane.deals.map((d) => {
+              {/* deals — labels drop below the dot when they'd collide above */}
+              {(() => {
+                const tracks = { above: -Infinity, below: -Infinity }
+                return lane.deals.map((d) => {
+                  const lx0 = clampX(x(d.date))
+                  let below = false
+                  if (lx0 - tracks.above < 116) {
+                    if (lx0 - tracks.below >= 116) below = true
+                  }
+                  if (below) tracks.below = lx0
+                  else tracks.above = lx0
+                  return { d, below }
+                })
+              })().map(({ d, below }) => {
                 const px = x(d.date)
                 const lx = clampX(px)
+                const nameY = below ? dealY + 22 : dealY - 22
+                const valueY = below ? dealY + 34 : dealY - 10
                 const closed = d.stage.startsWith('Closed')
                 const stageNote = closed ? (d.stage === 'Closed Won' ? ' · won' : ' · lost') : ''
                 const lines = [
@@ -217,10 +251,10 @@ export default function InfluenceTimeline({ deals, enablements }) {
                     ) : (
                       <circle cx={px} cy={dealY} r="6" fill="var(--cds-layer-01)" stroke={gray} strokeWidth="2" />
                     )}
-                    <text x={lx} y={dealY - 22} fontSize="11" fontWeight="600" textAnchor="middle" style={{ fill: d.influenced ? ink.primary : ink.helper }}>
+                    <text x={lx} y={nameY} fontSize="11" fontWeight="600" textAnchor="middle" style={{ fill: d.influenced ? ink.primary : ink.helper }}>
                       {d.customer}
                     </text>
-                    <text x={lx} y={dealY - 10} fontSize="10" textAnchor="middle" style={{ fill: ink.secondary }}>
+                    <text x={lx} y={valueY} fontSize="10" textAnchor="middle" style={{ fill: ink.secondary }}>
                       {fmtUSDCompact(d.value)}{stageNote}
                     </text>
                   </g>
