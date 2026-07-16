@@ -25,38 +25,6 @@ const NAV = [
   { path: '/pipeline', label: 'Pipeline' },
 ]
 
-// The IBM 8-bar mark: "IBM" lettering masked by eight horizontal stripes.
-function IbmLogo() {
-  return (
-    <svg
-      className="ibm-logo"
-      width="52"
-      height="26"
-      viewBox="0 0 64 32"
-      aria-label="IBM"
-      role="img"
-    >
-      <mask id="ibm-8bar">
-        {Array.from({ length: 8 }, (_, i) => (
-          <rect key={i} x="0" y={i * 4} width="64" height="2.6" fill="#ffffff" />
-        ))}
-      </mask>
-      <text
-        x="0"
-        y="28.5"
-        fontFamily="'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif"
-        fontWeight="700"
-        fontSize="32"
-        letterSpacing="-0.5"
-        fill="currentColor"
-        mask="url(#ibm-8bar)"
-      >
-        IBM
-      </text>
-    </svg>
-  )
-}
-
 export default function App() {
   const { theme, setTheme, resetToDemo } = useStore()
   const location = useLocation()
@@ -67,9 +35,8 @@ export default function App() {
       <Theme theme="g100">
         <Header aria-label="IBM Enablement Impact">
           <SkipToContent />
-          <HeaderName as={Link} to="/" prefix="">
-            <IbmLogo />
-            <span className="brand-name">Enablement Impact</span>
+          <HeaderName as={Link} to="/" prefix="IBM">
+            Enablement Impact
           </HeaderName>
           <HeaderNavigation aria-label="Dashboard navigation">
             {NAV.map((item) => (

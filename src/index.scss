@@ -17,23 +17,6 @@ html[data-carbon-theme='g100'] body {
   background: #161616;
 }
 
-/* header brand: 8-bar mark + product name (HeaderName nests children in a span) */
-.cds--header__name > span {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  white-space: nowrap;
-}
-
-.ibm-logo {
-  display: block;
-  flex: none;
-}
-
-.brand-name {
-  font-weight: 400;
-}
-
 .app-theme {
   margin-top: 3rem; /* clear the fixed UI-shell header */
   min-height: calc(100vh - 3rem);
@@ -369,14 +352,6 @@ html[data-carbon-theme='g100'] body {
   color: var(--cds-text-secondary);
 }
 
-/* the data-generated answer to the section's question */
-.cmp__verdict {
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.4;
-  margin: -0.5rem 0 0.75rem;
-}
-
 @media (max-width: 52rem) {
   .cmp__row {
     grid-template-columns: 1fr;
@@ -416,7 +391,7 @@ html[data-carbon-theme='g100'] body {
 }
 
 .op-toolbar {
-  max-width: 52rem;
+  max-width: 56rem;
   margin: 0 auto 1rem;
   display: flex;
   justify-content: space-between;
@@ -424,7 +399,7 @@ html[data-carbon-theme='g100'] body {
 }
 
 .op {
-  max-width: 52rem;
+  max-width: 56rem;
   margin: 0 auto;
   background: #ffffff;
   color: #161616;
@@ -522,6 +497,26 @@ html[data-carbon-theme='g100'] body {
   white-space: nowrap;
 }
 
+.op__num--right {
+  text-align: right;
+  padding-right: 1rem !important;
+}
+
+.op__sub {
+  font-size: 0.6875rem;
+  color: #525252;
+  margin-top: 0.125rem;
+}
+
+/* fixed column proportions so the deals table never squeezes */
+.op__table--deals {
+  table-layout: fixed;
+
+  td {
+    overflow-wrap: break-word;
+  }
+}
+
 .op__num--accent {
   color: #0f62fe;
   font-weight: 600;
@@ -591,7 +586,21 @@ html[data-carbon-theme='g100'] body {
     print-color-adjust: exact;
   }
 
+  /* keep table rows and section headings intact across page breaks */
+  .op__table tr {
+    break-inside: avoid;
+  }
+
+  .op h2 {
+    break-after: avoid;
+  }
+
+  .op__kpis,
+  .op__callout {
+    break-inside: avoid;
+  }
+
   @page {
-    margin: 1.5cm;
+    margin: 1.25cm;
   }
 }

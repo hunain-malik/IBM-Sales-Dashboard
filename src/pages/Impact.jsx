@@ -76,8 +76,6 @@ export default function Impact() {
       <div className="card-stack">
         <div className="chart-card">
           <h4 className="section-title">Deal performance: influenced vs. not influenced</h4>
-          {/* the answer is generated from the data — it changes when the data does */}
-          <p className="cmp__verdict">{insights.headline}</p>
           {insights.caveat && <p className="impact-note" style={{ marginTop: 0 }}>{insights.caveat}</p>}
           <ComparisonPanel stats={comparison} />
         </div>

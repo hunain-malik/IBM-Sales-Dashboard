@@ -78,10 +78,11 @@ export default function OnePager() {
         <div className="op__cols">
           <section>
             <h2>{toneHeading[insights.tone]}</h2>
-            <p className="op__verdict">
-              {insights.headline}
-              {insights.caveat ? <em> {insights.caveat}</em> : null}
-            </p>
+            {insights.caveat && (
+              <p className="op__verdict">
+                <em>{insights.caveat}</em>
+              </p>
+            )}
             <table className="op__table">
               <thead>
                 <tr>
@@ -134,12 +135,19 @@ export default function OnePager() {
 
         <section>
           <h2>Top enablement-influenced deals</h2>
-          <table className="op__table">
+          <table className="op__table op__table--deals">
+            <colgroup>
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '13%' }} />
+              <col style={{ width: '13%' }} />
+              <col style={{ width: '36%' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th>Customer</th>
                 <th>Use case</th>
-                <th>Revenue</th>
+                <th className="op__num--right">Revenue</th>
                 <th>Stage</th>
                 <th>First matching session</th>
               </tr>
@@ -149,12 +157,13 @@ export default function OnePager() {
                 <tr key={d.id}>
                   <td>{d.customer}</td>
                   <td>{getUseCase(d.useCase).label}</td>
-                  <td className="op__num">{fmtUSD(d.value)}</td>
+                  <td className="op__num op__num--right">{fmtUSD(d.value)}</td>
                   <td>
                     <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
                   </td>
                   <td>
-                    {d.matched[0].title} · {fmtDate(d.matched[0].date)}
+                    {d.matched[0].title}
+                    <div className="op__sub">{fmtDate(d.matched[0].date)}</div>
                   </td>
                 </tr>
               ))}
