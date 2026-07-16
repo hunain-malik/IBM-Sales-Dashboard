@@ -47,7 +47,7 @@ export default function OnePager() {
             <div className="op__brand">IBM · Enablement Impact</div>
             <h1>Executive summary</h1>
           </div>
-          <div className="op__date">{today}</div>
+          <div className="op__date">FY{new Date().getFullYear()} year to date · {today}</div>
         </header>
 
         <section className="op__kpis">
@@ -174,7 +174,7 @@ export default function OnePager() {
         <footer className="op__foot">
           Attribution method: a deal counts as enablement-influenced when the customer&apos;s use case
           matches at least one session our team delivered on or before the deal&apos;s open date.
-          Figures reflect data entered as of {today}.
+          All figures are year to date from the start of FY{new Date().getFullYear()}, as entered by {today}.
         </footer>
       </article>
     </Theme>
