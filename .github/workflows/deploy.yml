@@ -53,7 +53,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          url="https://raw.githack.com/${GITHUB_REPOSITORY}/site/index.html"
+          # ?v=<sha> busts the CDN cache for the HTML on every deploy;
+          # the JS/CSS assets are content-hashed so they are always fresh.
+          url="https://raw.githack.com/${GITHUB_REPOSITORY}/site/index.html?v=${GITHUB_SHA:0:8}"
           notes=$(cat <<EOF
           ## 🚀 Live dashboard
 
@@ -62,21 +64,25 @@ jobs:
           The link above opens the running dashboard live in your browser — no install, no login.
 
           **What's inside**
-          - **Impact summary** (landing) — KPIs, influenced-vs-not comparison with a data-generated verdict, where-to-invest view, monthly influenced pipeline, and the influence timeline
-          - **Enablements** — month calendar + table; click any day to log a session
-          - **Pipeline** — add and edit deals with automatic "Influenced" tagging
+          - **Command Center** (landing) — KPIs, influenced-vs-not deal comparison, demand-vs-coverage view, quarterly influenced pipeline, and the influenced-deals list
+          - **Enablements** — sessions list + month calendar; click any day to log one
+          - **Pipeline** — add and edit deals with automatic "Influenced" tagging, plus the session-to-deal timeline
           - **Executive one-pager** — print/PDF summary whose headline and recommended actions adapt to the data
 
           v1 data is manual input, stored in your browser (localStorage) and seeded with a demo dataset.
           Toggle the IBM dark theme with the moon/sun icon; reset the demo data with the refresh icon.
 
-          _Built from \`${GITHUB_SHA}\`. The link always serves the latest build on the \`site\` branch._
+          _Built from \`${GITHUB_SHA}\`._
           EOF
           )
-          # Recreate the tag/release each run so the link always points at the latest build.
-          gh release delete v0.1.0 --yes --cleanup-tag 2>/dev/null || true
-          gh release create v0.1.0 \
-            --title "Enablement Impact Dashboard v0.1.0" \
-            --notes "$notes" \
-            --target "$GITHUB_SHA"
-          echo "Release published, dashboard at: $url"
+          # Edit the release in place — never delete it, so the release page
+          # has no window where it doesn't exist.
+          if gh release view v0.1.0 >/dev/null 2>&1; then
+            gh release edit v0.1.0 --title "Enablement Impact Dashboard v0.1.0" --notes "$notes"
+          else
+            gh release create v0.1.0 \
+              --title "Enablement Impact Dashboard v0.1.0" \
+              --notes "$notes" \
+              --target "$GITHUB_SHA"
+          fi
+          echo "Release updated, dashboard at: $url"
