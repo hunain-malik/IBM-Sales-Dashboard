@@ -12,40 +12,55 @@ import { useStore } from '../data/store.jsx'
 
 const blank = { title: '', useCase: null, date: '', presenter: '', attendees: 10, hours: 4 }
 
-export default function EnablementModal({ open, onClose, initialDate }) {
-  const { addEnablement } = useStore()
+// Create a new session, or edit an existing one when `session` is passed —
+// hours and dates feed the ROI and attribution math, so they must be fixable.
+export default function EnablementModal({ open, onClose, initialDate, session = null }) {
+  const { addEnablement, updateEnablement } = useStore()
   const [form, setForm] = useState(blank)
   const [invalid, setInvalid] = useState(false)
 
   useEffect(() => {
     if (open) {
-      setForm({ ...blank, date: initialDate || '' })
+      setForm(
+        session
+          ? {
+              title: session.title,
+              useCase: USE_CASES.find((u) => u.id === session.useCase) ?? null,
+              date: session.date,
+              presenter: session.presenter ?? '',
+              attendees: session.attendees ?? 0,
+              hours: session.hours ?? 0,
+            }
+          : { ...blank, date: initialDate || '' },
+      )
       setInvalid(false)
     }
-  }, [open, initialDate])
+  }, [open, initialDate, session])
 
   const submit = () => {
     if (!form.title.trim() || !form.useCase || !form.date) {
       setInvalid(true)
       return
     }
-    addEnablement({
+    const payload = {
       title: form.title.trim(),
       useCase: form.useCase.id,
       date: form.date,
       presenter: form.presenter.trim(),
       attendees: Number(form.attendees) || 0,
       hours: Number(form.hours) || 0,
-    })
+    }
+    if (session) updateEnablement(session.id, payload)
+    else addEnablement(payload)
     onClose()
   }
 
   return (
     <Modal
       open={open}
-      modalHeading="Add enablement session"
+      modalHeading={session ? 'Edit enablement session' : 'Add enablement session'}
       modalLabel="Enablements"
-      primaryButtonText="Add session"
+      primaryButtonText={session ? 'Save changes' : 'Add session'}
       secondaryButtonText="Cancel"
       onRequestClose={onClose}
       onRequestSubmit={submit}

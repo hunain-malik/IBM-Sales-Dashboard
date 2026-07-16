@@ -44,6 +44,11 @@ export function StoreProvider({ children }) {
       setTheme,
       addEnablement: (e) =>
         setData((d) => ({ ...d, enablements: [...d.enablements, { ...e, id: newId() }] })),
+      updateEnablement: (id, patch) =>
+        setData((d) => ({
+          ...d,
+          enablements: d.enablements.map((x) => (x.id === id ? { ...x, ...patch } : x)),
+        })),
       removeEnablement: (id) =>
         setData((d) => ({ ...d, enablements: d.enablements.filter((e) => e.id !== id) })),
       addDeal: (deal) =>

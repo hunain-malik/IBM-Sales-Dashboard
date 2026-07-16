@@ -9,7 +9,7 @@ import {
   TableCell,
   IconButton,
 } from '@carbon/react'
-import { Add, TrashCan } from '@carbon/icons-react'
+import { Add, Edit, TrashCan } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { fmtDate } from '../data/constants.js'
 import UseCaseChip from '../components/UseCaseChip.jsx'
@@ -18,15 +18,12 @@ import EnablementModal from '../components/EnablementModal.jsx'
 
 export default function Enablements() {
   const { enablements, removeEnablement } = useStore()
-  const [modalOpen, setModalOpen] = useState(false)
-  const [pickedDate, setPickedDate] = useState('')
+  // null = closed, { date } = create (optionally pre-dated), { session } = edit
+  const [modal, setModal] = useState(null)
 
   const sorted = [...enablements].sort((a, b) => b.date.localeCompare(a.date))
 
-  const openForDate = (isoDate) => {
-    setPickedDate(isoDate)
-    setModalOpen(true)
-  }
+  const openForDate = (isoDate) => setModal({ date: isoDate })
 
   return (
     <div>
@@ -64,6 +61,9 @@ export default function Enablements() {
                     <TableCell>{e.attendees}</TableCell>
                     <TableCell>{Number(e.hours) || 0}</TableCell>
                     <TableCell>
+                      <IconButton kind="ghost" size="sm" label="Edit session" onClick={() => setModal({ session: e })}>
+                        <Edit />
+                      </IconButton>
                       <IconButton
                         kind="ghost"
                         size="sm"
@@ -87,7 +87,12 @@ export default function Enablements() {
 
       <MonthCalendar sessions={enablements} onPickDay={openForDate} />
 
-      <EnablementModal open={modalOpen} onClose={() => setModalOpen(false)} initialDate={pickedDate} />
+      <EnablementModal
+        open={modal !== null}
+        initialDate={modal?.date ?? ''}
+        session={modal?.session ?? null}
+        onClose={() => setModal(null)}
+      />
     </div>
   )
 }
