@@ -164,7 +164,7 @@ export default function OnePager() {
                   </td>
                   <td>
                     {d.matched[0].title}
-                    <div className="op__sub">{fmtDate(d.matched[0].date)}</div>
+                    <div className="op__sub">delivered {fmtDate(d.matched[0].date)}</div>
                   </td>
                 </tr>
               ))}
