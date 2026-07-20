@@ -53,11 +53,11 @@ export default function ComparisonPanel({ stats }) {
       <div className="cmp__legend">
         <span className="uc-chip">
           <span className="uc-chip__dot" style={{ background: accent }} aria-hidden="true" />
-          Enablement-influenced (n={influenced.n})
+          GTM-touched (n={influenced.n})
         </span>
         <span className="uc-chip">
           <span className="uc-chip__dot" style={{ background: context }} aria-hidden="true" />
-          Not influenced (n={rest.n})
+          No GTM touch (n={rest.n})
         </span>
       </div>
       {METRICS.map((m) => {
@@ -70,8 +70,8 @@ export default function ComparisonPanel({ stats }) {
             <div className="cmp__label">{m.label}</div>
             <div className="cmp__bars">
               {[
-                { v: a, color: accent, name: 'Influenced' },
-                { v: b, color: context, name: 'Not influenced' },
+                { v: a, color: accent, name: 'GTM-touched' },
+                { v: b, color: context, name: 'No GTM touch' },
               ].map((s) => (
                 <div key={s.name} className="cmp__barline">
                   <span

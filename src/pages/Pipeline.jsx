@@ -31,7 +31,7 @@ export default function Pipeline() {
   return (
     <div>
       <div className="page-header page-header--actions">
-        <h1>Customer Pipeline</h1>
+        <h1>Customer Deals</h1>
         <Button renderIcon={Add} onClick={() => setModal('new')}>
           Add deal
         </Button>
@@ -49,7 +49,7 @@ export default function Pipeline() {
                 <TableHeader>Open date</TableHeader>
                 <TableHeader>Stage</TableHeader>
                 <TableHeader>Owner</TableHeader>
-                <TableHeader>Enablement</TableHeader>
+                <TableHeader>GTM touch</TableHeader>
                 <TableHeader aria-label="Actions" />
               </TableRow>
             </TableHead>
@@ -67,7 +67,7 @@ export default function Pipeline() {
                   <TableCell>
                     {d.influenced ? (
                       <Tag type="purple" size="sm" title={`Preceded by ${d.matched.length} matching session(s)`}>
-                        Influenced
+                        GTM touched
                       </Tag>
                     ) : (
                       <span style={{ color: 'var(--cds-text-helper)' }}>—</span>

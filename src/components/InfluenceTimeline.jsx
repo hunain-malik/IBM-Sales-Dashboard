@@ -144,16 +144,16 @@ export default function InfluenceTimeline({ deals, enablements }) {
           </span>
           <span className="uc-chip">
             <svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="currentColor" opacity="0.75" /></svg>
-            Influenced deal (opened after a session)
+            GTM-touched deal (opened after a session)
           </span>
           <span className="uc-chip">
             <svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="none" stroke={gray} strokeWidth="1.5" /></svg>
-            Deal with no prior enablement — not counted
+            Deal with no prior session — not counted
           </span>
           {anyCarried && (
             <span className="uc-chip">
               <svg width="20" height="12" aria-hidden="true"><path d="M1 6 H19" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.75" /></svg>
-              Influence carried from an earlier quarter
+              Touchpoint carried from an earlier quarter
             </span>
           )}
         </div>
@@ -243,7 +243,7 @@ export default function InfluenceTimeline({ deals, enablements }) {
                 {/* carried-influence entry marker at the quarter boundary */}
                 {lane.carriedSessions.length > 0 && (() => {
                   const lines = [
-                    `Influence carried from ${lane.carriedQuarters.join(', ')}`,
+                    `Touchpoint carried from ${lane.carriedQuarters.join(', ')}`,
                     ...lane.carriedSessions.map((s) => `${s.title} — ${fmtDate(s.date)}`),
                   ]
                   return (
@@ -311,8 +311,8 @@ export default function InfluenceTimeline({ deals, enablements }) {
                     `Opened ${fmtDate(d.date)}`,
                     d.influenced
                       ? d.link
-                        ? `Influenced — session: ${d.link.title} (${fmtDate(d.link.date)})`
-                        : `Influenced — carried from ${quarterLabel(quarterStart(toDate(d.carried.date)))}: ${d.carried.title} (${fmtDate(d.carried.date)})`
+                        ? `GTM touched — session: ${d.link.title} (${fmtDate(d.link.date)})`
+                        : `GTM touched — carried from ${quarterLabel(quarterStart(toDate(d.carried.date)))}: ${d.carried.title} (${fmtDate(d.carried.date)})`
                       : `Not counted — no ${getUseCase(d.useCase).label} session before this deal`,
                   ]
                   return (

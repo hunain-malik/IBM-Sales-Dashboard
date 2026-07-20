@@ -4,7 +4,7 @@ import { Button, Theme, Tag } from '@carbon/react'
 import { Printer, ArrowLeft } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { buildInsights, toneHeading } from '../data/insights.js'
-import { getUseCase, fmtUSD, fmtUSDCompact, fmtPct, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
+import { getUseCase, fmtUSD, fmtUSDCompact, fmtPct, fmtDate, STAGE_TAG_TYPE, GLOSSARY_URL } from '../data/constants.js'
 
 const pct0 = (ratio) => `${Math.round(ratio * 100)}%`
 
@@ -44,7 +44,7 @@ export default function OnePager() {
       <article className="op">
         <header className="op__head">
           <div>
-            <div className="op__brand">IBM · Enablement Impact</div>
+            <div className="op__brand">IBM · GTM Pipeline View</div>
             <h1>Executive Summary</h1>
           </div>
           <div className="op__date">FY{new Date().getFullYear()} year to date · {today}</div>
@@ -56,22 +56,22 @@ export default function OnePager() {
             <div className="op__kpi-value">
               {summary.influencedCount} of {summary.totalDeals}
             </div>
-            <div className="op__kpi-label">Deals driven by enablement</div>
+            <div className="op__kpi-label">GTM-touched deals</div>
           </div>
           <div className="op__kpi">
             <div className="op__kpi-value">{fmtUSDCompact(summary.wonRevenue)}</div>
-            <div className="op__kpi-label">Influenced revenue (closed won)</div>
+            <div className="op__kpi-label">GTM-touched revenue (closed won)</div>
           </div>
           <div className="op__kpi">
             <div className="op__kpi-value">{fmtUSDCompact(summary.pipelineRevenue)}</div>
-            <div className="op__kpi-label">Influenced open pipeline</div>
+            <div className="op__kpi-label">GTM-touched open pipeline</div>
           </div>
           <div className="op__kpi">
             <div className="op__kpi-value">
               {summary.valuePerHour != null ? fmtUSDCompact(summary.valuePerHour) : '—'}
             </div>
             <div className="op__kpi-label">
-              Influenced value per team hour ({summary.totalHours}h invested)
+              GTM-touched value per team hour ({summary.totalHours}h invested)
             </div>
           </div>
         </section>
@@ -88,8 +88,8 @@ export default function OnePager() {
               <thead>
                 <tr>
                   <th />
-                  <th>Influenced (n={inf.n})</th>
-                  <th>Not influenced (n={rest.n})</th>
+                  <th>GTM-touched (n={inf.n})</th>
+                  <th>No GTM touch (n={rest.n})</th>
                 </tr>
               </thead>
               <tbody>
@@ -135,7 +135,7 @@ export default function OnePager() {
         )}
 
         <section>
-          <h2>Top enablement-influenced deals</h2>
+          <h2>Top GTM-touched deals</h2>
           <table className="op__table op__table--deals">
             {/* sized so the whitespace between every pair of columns reads evenly */}
             <colgroup>
@@ -174,9 +174,14 @@ export default function OnePager() {
         </section>
 
         <footer className="op__foot">
-          Attribution method: a deal counts as enablement-influenced when the customer&apos;s use case
-          matches at least one session our team delivered on or before the deal&apos;s open date.
+          Method: a deal is counted as GTM-touched when an enablement session on the same use case
+          preceded the deal&apos;s open date — an association by timing and topic, not a claim of
+          credit for the sale.
           All figures are year to date from the start of FY{new Date().getFullYear()}, as entered by {today}.
+          Full glossary of terms and calculations:{' '}
+          <a href={GLOSSARY_URL} target="_blank" rel="noreferrer">
+            {GLOSSARY_URL.replace('https://', '')}
+          </a>
         </footer>
       </article>
     </Theme>

@@ -6,6 +6,16 @@ Copy everything below the line into the AI builder.
 
 Build a single-page web application called the **Enablement Impact Dashboard**. Its purpose: track the enablement sessions our team delivers and the customer pipeline/revenue that follows them, to show sales and executives — with numbers, not narration — that the team drives revenue, and where to invest next. Follow this specification exactly; every detail here is deliberate.
 
+## Language addendum (supersedes any conflicting labels below)
+
+Stakeholder feedback required neutral, non-credit-claiming language so sales never reads
+the dashboard as claiming their deals. Apply these renames everywhere (UI, generated
+sentences, tooltips, one-pager):
+
+- Product/landing name: **"GTM Pipeline View"** (header brand, landing tab "Pipeline View", landing page title). Deals input tab is named "Deals", its page "Customer Deals".
+- Replace every "influenced"/"driven by enablement" with **"GTM-touched"** / "No GTM touch" / "untouched": KPI "GTM-touched deals", "GTM-touched revenue (closed won)", "GTM-touched open pipeline", "GTM-touched value per team hour"; section "Deal performance: GTM-touched vs. untouched"; chart "GTM-touched pipeline opened by month"; table "GTM-touched deals"; pipeline tag "GTM touched"; timeline legend "GTM-touched deal…", carried marker "Touchpoint carried from an earlier quarter"; all insights-engine sentences and tone headings use the same terms.
+- Transparency: ship a glossary/methodology document defining every term and calculation (including the explicit statement that GTM-touched is an association by timing and topic, NOT attribution of credit). Link to it from the landing page header ("How these numbers are calculated ↗") and the one-pager footer; keep the URL in a single constant so it can point at a Box note.
+
 ## Tech stack
 
 - React + Vite. UI components from IBM Carbon Design System (`@carbon/react`), themes `white` (light) and `g100` (dark) with a header toggle (moon/sun icon). Do NOT use a charting library — all charts are hand-rolled inline SVG (specs below).

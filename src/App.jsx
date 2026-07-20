@@ -20,9 +20,9 @@ import OnePager from './pages/OnePager.jsx'
 // Impact summary IS the landing page — one unambiguous page to show
 // leadership; the other two tabs feed it.
 const NAV = [
-  { path: '/', label: 'Command Center' },
+  { path: '/', label: 'Pipeline View' },
   { path: '/enablements', label: 'Enablements' },
-  { path: '/pipeline', label: 'Pipeline' },
+  { path: '/pipeline', label: 'Deals' },
 ]
 
 export default function App() {
@@ -33,10 +33,10 @@ export default function App() {
   return (
     <>
       <Theme theme="g100">
-        <Header aria-label="IBM Enablement Impact">
+        <Header aria-label="IBM GTM Pipeline View">
           <SkipToContent />
           <HeaderName as={Link} to="/" prefix="IBM">
-            Enablement Impact
+            GTM Pipeline View
           </HeaderName>
           <HeaderNavigation aria-label="Dashboard navigation">
             {NAV.map((item) => (

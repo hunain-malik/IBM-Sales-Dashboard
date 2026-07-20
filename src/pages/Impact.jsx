@@ -13,7 +13,7 @@ import {
 import { Document } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { buildInsights } from '../data/insights.js'
-import { fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
+import { fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE, GLOSSARY_URL } from '../data/constants.js'
 import KpiTile from '../components/KpiTile.jsx'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import ComparisonPanel from '../components/ComparisonPanel.jsx'
@@ -36,8 +36,13 @@ export default function Impact() {
     <div>
       <div className="page-header page-header--actions">
         <div>
-          <h1>Enablement Impact</h1>
-          <p>All figures year to date, from the start of FY{new Date().getFullYear()}.</p>
+          <h1>GTM Pipeline View</h1>
+          <p>
+            All figures year to date, from the start of FY{new Date().getFullYear()}.{' '}
+            <a href={GLOSSARY_URL} target="_blank" rel="noreferrer">
+              How these numbers are calculated ↗
+            </a>
+          </p>
         </div>
         <Button as={Link} to="/onepager" kind="tertiary" size="md" renderIcon={Document}>
           Executive one-pager
@@ -46,7 +51,7 @@ export default function Impact() {
 
       <div className="kpi-row">
         <KpiTile
-          label="Deals driven by enablement"
+          label="GTM-touched deals"
           value={`${summary.influencedCount} of ${summary.totalDeals}`}
           detail={
             summary.totalDeals
@@ -54,15 +59,15 @@ export default function Impact() {
               : 'No deals tracked yet'
           }
         />
-        <KpiTile label="Influenced revenue (closed won)" value={fmtUSDCompact(summary.wonRevenue)} />
-        <KpiTile label="Influenced open pipeline" value={fmtUSDCompact(summary.pipelineRevenue)} />
+        <KpiTile label="GTM-touched revenue (closed won)" value={fmtUSDCompact(summary.wonRevenue)} />
+        <KpiTile label="GTM-touched open pipeline" value={fmtUSDCompact(summary.pipelineRevenue)} />
         <KpiTile
           label="Sessions delivered"
           value={summary.sessionCount}
           detail={`${summary.attendeeCount} attendees enabled`}
         />
         <KpiTile
-          label="Influenced value per team hour"
+          label="GTM-touched value per team hour"
           value={summary.valuePerHour != null ? fmtUSDCompact(summary.valuePerHour) : '—'}
           detail={
             summary.valuePerHour != null
@@ -76,14 +81,14 @@ export default function Impact() {
           proof → mechanism → momentum → the ask → the receipts */}
       <div className="card-stack">
         <div className="chart-card">
-          <h4 className="section-title">Deal performance: influenced vs. not influenced</h4>
+          <h4 className="section-title">Deal performance: GTM-touched vs. untouched</h4>
           {insights.caveat && <p className="impact-note" style={{ marginTop: 0 }}>{insights.caveat}</p>}
           <ComparisonPanel stats={comparison} />
         </div>
 
         {influenced.length > 0 && (
           <div className="chart-card">
-            <h4 className="section-title">Influenced pipeline opened by month</h4>
+            <h4 className="section-title">GTM-touched pipeline opened by month</h4>
             <QuarterlyPipeline deals={deals} enablements={enablements} />
           </div>
         )}
@@ -96,8 +101,8 @@ export default function Impact() {
 
       {influenced.length ? (
         <div className="table-card">
-          <h4 className="section-title section-title--table">Influenced deals</h4>
-          <Table size="md" aria-label="Influenced deals">
+          <h4 className="section-title section-title--table">GTM-touched deals</h4>
+          <Table size="md" aria-label="GTM-touched deals">
             <TableHead>
               <TableRow>
                 <TableHeader>Customer</TableHeader>
@@ -133,7 +138,7 @@ export default function Impact() {
         </div>
       ) : (
         <div className="empty-state">
-          <h3>No influenced deals yet</h3>
+          <h3>No GTM-touched deals yet</h3>
           <p>
             When a customer deal matches a use case we enabled on — and opened after that session —
             it will appear here automatically.

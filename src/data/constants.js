@@ -49,6 +49,11 @@ const usdCompact = new Intl.NumberFormat('en-US', {
 export const fmtUSD = (n) => usd.format(n)
 export const fmtUSDCompact = (n) => usdCompact.format(n)
 
+// Methodology & glossary link. Points at the repo doc for now — swap this one
+// URL for the Box note when the glossary moves there.
+export const GLOSSARY_URL =
+  'https://github.com/hunain-malik/IBM-Sales-Dashboard/blob/claude/determined-turing-d1ieij/docs/GLOSSARY.md'
+
 export const fmtPct = (ratio) => `${Math.round(ratio * 100)}%`
 
 export const fmtDate = (iso) =>

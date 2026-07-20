@@ -59,14 +59,14 @@ jobs:
           notes=$(cat <<EOF
           ## 🚀 Live dashboard
 
-          ### ▶ [Open the Enablement Impact Dashboard]($url)
+          ### ▶ [Open the GTM Pipeline View]($url)
 
           The link above opens the running dashboard live in your browser — no install, no login.
 
           **What's inside**
-          - **Command Center** (landing) — KPIs, influenced-vs-not deal comparison, demand-vs-coverage view, quarterly influenced pipeline, and the influenced-deals list
+          - **Pipeline View** (landing) — KPIs, GTM-touched vs. untouched deal comparison, demand-vs-coverage view, quarterly GTM-touched pipeline, and the GTM-touched deals list
           - **Enablements** — sessions list + month calendar; click any day to log one
-          - **Pipeline** — add and edit deals with automatic "Influenced" tagging, plus the session-to-deal timeline
+          - **Deals** — add and edit deals with automatic "GTM touched" tagging, plus the session-to-deal timeline
           - **Executive one-pager** — print/PDF summary whose headline and recommended actions adapt to the data
 
           v1 data is manual input, stored in your browser (localStorage) and seeded with a demo dataset.
@@ -78,10 +78,10 @@ jobs:
           # Edit the release in place — never delete it, so the release page
           # has no window where it doesn't exist.
           if gh release view v0.1.0 >/dev/null 2>&1; then
-            gh release edit v0.1.0 --title "Enablement Impact Dashboard v0.1.0" --notes "$notes"
+            gh release edit v0.1.0 --title "GTM Pipeline View v0.1.0" --notes "$notes"
           else
             gh release create v0.1.0 \
-              --title "Enablement Impact Dashboard v0.1.0" \
+              --title "GTM Pipeline View v0.1.0" \
               --notes "$notes" \
               --target "$GITHUB_SHA"
           fi

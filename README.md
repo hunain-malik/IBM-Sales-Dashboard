@@ -1,50 +1,44 @@
-# Enablement Impact Dashboard
+# GTM Pipeline View
 
-A dashboard that tracks the team's **enablement sessions** and the **customer pipeline/revenue**
-they helped create — built to show sales and executives, at a glance, how much pipeline our
-enablement work drives.
+A dashboard that tracks the team's **enablement sessions** alongside the **customer
+pipeline**, and shows where the two coincide — neutrally framed so it never reads as
+claiming credit for sales' deals.
 
-Built with React, [IBM Carbon Design System](https://carbondesignsystem.com/) (`@carbon/react`)
-and [Carbon Charts](https://charts.carbondesignsystem.com/) (`@carbon/charts-react`).
+Built with React and the [IBM Carbon Design System](https://carbondesignsystem.com/)
+(`@carbon/react`); all charts are hand-rolled SVG.
 
 ## How it works (v1 — manual input)
 
-- **Enablements** — anyone on the team logs a session on the calendar (or via *Add enablement*):
-  title, date, the use case it enables on (Vulnerability Management, Secure Coder, Monitoring,
-  Optimization, Other), presenter, and attendee count.
-- **Pipeline** — the team or sales logs customer deals: customer name, deal revenue, the use case
-  the customer is interested in, open date, stage, and owner.
-- **Attribution** — a deal is automatically marked **enablement-influenced** when the customer's
-  use case matches at least one session delivered *on or before* the deal's open date.
-- **Impact summary** — the executive page: KPI tiles (deals driven, influenced closed-won revenue,
-  influenced open pipeline, sessions delivered, influenced value per team hour) plus an
-  **influence timeline**: one lane per use case on a real time axis, sessions as diamonds, deals as
-  dots at their actual value, and curves linking each influenced deal back to the first session
-  that preceded it. Deals with no prior session are drawn hollow — visibly excluded, so the
-  attribution rule is itself on display.
-- **Influenced vs. not influenced** — win rate, average deal size, and sales-cycle length compared
-  between deals preceded by enablement and the rest (uses each deal's optional close date).
-- **Where to invest next** — per use case, customer demand share (deal value) vs. enablement
-  coverage share (team hours); use cases where demand outruns coverage are flagged *Invest here*.
-- **Executive one-pager** — a print-optimized summary (`Impact summary → Executive one-pager →
-  Print / save as PDF`) with the headline KPIs, the comparison, the coverage gaps, and the top
-  influenced deals on a single page.
+- **Enablements** — the team logs sessions (title, presenter, use case, date, attendees,
+  hours) via a form or by clicking a day on the month calendar.
+- **Deals** — the team or sales logs customer deals: customer, revenue, use case, open
+  date, stage, owner, and close date once closed. Deals are editable as they progress.
+- **GTM touch** — a deal is automatically tagged **GTM touched** when a session on the
+  same use case was delivered on or before the deal's open date. This is an association
+  by timing and topic, not an attribution of credit; deals with no prior session are
+  shown as explicitly not counted.
+- The landing **Pipeline View** shows KPIs, a GTM-touched vs. untouched deal comparison
+  (win rate, average size, cycle length), quarterly GTM-touched pipeline by month,
+  customer demand vs. enablement coverage per use case, and the GTM-touched deals list.
+  The **Deals** tab carries the quarter-scoped session-to-deal timeline.
+- The **Executive Summary** (`/onepager`) is a print/PDF one-pager whose verdict heading
+  and recommended actions are **generated from the data** by a small insights engine
+  (`src/data/insights.js`) — strong results read as strong, mixed as mixed, adverse
+  deltas are stated rather than hidden, and small samples carry a caveat.
 
-Data is stored in the browser's `localStorage`. The app seeds a demo dataset on first load;
-use the reset action in the header to restore it, and delete rows to clear records.
+Every term and calculation is defined in [`docs/GLOSSARY.md`](docs/GLOSSARY.md), linked
+from the dashboard header and the one-pager footer.
+
+Data is stored in the browser's `localStorage`, seeded with a demo dataset on first load;
+the header has a reset action and a light/dark theme toggle.
 
 ## Pages
 
 | Page | Audience | What it shows |
 |---|---|---|
-| Impact summary (landing) | Sales + executives | KPIs, influenced-vs-not comparison, where-to-invest, monthly influenced pipeline, influence timeline, attribution detail |
-| Enablements | Team | Month calendar + table of sessions; click a day to log one |
-| Pipeline | Team + sales | All deals (add/edit) with an *Influenced* tag where enablement preceded the deal |
-
-The headline verdict and the one-pager's recommended actions are **generated from the data** by a
-small insights engine (`src/data/insights.js`): strong results read as strong, mixed as mixed,
-adverse deltas are stated rather than hidden, small samples carry a caveat, and missing data
-(hours, close dates) produces asks instead of claims.
+| Pipeline View (landing) | Sales + executives | KPIs, touched-vs-untouched comparison, quarterly pipeline, demand vs. coverage, GTM-touched deals list |
+| Enablements | Team | Sessions list + month calendar; click a day to log one |
+| Deals | Team + sales | All deals (add/edit) with automatic *GTM touched* tagging, plus the session-to-deal timeline |
 
 ## Run it
 
@@ -57,7 +51,7 @@ npm run preview  # serve the production build
 
 ## Notes on the theme
 
-The UI uses Carbon's `white` and `g100` themes (toggle in the header). Use-case colors are IBM
-Carbon data-viz ramp steps, re-ordered and validated for color-vision-deficiency separation and
-surface contrast on both themes — each use case keeps the same hue everywhere in the app, and
-every color is always paired with a text label.
+The UI uses Carbon's `white` and `g100` themes. Use-case colors are IBM Carbon data-viz
+ramp steps, re-ordered and validated for color-vision-deficiency separation and surface
+contrast on both themes — each use case keeps the same hue everywhere, and every color is
+always paired with a text label.
