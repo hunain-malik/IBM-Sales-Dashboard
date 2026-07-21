@@ -4,7 +4,7 @@ import { Button, Theme, Tag } from '@carbon/react'
 import { Printer, ArrowLeft } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { buildInsights, toneHeading } from '../data/insights.js'
-import { getUseCase, fmtUSD, fmtUSDCompact, fmtPct, fmtDate, STAGE_TAG_TYPE, GLOSSARY_URL } from '../data/constants.js'
+import { getUseCase, fmtUSD, fmtUSDCompact, fmtPct, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
 
 const pct0 = (ratio) => `${Math.round(ratio * 100)}%`
 
@@ -178,10 +178,8 @@ export default function OnePager() {
           preceded the deal&apos;s open date — an association by timing and topic, not a claim of
           credit for the sale.
           All figures are year to date from the start of FY{new Date().getFullYear()}, as entered by {today}.
-          Full glossary of terms and calculations:{' '}
-          <a href={GLOSSARY_URL} target="_blank" rel="noreferrer">
-            {GLOSSARY_URL.replace('https://', '')}
-          </a>
+          Every term and formula is defined on the{' '}
+          <Link to="/glossary">Methodology &amp; Glossary</Link> page of the GTM Pipeline View.
         </footer>
       </article>
     </Theme>

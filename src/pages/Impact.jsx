@@ -13,7 +13,7 @@ import {
 import { Document } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { buildInsights } from '../data/insights.js'
-import { fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE, GLOSSARY_URL } from '../data/constants.js'
+import { fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
 import KpiTile from '../components/KpiTile.jsx'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import ComparisonPanel from '../components/ComparisonPanel.jsx'
@@ -39,9 +39,7 @@ export default function Impact() {
           <h1>GTM Pipeline View</h1>
           <p>
             All figures year to date, from the start of FY{new Date().getFullYear()}.{' '}
-            <a href={GLOSSARY_URL} target="_blank" rel="noreferrer">
-              How these numbers are calculated ↗
-            </a>
+            <Link to="/glossary">How these numbers are calculated</Link>
           </p>
         </div>
         <Button as={Link} to="/onepager" kind="tertiary" size="md" renderIcon={Document}>

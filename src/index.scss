@@ -361,6 +361,115 @@ html[data-carbon-theme='g100'] body {
   }
 }
 
+/* Methodology & glossary page */
+.gl-promise {
+  background: var(--cds-layer-01);
+  border-left: 4px solid var(--cds-link-primary);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  max-width: 56rem;
+}
+
+.gl-promise__lead {
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.4;
+  margin: 0 0 0.5rem;
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+.gl-promise__body {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--cds-text-secondary);
+  margin: 0;
+  max-width: 44rem;
+}
+
+.gl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: 0.75rem;
+}
+
+.gl-card {
+  background: var(--cds-layer-02);
+  border: 1px solid var(--cds-border-subtle-01);
+  padding: 1rem;
+
+  h5 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0 0 0.375rem;
+  }
+
+  p {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--cds-text-secondary);
+    margin: 0;
+  }
+}
+
+.gl-metrics {
+  max-width: 64rem;
+}
+
+.gl-metric {
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 22rem) 1fr;
+  gap: 0.5rem 1.5rem;
+  align-items: baseline;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--cds-border-subtle-01);
+}
+
+.gl-metric__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.gl-metric__formula {
+  font-family: 'IBM Plex Mono', 'Menlo', monospace;
+  font-size: 0.75rem;
+  color: var(--cds-text-secondary);
+  background: var(--cds-layer-02);
+  padding: 0.25rem 0.5rem;
+  border-radius: 2px;
+  justify-self: start;
+}
+
+.gl-metric__note {
+  font-size: 0.8125rem;
+  color: var(--cds-text-helper);
+}
+
+@media (max-width: 60rem) {
+  .gl-metric {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}
+
+.gl-conventions {
+  margin: 0;
+  padding-left: 1.125rem;
+  max-width: 56rem;
+
+  li {
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--cds-text-secondary);
+  }
+
+  li + li {
+    margin-top: 0.625rem;
+  }
+}
+
 /* Influence timeline: legend + quarter navigation */
 .tl-head {
   display: flex;

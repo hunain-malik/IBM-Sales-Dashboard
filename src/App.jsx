@@ -16,6 +16,7 @@ import Enablements from './pages/Enablements.jsx'
 import Pipeline from './pages/Pipeline.jsx'
 import Impact from './pages/Impact.jsx'
 import OnePager from './pages/OnePager.jsx'
+import Glossary from './pages/Glossary.jsx'
 
 // Impact summary IS the landing page — one unambiguous page to show
 // leadership; the other two tabs feed it.
@@ -81,6 +82,7 @@ export default function App() {
             {/* old bookmark support */}
             <Route path="/impact" element={<Impact />} />
             <Route path="/onepager" element={<OnePager />} />
+            <Route path="/glossary" element={<Glossary />} />
           </Routes>
         </Content>
       </Theme>
