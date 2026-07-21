@@ -1,4 +1,4 @@
-import { OPEN_STAGES } from './constants.js'
+import { OPEN_STAGES, todayIso } from './constants.js'
 
 // A deal is "enablement-influenced" when at least one enablement session on
 // the same use case took place on or before the deal date.
@@ -18,7 +18,10 @@ export function impactSummary(deals, enablements) {
   const openInfluenced = influenced.filter((d) => OPEN_STAGES.includes(d.stage))
   const wonRevenue = wonInfluenced.reduce((s, d) => s + d.value, 0)
   const pipelineRevenue = openInfluenced.reduce((s, d) => s + d.value, 0)
-  const totalHours = enablements.reduce((s, e) => s + (Number(e.hours) || 0), 0)
+  // scheduled (future-dated) sessions show as "upcoming" but must not count
+  // in any delivered total until their date passes
+  const delivered = enablements.filter((e) => e.date <= todayIso())
+  const totalHours = delivered.reduce((s, e) => s + (Number(e.hours) || 0), 0)
   return {
     attributed,
     influenced,
@@ -26,8 +29,8 @@ export function impactSummary(deals, enablements) {
     totalDeals: deals.length,
     wonRevenue,
     pipelineRevenue,
-    sessionCount: enablements.length,
-    attendeeCount: enablements.reduce((s, e) => s + (Number(e.attendees) || 0), 0),
+    sessionCount: delivered.length,
+    attendeeCount: delivered.reduce((s, e) => s + (Number(e.attendees) || 0), 0),
     totalHours,
     // ROI headline: influenced value (won + open) per team hour invested
     valuePerHour: totalHours > 0 ? (wonRevenue + pipelineRevenue) / totalHours : null,
@@ -65,15 +68,18 @@ export function comparisonStats(deals, enablements) {
 // value) vs. the share of enablement effort. A positive gap means customers
 // want more of a use case than we currently enable on. Coverage share is
 // hour-weighted when hours are recorded, session-weighted otherwise.
+// Only delivered sessions count as coverage — a session on the calendar
+// hasn't covered anything yet.
 export function coverageGaps(deals, enablements, useCases) {
+  const delivered = enablements.filter((e) => e.date <= todayIso())
   const totalValue = deals.reduce((s, d) => s + d.value, 0)
-  const totalHours = enablements.reduce((s, e) => s + (Number(e.hours) || 0), 0)
+  const totalHours = delivered.reduce((s, e) => s + (Number(e.hours) || 0), 0)
   const byHours = totalHours > 0
-  const totalSessions = enablements.length
+  const totalSessions = delivered.length
   return useCases
     .map((u) => {
       const ucDeals = deals.filter((d) => d.useCase === u.id)
-      const sessions = enablements.filter((e) => e.useCase === u.id)
+      const sessions = delivered.filter((e) => e.useCase === u.id)
       const demandValue = ucDeals.reduce((s, d) => s + d.value, 0)
       const hours = sessions.reduce((s, e) => s + (Number(e.hours) || 0), 0)
       const demandShare = totalValue ? demandValue / totalValue : 0

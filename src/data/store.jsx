@@ -2,7 +2,9 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { seedEnablements, seedDeals } from './seed.js'
 
 // v2: enablements gained `hours`, deals gained `closeDate`.
-const DATA_KEY = 'enablement-dashboard-data-v2'
+// v3: seed gained scheduled (future-dated) sessions for the upcoming strip;
+// bumping the key re-seeds browsers that stored the old demo data.
+const DATA_KEY = 'enablement-dashboard-data-v3'
 const THEME_KEY = 'enablement-dashboard-theme'
 
 const StoreContext = createContext(null)

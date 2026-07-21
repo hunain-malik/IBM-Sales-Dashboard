@@ -62,14 +62,14 @@ export function buildInsights(deals, enablements) {
   let headline
   if (summary.totalDeals === 0 && summary.sessionCount === 0) {
     tone = 'none'
-    headline = 'No data yet — log enablement sessions and customer deals to start measuring impact.'
+    headline = 'No data yet — log enablement sessions and customer deals to populate this view.'
   } else if (summary.totalDeals === 0) {
     tone = 'none'
     headline = `${summary.sessionCount} sessions delivered, no deals tracked yet — add the pipeline to connect enablement to revenue.`
   } else if (summary.influencedCount === 0) {
     tone = 'none'
     headline = summary.sessionCount === 0
-      ? 'No enablement sessions logged yet, so no deals can be attributed.'
+      ? 'No enablement sessions logged yet, so no deals count as GTM-touched.'
       : 'No tracked deals have followed a session yet — no GTM touchpoints to report.'
   } else if (known.length === 0) {
     tone = 'early'
@@ -118,7 +118,7 @@ export function buildInsights(deals, enablements) {
   }
   const closedDeals = deals.filter((d) => d.stage === 'Closed Won' || d.stage === 'Closed Lost')
   if (closedDeals.length > 0 && closedDeals.every((d) => !d.closeDate)) {
-    asks.push('Add close dates to closed deals to measure sales-cycle impact.')
+    asks.push('Add close dates to closed deals to compare sales-cycle length.')
   }
 
   return { tone, headline, caveat, asks, summary, comparison, coverage }

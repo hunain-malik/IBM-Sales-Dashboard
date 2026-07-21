@@ -175,8 +175,7 @@ export default function OnePager() {
 
         <footer className="op__foot">
           Method: a deal is counted as GTM-touched when an enablement session on the same use case
-          preceded the deal&apos;s open date — an association by timing and topic, not a claim of
-          credit for the sale.
+          preceded the deal&apos;s open date.
           All figures are year to date from the start of FY{new Date().getFullYear()}, as entered by {today}.
           Every term and formula is defined on the{' '}
           <Link to="/glossary">Methodology &amp; Glossary</Link> page of the GTM Pipeline View.

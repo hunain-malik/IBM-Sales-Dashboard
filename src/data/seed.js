@@ -12,6 +12,11 @@ export const seedEnablements = [
   { id: 'e7', title: 'Observability Clinic',                  useCase: 'monitoring',   date: '2026-05-12', presenter: 'S. Patel',     attendees: 17, hours: 4 },
   { id: 'e8', title: 'FinOps Optimization Enablement',        useCase: 'optimization', date: '2026-06-09', presenter: 'J. Kim',       attendees: 22, hours: 6 },
   { id: 'e9', title: 'Secure Coder Office Hours',             useCase: 'secure-coder', date: '2026-07-08', presenter: 'M. Rodriguez', attendees: 14, hours: 2 },
+  // Scheduled sessions (future-dated): they appear in "Upcoming sessions" and
+  // on the calendar, and are excluded from every delivered total until their
+  // date passes — attendees stays 0 until the session actually runs.
+  { id: 'e10', title: 'Vulnerability Management Threat Briefing', useCase: 'vuln-mgmt',  date: '2026-07-30', presenter: 'A. Chen',  attendees: 0, hours: 3 },
+  { id: 'e11', title: 'Monitoring War-Room Simulation',          useCase: 'monitoring', date: '2026-08-13', presenter: 'S. Patel', attendees: 0, hours: 4 },
 ]
 
 // `closeDate` is set once a deal reaches Closed Won / Closed Lost and is used

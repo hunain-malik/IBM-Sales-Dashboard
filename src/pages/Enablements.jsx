@@ -8,10 +8,11 @@ import {
   TableBody,
   TableCell,
   IconButton,
+  Tag,
 } from '@carbon/react'
-import { Add, Edit, TrashCan } from '@carbon/icons-react'
+import { Add, Edit, Email, TrashCan } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
-import { fmtDate } from '../data/constants.js'
+import { fmtDate, sessionRequestMailto, todayIso } from '../data/constants.js'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import MonthCalendar from '../components/MonthCalendar.jsx'
 import EnablementModal from '../components/EnablementModal.jsx'
@@ -29,9 +30,14 @@ export default function Enablements() {
     <div>
       <div className="page-header page-header--actions">
         <h1>Enablement Sessions</h1>
-        <Button renderIcon={Add} onClick={() => openForDate('')}>
-          Add enablement
-        </Button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Button kind="tertiary" renderIcon={Email} href={sessionRequestMailto()}>
+            Request a session
+          </Button>
+          <Button renderIcon={Add} onClick={() => openForDate('')}>
+            Add enablement
+          </Button>
+        </div>
       </div>
 
       <div className="table-card" style={{ marginBottom: '1rem' }}>
@@ -57,8 +63,14 @@ export default function Enablements() {
                       ) : null}
                     </TableCell>
                     <TableCell><UseCaseChip id={e.useCase} /></TableCell>
-                    <TableCell>{fmtDate(e.date)}</TableCell>
-                    <TableCell>{e.attendees}</TableCell>
+                    <TableCell>
+                      {fmtDate(e.date)}
+                      {e.date > todayIso() && (
+                        <Tag type="blue" size="sm" style={{ marginLeft: '0.5rem' }}>Scheduled</Tag>
+                      )}
+                    </TableCell>
+                    {/* a scheduled session hasn't had attendees yet */}
+                    <TableCell>{e.date > todayIso() ? '—' : e.attendees}</TableCell>
                     <TableCell>{Number(e.hours) || 0}</TableCell>
                     <TableCell>
                       <IconButton kind="ghost" size="sm" label="Edit session" onClick={() => setModal({ session: e })}>
@@ -80,7 +92,7 @@ export default function Enablements() {
           ) : (
             <div className="empty-state">
               <h3>No sessions logged</h3>
-              <p>Add the first enablement session to start tracking impact.</p>
+              <p>Add the first enablement session — deals that open later on the same use case will match it automatically.</p>
             </div>
           )}
       </div>

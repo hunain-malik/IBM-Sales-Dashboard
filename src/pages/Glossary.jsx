@@ -4,9 +4,9 @@ import { ArrowLeft } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 
 // The methodology page: everything the view counts, defined in one designed
-// place. Written for the sales audience — it opens with the non-attribution
-// promise, shows the counting rule visually, then defines every term and
-// formula used anywhere in the app.
+// place — one sentence of scope, the counting rule shown visually, then every
+// term and formula used anywhere in the app. Deliberately matter-of-fact: the
+// page defines the math and lets it speak, rather than arguing about credit.
 
 const TERMS = [
   {
@@ -39,12 +39,17 @@ const METRICS = [
   {
     name: 'GTM-touched deals (X of Y)',
     formula: 'count of GTM-touched deals ÷ all tracked deals',
-    note: 'A share of the tracked pipeline, not a performance claim.',
+    note: 'A share of the tracked pipeline.',
   },
   {
     name: 'GTM-touched revenue (closed won)',
     formula: 'Σ value of GTM-touched deals in Closed Won',
-    note: 'The deals’ full value — not a claimed share of it.',
+    note: 'Sums each deal’s full value; nothing is split or allocated per session.',
+  },
+  {
+    name: 'Sessions delivered',
+    formula: 'count of sessions dated on or before today',
+    note: 'Sessions scheduled for a future date appear under “Upcoming sessions” and on the calendar, and join every delivered total (sessions, attendees, hours, coverage) once their date passes.',
   },
   {
     name: 'GTM-touched open pipeline',
@@ -69,7 +74,7 @@ const METRICS = [
   {
     name: 'GTM-touched value per team hour',
     formula: '(touched won revenue + touched open pipeline) ÷ total session hours',
-    note: 'A throughput measure of enablement effort, not a revenue claim.',
+    note: 'A throughput measure of enablement effort.',
   },
   {
     name: 'Demand share',
@@ -159,12 +164,8 @@ export default function Glossary() {
 
       <div className="gl-promise">
         <p className="gl-promise__lead">
-          “GTM-touched” is an association by timing and topic — <strong>not an attribution of credit.</strong>
-        </p>
-        <p className="gl-promise__body">
-          It means one thing only: an enablement session on the same use case happened before the deal
-          opened. Sales owns and closes every deal. This view exists to show where enablement activity
-          and pipeline activity coincide, so enablement investment can be planned together.
+          Every number in this view counts one thing: <strong>an enablement session delivered before
+          a deal opened on the same use case.</strong>
         </p>
       </div>
 

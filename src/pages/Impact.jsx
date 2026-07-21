@@ -19,6 +19,7 @@ import UseCaseChip from '../components/UseCaseChip.jsx'
 import ComparisonPanel from '../components/ComparisonPanel.jsx'
 import CoveragePanel from '../components/CoveragePanel.jsx'
 import QuarterlyPipeline from '../components/QuarterlyPipeline.jsx'
+import UpcomingSessions from '../components/UpcomingSessions.jsx'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const lagDays = (fromIso, toIso) =>
@@ -75,9 +76,11 @@ export default function Impact() {
         />
       </div>
 
-      {/* full-width sections, ordered by how the impact story is argued:
-          proof → mechanism → momentum → the ask → the receipts */}
+      {/* full-width sections: what a seller can act on next, then the
+          comparison, momentum, coverage, and the deal-level receipts */}
       <div className="card-stack">
+        <UpcomingSessions />
+
         <div className="chart-card">
           <h4 className="section-title">Deal performance: GTM-touched vs. untouched</h4>
           {insights.caveat && <p className="impact-note" style={{ marginTop: 0 }}>{insights.caveat}</p>}

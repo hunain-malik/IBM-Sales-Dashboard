@@ -53,3 +53,29 @@ export const fmtPct = (ratio) => `${Math.round(ratio * 100)}%`
 
 export const fmtDate = (iso) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+
+// Local-date ISO (YYYY-MM-DD). Not toISOString(): that is UTC and would flip
+// the date near midnight, making a session count as delivered a day early/late.
+export const todayIso = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+// "Request a session" opens the seller's mail client pre-filled. Set the
+// enablement team's distribution list here before sharing the dashboard;
+// while empty, the To field is simply left blank.
+export const SESSION_REQUEST_EMAIL = ''
+
+export const sessionRequestMailto = (useCaseLabel) => {
+  const subject = 'Enablement session request'
+  const body = [
+    'Hi team,',
+    '',
+    'I’d like to request an enablement session.',
+    '',
+    `Use case: ${useCaseLabel || ''}`,
+    'Customer / audience: ',
+    'Preferred timing: ',
+  ].join('\n')
+  return `mailto:${SESSION_REQUEST_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+}

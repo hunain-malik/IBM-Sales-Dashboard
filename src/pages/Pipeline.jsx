@@ -88,7 +88,7 @@ export default function Pipeline() {
         ) : (
           <div className="empty-state">
             <h3>No deals tracked</h3>
-            <p>Add the first customer deal to start measuring enablement influence.</p>
+            <p>Add the first customer deal — if a session on its use case came first, it is tagged GTM touched automatically.</p>
           </div>
         )}
       </div>
