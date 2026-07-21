@@ -47,15 +47,19 @@ jobs:
           git add -A
           git commit -qm "Deploy dashboard build ${GITHUB_SHA}"
           git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" site
+          # the release link pins this exact build commit, so the CDN can never
+          # serve a stale page for it
+          echo "SITE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
       - name: Publish release with live dashboard link
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          # ?v=<sha> busts the CDN cache for the HTML on every deploy;
-          # the JS/CSS assets are content-hashed so they are always fresh.
-          url="https://raw.githack.com/${GITHUB_REPOSITORY}/site/index.html?v=${GITHUB_SHA:0:8}"
+          # The URL embeds the immutable site-branch commit sha, so every deploy
+          # yields a never-seen-before URL — the CDN cannot serve stale content
+          # (a ?v= query string turned out not to bust githack's cache reliably).
+          url="https://rawcdn.githack.com/${GITHUB_REPOSITORY}/${SITE_SHA}/index.html"
           notes=$(cat <<EOF
           ## 🚀 Live dashboard
 
