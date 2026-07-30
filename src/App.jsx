@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import {
   Header,
@@ -33,10 +34,36 @@ const SYNC_LABEL = {
   offline: 'Offline — changes not saved',
 }
 
+// Deployed links are frozen snapshots (the URL pins the exact build commit),
+// so an old bookmark keeps old wording forever even though the shared data
+// stays live. Each deployed build knows its own source commit; on load it
+// asks GitHub what the newest deployed build is, and when they differ it
+// offers a direct link to the fresh copy. Local/dev builds skip the check.
+const BUILD_SHA = import.meta.env.VITE_BUILD_SHA || ''
+const SITE_BRANCH_API = 'https://api.github.com/repos/hunain-malik/IBM-Sales-Dashboard/branches/site'
+
+function useLatestBuildUrl() {
+  const [latestUrl, setLatestUrl] = useState(null)
+  useEffect(() => {
+    if (!BUILD_SHA) return
+    fetch(SITE_BRANCH_API)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((branch) => {
+        const built = branch?.commit?.commit?.message?.match(/Deploy dashboard build ([0-9a-f]{40})/)
+        if (built && built[1] !== BUILD_SHA) {
+          setLatestUrl(`https://rawcdn.githack.com/hunain-malik/IBM-Sales-Dashboard/${branch.commit.sha}/index.html`)
+        }
+      })
+      .catch(() => {}) // no signal, no banner — never block the app on this
+  }, [])
+  return latestUrl
+}
+
 export default function App() {
   const { theme, setTheme, resetToDemo, syncStatus } = useStore()
   const location = useLocation()
   const dark = theme === 'g100'
+  const latestUrl = useLatestBuildUrl()
 
   return (
     <>
@@ -93,6 +120,12 @@ export default function App() {
       </Theme>
       <Theme theme={theme} className="app-theme">
         <Content className="app-content">
+          {latestUrl && (
+            <div className="stale-banner" role="status">
+              You&apos;re viewing an older copy of this dashboard.{' '}
+              <a href={latestUrl}>Open the latest version</a> — all data carries over automatically.
+            </div>
+          )}
           <Routes>
             <Route path="/" element={<Impact />} />
             <Route path="/enablements" element={<Enablements />} />

@@ -381,6 +381,15 @@ html[data-carbon-theme='g100'] body {
   }
 }
 
+/* Outdated-copy notice (deployed links are frozen snapshots) */
+.stale-banner {
+  background: var(--cds-layer-01);
+  border-left: 3px solid #f1c21b; /* Carbon support-warning */
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
 /* Shared-mode sync status in the header (g100 bar, so fixed light inks) */
 .sync-badge {
   display: flex;
