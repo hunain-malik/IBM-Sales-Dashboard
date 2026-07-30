@@ -53,11 +53,11 @@ export default function ComparisonPanel({ stats }) {
       <div className="cmp__legend">
         <span className="uc-chip">
           <span className="uc-chip__dot" style={{ background: accent }} aria-hidden="true" />
-          GTM-touched (n={influenced.n})
+          Outbound-touched (n={influenced.n})
         </span>
         <span className="uc-chip">
           <span className="uc-chip__dot" style={{ background: context }} aria-hidden="true" />
-          No GTM touch (n={rest.n})
+          No outbound touch (n={rest.n})
         </span>
       </div>
       {METRICS.map((m) => {
@@ -70,8 +70,8 @@ export default function ComparisonPanel({ stats }) {
             <div className="cmp__label">{m.label}</div>
             <div className="cmp__bars">
               {[
-                { v: a, color: accent, name: 'GTM-touched' },
-                { v: b, color: context, name: 'No GTM touch' },
+                { v: a, color: accent, name: 'Outbound-touched' },
+                { v: b, color: context, name: 'No outbound touch' },
               ].map((s) => (
                 <div key={s.name} className="cmp__barline">
                   <span

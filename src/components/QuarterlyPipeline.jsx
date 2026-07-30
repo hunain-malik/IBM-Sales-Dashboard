@@ -86,7 +86,7 @@ export default function QuarterlyPipeline({ deals, enablements }) {
         viewBox={`0 0 ${W} ${H}`}
         style={{ width: '100%', minWidth: '48rem', display: 'block' }}
         role="img"
-        aria-label={`GTM-touched pipeline opened per month in ${quarterLabel(qCursor)}`}
+        aria-label={`Outbound-touched pipeline opened per month in ${quarterLabel(qCursor)}`}
       >
         {months.map((mo, i) => {
           const x1 = PAD_L + i * bandW

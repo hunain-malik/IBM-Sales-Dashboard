@@ -10,7 +10,7 @@ import { useStore } from '../data/store.jsx'
 
 const TERMS = [
   {
-    term: 'GTM-touched deal',
+    term: 'Outbound-touched deal',
     def: 'A deal where at least one enablement session on the same use case was delivered on or before the deal’s open date. Deals with no prior session are explicitly not counted — and are shown as excluded, never hidden.',
   },
   {
@@ -37,13 +37,13 @@ const TERMS = [
 
 const METRICS = [
   {
-    name: 'GTM-touched deals (X of Y)',
-    formula: 'count of GTM-touched deals ÷ all tracked deals',
+    name: 'Outbound-touched deals (X of Y)',
+    formula: 'count of outbound-touched deals ÷ all tracked deals',
     note: 'A share of the tracked pipeline.',
   },
   {
-    name: 'GTM-touched revenue (closed won)',
-    formula: 'Σ value of GTM-touched deals in Closed Won',
+    name: 'Outbound-touched revenue (closed won)',
+    formula: 'Σ value of outbound-touched deals in Closed Won',
     note: 'Sums each deal’s full value; nothing is split or allocated per session.',
   },
   {
@@ -52,14 +52,14 @@ const METRICS = [
     note: 'Sessions scheduled for a future date appear under “Upcoming sessions” and on the calendar, and join every delivered total (sessions, attendees, hours, coverage) once their date passes.',
   },
   {
-    name: 'GTM-touched open pipeline',
-    formula: 'Σ value of GTM-touched deals in open stages',
+    name: 'Outbound-touched open pipeline',
+    formula: 'Σ value of outbound-touched deals in open stages',
     note: 'Open stages: Prospecting, Qualification, Proposal, Negotiation.',
   },
   {
     name: 'Win rate',
     formula: 'Closed Won ÷ (Closed Won + Closed Lost)',
-    note: 'Computed separately for the GTM-touched and untouched groups; open deals are not in the denominator.',
+    note: 'Computed separately for the outbound-touched and untouched groups; open deals are not in the denominator.',
   },
   {
     name: 'Average deal size',
@@ -72,7 +72,7 @@ const METRICS = [
     note: 'Over closed deals that have a close date recorded.',
   },
   {
-    name: 'GTM-touched value per team hour',
+    name: 'Outbound-touched value per team hour',
     formula: '(touched won revenue + touched open pipeline) ÷ total session hours',
     note: 'A throughput measure of enablement effort.',
   },
@@ -92,7 +92,7 @@ const METRICS = [
     note: '≥ +5 points → Invest here · ≤ −5 points → Well covered · otherwise Balanced.',
   },
   {
-    name: 'GTM-touched pipeline by month',
+    name: 'Outbound-touched pipeline by month',
     formula: 'Σ value of touched deals, bucketed by open-date month',
     note: 'Shown per fiscal quarter; months that haven’t started show “Coming soon”, not $0.',
   },
@@ -126,7 +126,7 @@ function RuleDiagram() {
       <path d="M 140 78 C 140 55, 480 55, 480 40" fill="none" stroke={accent} strokeWidth="1.5" opacity="0.5" />
       <circle cx="480" cy="32" r="8" fill={accent} />
       <text x="480" y="12" fontSize="12" textAnchor="middle" fontWeight="600" style={{ fill: ink.primary }}>Deal opened · Apr 27</text>
-      <text x="586" y="36" fontSize="12" fontWeight="600" style={{ fill: accent }}>→ GTM-touched</text>
+      <text x="586" y="36" fontSize="12" fontWeight="600" style={{ fill: accent }}>→ Outbound-touched</text>
 
       {/* not-counted example */}
       <text x="0" y="170" fontSize="13" fontWeight="600" style={{ fill: ink.primary }}>Not counted</text>
@@ -144,7 +144,7 @@ function RuleDiagram() {
         <rect x="0" y="0" width="10" height="10" transform="rotate(45 5 5)" fill={accent} />
         <text x="22" y="10" fontSize="12" style={{ fill: ink.secondary }}>Enablement session</text>
         <circle cx="5" cy="34" r="6" fill={accent} />
-        <text x="22" y="38" fontSize="12" style={{ fill: ink.secondary }}>Deal counted as GTM-touched</text>
+        <text x="22" y="38" fontSize="12" style={{ fill: ink.secondary }}>Deal counted as outbound-touched</text>
         <circle cx="5" cy="62" r="5.5" fill="var(--cds-layer-01)" stroke={gray} strokeWidth="2" />
         <text x="22" y="66" fontSize="12" style={{ fill: ink.secondary }}>Deal with no prior session</text>
       </g>

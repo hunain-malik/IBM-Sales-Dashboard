@@ -102,14 +102,14 @@ jobs:
           notes=$(cat <<EOF
           ## 🚀 Live dashboard
 
-          ### ▶ [Open the GTM Pipeline View]($url)
+          ### ▶ [Open the Outbound Pipeline View]($url)
 
           The link above opens the running dashboard live in your browser — no install, no login.
 
           **What's inside**
-          - **Pipeline View** (landing) — KPIs, GTM-touched vs. untouched deal comparison, demand-vs-coverage view, quarterly GTM-touched pipeline, and the GTM-touched deals list
+          - **Pipeline View** (landing) — KPIs, outbound-touched vs. untouched deal comparison, demand-vs-coverage view, quarterly outbound-touched pipeline, and the outbound-touched deals list
           - **Enablements** — sessions list + month calendar; click any day to log one
-          - **Deals** — add and edit deals with automatic "GTM touched" tagging, plus the session-to-deal timeline
+          - **Deals** — add and edit deals with automatic "Outbound touched" tagging, plus the session-to-deal timeline
           - **Executive one-pager** — print/PDF summary whose headline and recommended actions adapt to the data
 
           Data is **shared and persistent**: every entry saves to a common store, and everyone opening
@@ -123,10 +123,10 @@ jobs:
           # Edit the release in place — never delete it, so the release page
           # has no window where it doesn't exist.
           if gh release view v0.1.0 >/dev/null 2>&1; then
-            gh release edit v0.1.0 --title "GTM Pipeline View v0.1.0" --notes "$notes"
+            gh release edit v0.1.0 --title "Outbound Pipeline View v0.1.0" --notes "$notes"
           else
             gh release create v0.1.0 \
-              --title "GTM Pipeline View v0.1.0" \
+              --title "Outbound Pipeline View v0.1.0" \
               --notes "$notes" \
               --target "$GITHUB_SHA"
           fi

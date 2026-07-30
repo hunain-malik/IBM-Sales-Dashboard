@@ -44,7 +44,7 @@ export default function OnePager() {
       <article className="op">
         <header className="op__head">
           <div>
-            <div className="op__brand">IBM · GTM Pipeline View</div>
+            <div className="op__brand">IBM · Outbound Pipeline View</div>
             <h1>Executive Summary</h1>
           </div>
           <div className="op__date">FY{new Date().getFullYear()} year to date · {today}</div>
@@ -56,22 +56,22 @@ export default function OnePager() {
             <div className="op__kpi-value">
               {summary.influencedCount} of {summary.totalDeals}
             </div>
-            <div className="op__kpi-label">GTM-touched deals</div>
+            <div className="op__kpi-label">Outbound-touched deals</div>
           </div>
           <div className="op__kpi">
             <div className="op__kpi-value">{fmtUSDCompact(summary.wonRevenue)}</div>
-            <div className="op__kpi-label">GTM-touched revenue (closed won)</div>
+            <div className="op__kpi-label">Outbound-touched revenue (closed won)</div>
           </div>
           <div className="op__kpi">
             <div className="op__kpi-value">{fmtUSDCompact(summary.pipelineRevenue)}</div>
-            <div className="op__kpi-label">GTM-touched open pipeline</div>
+            <div className="op__kpi-label">Outbound-touched open pipeline</div>
           </div>
           <div className="op__kpi">
             <div className="op__kpi-value">
               {summary.valuePerHour != null ? fmtUSDCompact(summary.valuePerHour) : '—'}
             </div>
             <div className="op__kpi-label">
-              GTM-touched value per team hour ({summary.totalHours}h invested)
+              Outbound-touched value per team hour ({summary.totalHours}h invested)
             </div>
           </div>
         </section>
@@ -88,8 +88,8 @@ export default function OnePager() {
               <thead>
                 <tr>
                   <th />
-                  <th>GTM-touched (n={inf.n})</th>
-                  <th>No GTM touch (n={rest.n})</th>
+                  <th>Outbound-touched (n={inf.n})</th>
+                  <th>No outbound touch (n={rest.n})</th>
                 </tr>
               </thead>
               <tbody>
@@ -135,7 +135,7 @@ export default function OnePager() {
         )}
 
         <section>
-          <h2>Top GTM-touched deals</h2>
+          <h2>Top outbound-touched deals</h2>
           <table className="op__table op__table--deals">
             {/* sized so the whitespace between every pair of columns reads evenly */}
             <colgroup>
@@ -174,11 +174,11 @@ export default function OnePager() {
         </section>
 
         <footer className="op__foot">
-          Method: a deal is counted as GTM-touched when an enablement session on the same use case
+          Method: a deal is counted as outbound-touched when an enablement session on the same use case
           preceded the deal&apos;s open date.
           All figures are year to date from the start of FY{new Date().getFullYear()}, as entered by {today}.
           Every term and formula is defined on the{' '}
-          <Link to="/glossary">Methodology &amp; Glossary</Link> page of the GTM Pipeline View.
+          <Link to="/glossary">Methodology &amp; Glossary</Link> page of the Outbound Pipeline View.
         </footer>
       </article>
     </Theme>

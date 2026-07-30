@@ -49,7 +49,7 @@ export default function Pipeline() {
                 <TableHeader>Open date</TableHeader>
                 <TableHeader>Stage</TableHeader>
                 <TableHeader>Owner</TableHeader>
-                <TableHeader>GTM touch</TableHeader>
+                <TableHeader>Outbound touch</TableHeader>
                 <TableHeader aria-label="Actions" />
               </TableRow>
             </TableHead>
@@ -67,7 +67,7 @@ export default function Pipeline() {
                   <TableCell>
                     {d.influenced ? (
                       <Tag type="purple" size="sm" title={`Preceded by ${d.matched.length} matching session(s)`}>
-                        GTM touched
+                        Outbound touched
                       </Tag>
                     ) : (
                       <span style={{ color: 'var(--cds-text-helper)' }}>—</span>
@@ -88,7 +88,7 @@ export default function Pipeline() {
         ) : (
           <div className="empty-state">
             <h3>No deals tracked</h3>
-            <p>Add the first customer deal — if a session on its use case came first, it is tagged GTM touched automatically.</p>
+            <p>Add the first customer deal — if a session on its use case came first, it is tagged Outbound touched automatically.</p>
           </div>
         )}
       </div>

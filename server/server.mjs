@@ -1,7 +1,7 @@
 import http from 'node:http'
 import { readFile, writeFile, rename } from 'node:fs/promises'
 
-// Shared-store API for the GTM Pipeline View. One resource: a single JSON
+// Shared-store API for the Outbound Pipeline View. One resource: a single JSON
 // document { version, enablements[], deals[] } with optimistic concurrency —
 // a PUT must carry the version it was based on; a stale version gets 409 plus
 // the current document so the client can merge and retry. Storage is a JSON

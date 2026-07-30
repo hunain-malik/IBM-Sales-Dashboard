@@ -41,10 +41,10 @@ export default function App() {
   return (
     <>
       <Theme theme="g100">
-        <Header aria-label="IBM GTM Pipeline View">
+        <Header aria-label="IBM Outbound Pipeline View">
           <SkipToContent />
           <HeaderName as={Link} to="/" prefix="IBM">
-            GTM Pipeline View
+            Outbound Pipeline View
           </HeaderName>
           <HeaderNavigation aria-label="Dashboard navigation">
             {NAV.map((item) => (

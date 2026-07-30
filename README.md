@@ -1,4 +1,4 @@
-# GTM Pipeline View
+# Outbound Pipeline View
 
 A dashboard that tracks the team's **enablement sessions** alongside the **customer
 pipeline**, and shows where the two coincide — neutrally framed so it never reads as
@@ -13,13 +13,13 @@ Built with React and the [IBM Carbon Design System](https://carbondesignsystem.c
   hours) via a form or by clicking a day on the month calendar.
 - **Deals** — the team or sales logs customer deals: customer, revenue, use case, open
   date, stage, owner, and close date once closed. Deals are editable as they progress.
-- **GTM touch** — a deal is automatically tagged **GTM touched** when a session on the
+- **Outbound touch** — a deal is automatically tagged **Outbound touched** when a session on the
   same use case was delivered on or before the deal's open date. This is an association
   by timing and topic, not an attribution of credit; deals with no prior session are
   shown as explicitly not counted.
-- The landing **Pipeline View** shows KPIs, a GTM-touched vs. untouched deal comparison
-  (win rate, average size, cycle length), quarterly GTM-touched pipeline by month,
-  customer demand vs. enablement coverage per use case, and the GTM-touched deals list.
+- The landing **Pipeline View** shows KPIs, a outbound-touched vs. untouched deal comparison
+  (win rate, average size, cycle length), quarterly outbound-touched pipeline by month,
+  customer demand vs. enablement coverage per use case, and the outbound-touched deals list.
   The **Deals** tab carries the quarter-scoped session-to-deal timeline.
 - The **Executive Summary** (`/onepager`) is a print/PDF one-pager whose verdict heading
   and recommended actions are **generated from the data** by a small insights engine
@@ -36,9 +36,9 @@ the header has a reset action and a light/dark theme toggle.
 
 | Page | Audience | What it shows |
 |---|---|---|
-| Pipeline View (landing) | Sales + executives | KPIs, touched-vs-untouched comparison, quarterly pipeline, demand vs. coverage, GTM-touched deals list |
+| Pipeline View (landing) | Sales + executives | KPIs, touched-vs-untouched comparison, quarterly pipeline, demand vs. coverage, outbound-touched deals list |
 | Enablements | Team | Sessions list + month calendar; click a day to log one |
-| Deals | Team + sales | All deals (add/edit) with automatic *GTM touched* tagging, plus the session-to-deal timeline |
+| Deals | Team + sales | All deals (add/edit) with automatic *Outbound touched* tagging, plus the session-to-deal timeline |
 
 ## Run it
 

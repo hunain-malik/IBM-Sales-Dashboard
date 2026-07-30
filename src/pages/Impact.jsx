@@ -37,7 +37,7 @@ export default function Impact() {
     <div>
       <div className="page-header page-header--actions">
         <div>
-          <h1>GTM Pipeline View</h1>
+          <h1>Outbound Pipeline View</h1>
           <p>
             All figures year to date, from the start of FY{new Date().getFullYear()}.{' '}
             <Link to="/glossary">How these numbers are calculated</Link>
@@ -50,7 +50,7 @@ export default function Impact() {
 
       <div className="kpi-row">
         <KpiTile
-          label="GTM-touched deals"
+          label="Outbound-touched deals"
           value={`${summary.influencedCount} of ${summary.totalDeals}`}
           detail={
             summary.totalDeals
@@ -58,15 +58,15 @@ export default function Impact() {
               : 'No deals tracked yet'
           }
         />
-        <KpiTile label="GTM-touched revenue (closed won)" value={fmtUSDCompact(summary.wonRevenue)} />
-        <KpiTile label="GTM-touched open pipeline" value={fmtUSDCompact(summary.pipelineRevenue)} />
+        <KpiTile label="Outbound-touched revenue (closed won)" value={fmtUSDCompact(summary.wonRevenue)} />
+        <KpiTile label="Outbound-touched open pipeline" value={fmtUSDCompact(summary.pipelineRevenue)} />
         <KpiTile
           label="Sessions delivered"
           value={summary.sessionCount}
           detail={`${summary.attendeeCount} attendees enabled`}
         />
         <KpiTile
-          label="GTM-touched value per team hour"
+          label="Outbound-touched value per team hour"
           value={summary.valuePerHour != null ? fmtUSDCompact(summary.valuePerHour) : '—'}
           detail={
             summary.valuePerHour != null
@@ -82,14 +82,14 @@ export default function Impact() {
         <UpcomingSessions />
 
         <div className="chart-card">
-          <h4 className="section-title">Deal performance: GTM-touched vs. untouched</h4>
+          <h4 className="section-title">Deal performance: outbound-touched vs. untouched</h4>
           {insights.caveat && <p className="impact-note" style={{ marginTop: 0 }}>{insights.caveat}</p>}
           <ComparisonPanel stats={comparison} />
         </div>
 
         {influenced.length > 0 && (
           <div className="chart-card">
-            <h4 className="section-title">GTM-touched pipeline opened by month</h4>
+            <h4 className="section-title">Outbound-touched pipeline opened by month</h4>
             <QuarterlyPipeline deals={deals} enablements={enablements} />
           </div>
         )}
@@ -102,8 +102,8 @@ export default function Impact() {
 
       {influenced.length ? (
         <div className="table-card">
-          <h4 className="section-title section-title--table">GTM-touched deals</h4>
-          <Table size="md" aria-label="GTM-touched deals">
+          <h4 className="section-title section-title--table">Outbound-touched deals</h4>
+          <Table size="md" aria-label="Outbound-touched deals">
             <TableHead>
               <TableRow>
                 <TableHeader>Customer</TableHeader>
@@ -139,7 +139,7 @@ export default function Impact() {
         </div>
       ) : (
         <div className="empty-state">
-          <h3>No GTM-touched deals yet</h3>
+          <h3>No outbound-touched deals yet</h3>
           <p>
             When a customer deal matches a use case we enabled on — and opened after that session —
             it will appear here automatically.

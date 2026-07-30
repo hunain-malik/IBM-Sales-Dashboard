@@ -144,7 +144,7 @@ export default function InfluenceTimeline({ deals, enablements }) {
           </span>
           <span className="uc-chip">
             <svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="currentColor" opacity="0.75" /></svg>
-            GTM-touched deal (opened after a session)
+            Outbound-touched deal (opened after a session)
           </span>
           <span className="uc-chip">
             <svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="none" stroke={gray} strokeWidth="1.5" /></svg>
@@ -311,8 +311,8 @@ export default function InfluenceTimeline({ deals, enablements }) {
                     `Opened ${fmtDate(d.date)}`,
                     d.influenced
                       ? d.link
-                        ? `GTM touched — session: ${d.link.title} (${fmtDate(d.link.date)})`
-                        : `GTM touched — carried from ${quarterLabel(quarterStart(toDate(d.carried.date)))}: ${d.carried.title} (${fmtDate(d.carried.date)})`
+                        ? `Outbound touched — session: ${d.link.title} (${fmtDate(d.link.date)})`
+                        : `Outbound touched — carried from ${quarterLabel(quarterStart(toDate(d.carried.date)))}: ${d.carried.title} (${fmtDate(d.carried.date)})`
                       : `Not counted — no ${getUseCase(d.useCase).label} session before this deal`,
                   ]
                   return (

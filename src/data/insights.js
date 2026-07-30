@@ -52,7 +52,7 @@ export function buildInsights(deals, enablements) {
 
   const smallSample = summary.totalDeals > 0 && (a.n < 4 || b.n < 2)
   const caveat = smallSample && known.length > 0
-    ? `Small sample (${a.n} GTM-touched vs ${b.n} not) — read as an early signal, not a proven effect.`
+    ? `Small sample (${a.n} outbound-touched vs ${b.n} not) — read as an early signal, not a proven effect.`
     : null
 
   const joinList = (items) =>
@@ -69,26 +69,26 @@ export function buildInsights(deals, enablements) {
   } else if (summary.influencedCount === 0) {
     tone = 'none'
     headline = summary.sessionCount === 0
-      ? 'No enablement sessions logged yet, so no deals count as GTM-touched.'
-      : 'No tracked deals have followed a session yet — no GTM touchpoints to report.'
+      ? 'No enablement sessions logged yet, so no deals count as outbound-touched.'
+      : 'No tracked deals have followed a session yet — no outbound touchpoints to report.'
   } else if (known.length === 0) {
     tone = 'early'
     headline = `A session preceded ${summary.influencedCount} of ${summary.totalDeals} deals (${fmtPct(summary.influencedCount / summary.totalDeals)}), but there aren't enough closed deals to compare performance yet.`
   } else if (losses.length === 0 && wins.length > 0) {
     tone = 'strong'
-    headline = `GTM-touched deals outperform: ${joinList(wins.map((m) => m.win))}.`
+    headline = `Outbound-touched deals outperform: ${joinList(wins.map((m) => m.win))}.`
   } else if (wins.length > 0 && losses.length > 0) {
     tone = 'mixed'
-    headline = `Mixed results: GTM-touched deals show ${joinList(wins.map((m) => m.win))}, but ${joinList(losses.map((m) => m.loss))}.`
+    headline = `Mixed results: outbound-touched deals show ${joinList(wins.map((m) => m.win))}, but ${joinList(losses.map((m) => m.loss))}.`
   } else if (losses.length > 0) {
     tone = 'weak'
-    headline = `GTM-touched deals aren't outperforming yet: ${joinList(losses.map((m) => m.loss))}.`
+    headline = `Outbound-touched deals aren't outperforming yet: ${joinList(losses.map((m) => m.loss))}.`
   } else {
     tone = 'even'
     // don't overstate: if win rate / cycle are unknowable, say so
     headline = known.length < metrics.length
-      ? 'On what can be measured so far, GTM-touched and untouched deals look similar — close more deals to compare win rate and cycle length.'
-      : 'GTM-touched and untouched deals are performing about the same so far.'
+      ? 'On what can be measured so far, outbound-touched and untouched deals look similar — close more deals to compare win rate and cycle length.'
+      : 'Outbound-touched and untouched deals are performing about the same so far.'
   }
 
   // ---- asks: coverage -----------------------------------------------------
@@ -109,7 +109,7 @@ export function buildInsights(deals, enablements) {
 
   // ---- asks: comparison follow-ups ---------------------------------------
   if (tone === 'weak' || tone === 'mixed') {
-    asks.push('Review the GTM-touched deals that stalled or lost — check whether session timing, content, or audience needs adjusting before scaling up.')
+    asks.push('Review the outbound-touched deals that stalled or lost — check whether session timing, content, or audience needs adjusting before scaling up.')
   }
 
   // ---- asks: data hygiene (what would sharpen the numbers) ---------------
@@ -126,10 +126,10 @@ export function buildInsights(deals, enablements) {
 
 // short section heading per tone — the sentence-level detail lives in `headline`
 export const toneHeading = {
-  strong: 'GTM-touched deals perform better',
-  mixed: 'GTM-touched deals: mixed results',
-  weak: 'GTM-touched deals: no edge yet',
-  even: 'GTM-touched deals: on par so far',
+  strong: 'Outbound-touched deals perform better',
+  mixed: 'Outbound-touched deals: mixed results',
+  weak: 'Outbound-touched deals: no edge yet',
+  even: 'Outbound-touched deals: on par so far',
   early: 'Deal performance: too early to compare',
   none: 'Deal performance comparison',
 }
