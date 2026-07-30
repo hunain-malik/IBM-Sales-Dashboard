@@ -12,8 +12,6 @@ import { useStore } from '../data/store.jsx'
 
 const blank = { customer: '', useCase: null, value: 100000, date: '', stage: 'Prospecting', owner: '', closeDate: '', sourceSessionId: '' }
 
-// the default "let the timing rule pick" option for the session tie
-const AUTO_TIE = { id: '', label: 'Automatic — earliest matching session' }
 
 // Create a new deal, or edit an existing one when `deal` is passed — stages
 // change over a deal's life, and stale stages silently corrupt the win-rate
@@ -55,10 +53,19 @@ export default function DealModal({ open, onClose, deal = null }) {
         : [],
     [enablements, form.useCase, form.date],
   )
-  const tieItems = [AUTO_TIE, ...eligibleSessions.map((e) => ({ id: e.id, label: `${e.title} — ${fmtDate(e.date)}` }))]
-  // a tie that stopped being eligible (use case / date changed) reads as
-  // Automatic and is dropped on save
-  const selectedTie = tieItems.find((i) => i.id === form.sourceSessionId) ?? AUTO_TIE
+  // the Automatic option names the session the timing rule resolves to (the
+  // earliest eligible one), and that session is left OUT of the manual list —
+  // picking it by hand would be the same choice twice
+  const earliest = eligibleSessions[0] ?? null
+  const autoTie = {
+    id: '',
+    label: earliest ? `Automatic — ${earliest.title} (${fmtDate(earliest.date)})` : 'Automatic',
+  }
+  const tieItems = [autoTie, ...eligibleSessions.slice(1).map((e) => ({ id: e.id, label: `${e.title} — ${fmtDate(e.date)}` }))]
+  // a tie that stopped being eligible (use case / date changed) — or one that
+  // points at the earliest session, which IS automatic — reads as Automatic
+  // and is dropped on save
+  const selectedTie = tieItems.find((i) => i.id === form.sourceSessionId) ?? autoTie
 
   const submit = () => {
     if (!form.customer.trim() || !form.useCase || !form.date || !(Number(form.value) > 0)) {
@@ -146,8 +153,8 @@ export default function DealModal({ open, onClose, deal = null }) {
           <Dropdown
             id="deal-source-session"
             titleText="Tie to a specific session (optional)"
-            helperText="Defaults to the earliest session on this use case before the open date."
-            label={AUTO_TIE.label}
+            helperText="Pick a different session if the deal came out of a later one."
+            label={autoTie.label}
             items={tieItems}
             itemToString={(i) => (i ? i.label : '')}
             selectedItem={selectedTie}
