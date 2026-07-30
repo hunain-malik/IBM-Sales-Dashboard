@@ -381,6 +381,20 @@ html[data-carbon-theme='g100'] body {
   }
 }
 
+/* Shared-mode sync status in the header (g100 bar, so fixed light inks) */
+.sync-badge {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #a8a8a8;
+  padding: 0 1rem;
+  white-space: nowrap;
+}
+
+.sync-badge--offline {
+  color: #ff8389;
+}
+
 /* Upcoming sessions strip (Pipeline View landing) */
 .up-head {
   display: flex;

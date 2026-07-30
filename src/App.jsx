@@ -11,7 +11,7 @@ import {
   Theme,
 } from '@carbon/react'
 import { Asleep, Light, Renew } from '@carbon/icons-react'
-import { useStore } from './data/store.jsx'
+import { useStore, SHARED_MODE } from './data/store.jsx'
 import Enablements from './pages/Enablements.jsx'
 import Pipeline from './pages/Pipeline.jsx'
 import Impact from './pages/Impact.jsx'
@@ -26,8 +26,15 @@ const NAV = [
   { path: '/pipeline', label: 'Deals' },
 ]
 
+const SYNC_LABEL = {
+  loading: 'Loading…',
+  saving: 'Saving…',
+  saved: 'Saved',
+  offline: 'Offline — changes not saved',
+}
+
 export default function App() {
-  const { theme, setTheme, resetToDemo } = useStore()
+  const { theme, setTheme, resetToDemo, syncStatus } = useStore()
   const location = useLocation()
   const dark = theme === 'g100'
 
@@ -52,17 +59,28 @@ export default function App() {
             ))}
           </HeaderNavigation>
           <HeaderGlobalBar>
-            <HeaderGlobalAction
-              aria-label="Reset demo data"
-              tooltipAlignment="end"
-              onClick={() => {
-                if (window.confirm('Reset the dashboard to the demo dataset? Manually entered records will be removed.')) {
-                  resetToDemo()
-                }
-              }}
-            >
-              <Renew size={20} />
-            </HeaderGlobalAction>
+            {SHARED_MODE && syncStatus && (
+              <span
+                className={`sync-badge${syncStatus === 'offline' ? ' sync-badge--offline' : ''}`}
+                role="status"
+              >
+                {SYNC_LABEL[syncStatus]}
+              </span>
+            )}
+            {/* one-click data wipes must not exist on a shared live store */}
+            {!SHARED_MODE && (
+              <HeaderGlobalAction
+                aria-label="Reset demo data"
+                tooltipAlignment="end"
+                onClick={() => {
+                  if (window.confirm('Reset the dashboard to the demo dataset? Manually entered records will be removed.')) {
+                    resetToDemo()
+                  }
+                }}
+              >
+                <Renew size={20} />
+              </HeaderGlobalAction>
+            )}
             <HeaderGlobalAction
               aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
               tooltipAlignment="end"
