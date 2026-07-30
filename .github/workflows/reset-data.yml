@@ -1,0 +1,25 @@
+name: Reset shared dashboard data
+
+# Deliberately manual-only: wiping the live shared store must be an explicit
+# admin action from the Actions tab, never a button in the dashboard UI.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Overwrite the shared store with an empty document
+        run: |
+          set -euo pipefail
+          url=$(cat server/shared-blob-url.txt)
+          version=$(curl -sf "$url" | jq -r '.version // 0')
+          curl -sf -X PUT "$url" -H 'Content-Type: application/json' \
+            -d "{\"version\":$((version + 1)),\"enablements\":[],\"deals\":[]}" > /dev/null
+          echo "shared store reset to empty (now v$((version + 1)))"

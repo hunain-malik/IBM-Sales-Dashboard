@@ -17,6 +17,12 @@ import { seedEnablements, seedDeals } from './seed.js'
 //   entering records at the same time both keep their entries. A poll picks
 //   up other people's changes without a refresh.
 const API_URL = import.meta.env.VITE_API_URL || ''
+// 'server' = our server/server.mjs (real 409 conflict handling).
+// 'blob'   = a dumb JSON-document store (e.g. jsonblob.com): GET returns the
+//            document, PUT overwrites it, no server-side version check — so
+//            the compare-and-swap is emulated client-side with a pre-flight
+//            read before every save.
+const API_KIND = import.meta.env.VITE_API_KIND || 'server'
 export const SHARED_MODE = Boolean(API_URL)
 
 // v2: enablements gained `hours`, deals gained `closeDate`.
@@ -75,6 +81,38 @@ export function StoreProvider({ children }) {
 
   const applyAll = (fns, doc) => fns.reduce((d, fn) => fn(d), doc)
 
+  const putJson = (body) =>
+    fetch(API_URL, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+
+  const docVersion = (d) => (Number.isInteger(d?.version) ? d.version : 0)
+  const asDoc = (d) => (validDoc(d) ? { enablements: d.enablements, deals: d.deals } : { enablements: [], deals: [] })
+
+  // Save `doc` on top of `baseVersion`. Resolves { version } on success or
+  // { conflict, server } when someone else saved first; throws on network or
+  // server errors.
+  const persist = async (doc, baseVersion) => {
+    if (API_KIND === 'blob') {
+      // no server-side version check — emulate compare-and-swap with a
+      // pre-flight read (a small race window remains; acceptable for a small
+      // team saving whole documents seconds apart)
+      const cur = await fetch(API_URL)
+      if (!cur.ok) throw new Error(`load failed (${cur.status})`)
+      const remote = await cur.json()
+      if (docVersion(remote) !== baseVersion) return { conflict: true, server: remote }
+      const res = await putJson({ version: baseVersion + 1, ...doc })
+      if (!res.ok) throw new Error(`save failed (${res.status})`)
+      return { version: baseVersion + 1 }
+    }
+    const res = await putJson({ version: baseVersion, ...doc })
+    if (res.status === 409) return { conflict: true, server: await res.json() }
+    if (!res.ok) throw new Error(`save failed (${res.status})`)
+    return { version: (await res.json()).version }
+  }
+
   const doSave = async () => {
     if (!SHARED_MODE || savingRef.current || pendingRef.current.length === 0) return
     savingRef.current = true
@@ -83,24 +121,17 @@ export function StoreProvider({ children }) {
     const count = pendingRef.current.length
     const doc = applyAll(pendingRef.current.slice(0, count), baseRef.current)
     try {
-      const res = await fetch(API_URL, {
-        method: 'PUT',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ version: versionRef.current, ...doc }),
-      })
-      if (res.status === 409) {
+      const result = await persist(doc, versionRef.current)
+      if (result.conflict) {
         // someone else saved first: adopt their document, replay our queued
         // mutations on top, and try again from the new version
-        const server = await res.json()
-        versionRef.current = server.version
-        baseRef.current = { enablements: server.enablements, deals: server.deals }
+        versionRef.current = docVersion(result.server)
+        baseRef.current = asDoc(result.server)
         setData(applyAll(pendingRef.current, baseRef.current))
         savingRef.current = false
         return doSave()
       }
-      if (!res.ok) throw new Error(`save failed (${res.status})`)
-      const { version } = await res.json()
-      versionRef.current = version
+      versionRef.current = result.version
       baseRef.current = doc
       pendingRef.current = pendingRef.current.slice(count)
       savingRef.current = false
