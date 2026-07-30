@@ -61,6 +61,18 @@ export const todayIso = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+// "Reset all data" administration key. Only this SHA-256 hash ships in the
+// bundle, so the key itself is not readable in the page source. To change the
+// key, run in any browser console and paste the output here:
+//   crypto.subtle.digest('SHA-256', new TextEncoder().encode('new-key')).then(
+//     (b) => console.log([...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join('')))
+export const ADMIN_KEY_HASH = '69308d325e093f046c5884277efcecc3d3dafc14c5828a1941a6fb24271f814c'
+
+export const sha256Hex = async (text) => {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+  return [...new Uint8Array(buf)].map((x) => x.toString(16).padStart(2, '0')).join('')
+}
+
 // "Request a session" opens the seller's mail client pre-filled. Set the
 // enablement team's distribution list here before sharing the dashboard;
 // while empty, the To field is simply left blank.

@@ -250,9 +250,11 @@ export function StoreProvider({ children }) {
         })),
       removeDeal: (id) =>
         mutate((d) => ({ ...d, deals: d.deals.filter((x) => x.id !== id) })),
-      // standalone-only controls (the header hides them in shared mode)
+      // standalone-only (the header hides it in shared mode)
       resetToDemo: () => setData({ enablements: seedEnablements, deals: seedDeals }),
-      clearAll: () => setData({ enablements: [], deals: [] }),
+      // key-gated admin reset: goes through mutate so in shared mode the wipe
+      // syncs to the store and reaches every other open browser
+      clearAll: () => mutate(() => ({ enablements: [], deals: [] })),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data, theme, syncStatus],

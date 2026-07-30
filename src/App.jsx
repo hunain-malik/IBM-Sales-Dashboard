@@ -11,8 +11,9 @@ import {
   Content,
   Theme,
 } from '@carbon/react'
-import { Asleep, Light, Renew } from '@carbon/icons-react'
+import { Asleep, Light, Renew, TrashCan } from '@carbon/icons-react'
 import { useStore, SHARED_MODE } from './data/store.jsx'
+import AdminResetModal from './components/AdminResetModal.jsx'
 import Enablements from './pages/Enablements.jsx'
 import Pipeline from './pages/Pipeline.jsx'
 import Impact from './pages/Impact.jsx'
@@ -64,6 +65,7 @@ export default function App() {
   const location = useLocation()
   const dark = theme === 'g100'
   const latestUrl = useLatestBuildUrl()
+  const [adminReset, setAdminReset] = useState(false)
 
   return (
     <>
@@ -94,7 +96,6 @@ export default function App() {
                 {SYNC_LABEL[syncStatus]}
               </span>
             )}
-            {/* one-click data wipes must not exist on a shared live store */}
             {!SHARED_MODE && (
               <HeaderGlobalAction
                 aria-label="Reset demo data"
@@ -106,6 +107,16 @@ export default function App() {
                 }}
               >
                 <Renew size={20} />
+              </HeaderGlobalAction>
+            )}
+            {/* wiping the shared live store requires the administration key */}
+            {SHARED_MODE && (
+              <HeaderGlobalAction
+                aria-label="Reset all data (administration)"
+                tooltipAlignment="end"
+                onClick={() => setAdminReset(true)}
+              >
+                <TrashCan size={20} />
               </HeaderGlobalAction>
             )}
             <HeaderGlobalAction
@@ -135,6 +146,7 @@ export default function App() {
             <Route path="/onepager" element={<OnePager />} />
             <Route path="/glossary" element={<Glossary />} />
           </Routes>
+          <AdminResetModal open={adminReset} onClose={() => setAdminReset(false)} />
         </Content>
       </Theme>
     </>
