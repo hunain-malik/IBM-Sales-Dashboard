@@ -7,6 +7,15 @@ export function attributeDeals(deals, enablements) {
     const matched = enablements
       .filter((e) => e.useCase === deal.useCase && e.date <= deal.date)
       .sort((a, b) => a.date.localeCompare(b.date))
+    // A deal can be tied to one specific eligible session (sourceSessionId):
+    // it moves to the front and becomes the deal's matched session everywhere,
+    // instead of the automatic earliest. A stale tie (session deleted, or no
+    // longer eligible after a date/use-case edit) silently falls back to
+    // automatic — findIndex misses and the order is untouched.
+    if (deal.sourceSessionId) {
+      const i = matched.findIndex((s) => s.id === deal.sourceSessionId)
+      if (i > 0) matched.unshift(matched.splice(i, 1)[0])
+    }
     return { ...deal, matched, influenced: matched.length > 0 }
   })
 }

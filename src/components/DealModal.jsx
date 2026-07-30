@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Modal,
   TextInput,
@@ -7,16 +7,19 @@ import {
   DatePickerInput,
   NumberInput,
 } from '@carbon/react'
-import { USE_CASES, DEAL_STAGES } from '../data/constants.js'
+import { USE_CASES, DEAL_STAGES, fmtDate } from '../data/constants.js'
 import { useStore } from '../data/store.jsx'
 
-const blank = { customer: '', useCase: null, value: 100000, date: '', stage: 'Prospecting', owner: '', closeDate: '' }
+const blank = { customer: '', useCase: null, value: 100000, date: '', stage: 'Prospecting', owner: '', closeDate: '', sourceSessionId: '' }
+
+// the default "let the timing rule pick" option for the session tie
+const AUTO_TIE = { id: '', label: 'Automatic — earliest matching session' }
 
 // Create a new deal, or edit an existing one when `deal` is passed — stages
 // change over a deal's life, and stale stages silently corrupt the win-rate
 // comparison, so editing in place matters.
 export default function DealModal({ open, onClose, deal = null }) {
-  const { addDeal, updateDeal } = useStore()
+  const { addDeal, updateDeal, enablements } = useStore()
   const [form, setForm] = useState(blank)
   const [invalid, setInvalid] = useState(false)
 
@@ -32,12 +35,30 @@ export default function DealModal({ open, onClose, deal = null }) {
               stage: deal.stage,
               owner: deal.owner ?? '',
               closeDate: deal.closeDate ?? '',
+              sourceSessionId: deal.sourceSessionId ?? '',
             }
           : blank,
       )
       setInvalid(false)
     }
   }, [open, deal])
+
+  // sessions this deal COULD be tied to: same use case, delivered on or
+  // before the open date — the same eligibility the counting rule uses, so a
+  // manual tie can never create a match the rule wouldn't count
+  const eligibleSessions = useMemo(
+    () =>
+      form.useCase && form.date
+        ? enablements
+            .filter((e) => e.useCase === form.useCase.id && e.date <= form.date)
+            .sort((a, b) => a.date.localeCompare(b.date))
+        : [],
+    [enablements, form.useCase, form.date],
+  )
+  const tieItems = [AUTO_TIE, ...eligibleSessions.map((e) => ({ id: e.id, label: `${e.title} — ${fmtDate(e.date)}` }))]
+  // a tie that stopped being eligible (use case / date changed) reads as
+  // Automatic and is dropped on save
+  const selectedTie = tieItems.find((i) => i.id === form.sourceSessionId) ?? AUTO_TIE
 
   const submit = () => {
     if (!form.customer.trim() || !form.useCase || !form.date || !(Number(form.value) > 0)) {
@@ -53,6 +74,7 @@ export default function DealModal({ open, onClose, deal = null }) {
       owner: form.owner.trim(),
       // closeDate only makes sense on closed stages; clear it otherwise
       closeDate: form.stage.startsWith('Closed') && form.closeDate ? form.closeDate : undefined,
+      sourceSessionId: selectedTie.id || undefined,
     }
     if (deal) updateDeal(deal.id, payload)
     else addDeal(payload)
@@ -120,6 +142,18 @@ export default function DealModal({ open, onClose, deal = null }) {
             invalidText="A deal date is required."
           />
         </DatePicker>
+        {eligibleSessions.length > 0 && (
+          <Dropdown
+            id="deal-source-session"
+            titleText="Tie to a specific session (optional)"
+            helperText="Defaults to the earliest session on this use case before the open date."
+            label={AUTO_TIE.label}
+            items={tieItems}
+            itemToString={(i) => (i ? i.label : '')}
+            selectedItem={selectedTie}
+            onChange={({ selectedItem }) => setForm({ ...form, sourceSessionId: selectedItem?.id ?? '' })}
+          />
+        )}
         <Dropdown
           id="deal-stage"
           titleText="Stage"

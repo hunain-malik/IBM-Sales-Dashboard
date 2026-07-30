@@ -18,8 +18,8 @@ const TERMS = [
     def: 'One of five fixed categories both sessions and deals are tagged with: Vulnerability Management, Secure Coder, Monitoring, Optimization, Other. Matching only ever happens within the same use case.',
   },
   {
-    term: 'First matching session',
-    def: 'The earliest session on the deal’s use case delivered on or before the deal’s open date. Shown with its delivery date ("delivered Feb 10, 2026").',
+    term: 'Matched session',
+    def: 'The session shown for a touched deal, with its delivery date ("delivered Feb 10, 2026"). By default it is the earliest eligible session — same use case, delivered on or before the open date. When logging or editing a deal, it can instead be tied to any other eligible session; those show "tied manually". A tie that becomes ineligible falls back to automatic.',
   },
   {
     term: 'Open date / Close date',
@@ -27,7 +27,7 @@ const TERMS = [
   },
   {
     term: 'Days from session to deal',
-    def: 'Deal open date minus the first matching session’s delivery date, in days.',
+    def: 'Deal open date minus the matched session’s delivery date, in days.',
   },
   {
     term: 'Touchpoint carried from an earlier quarter',

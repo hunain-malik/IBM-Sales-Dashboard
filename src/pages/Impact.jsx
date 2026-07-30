@@ -110,7 +110,7 @@ export default function Impact() {
                 <TableHeader>Revenue</TableHeader>
                 <TableHeader>Use case</TableHeader>
                 <TableHeader>Stage</TableHeader>
-                <TableHeader>First matching session</TableHeader>
+                <TableHeader>Matched session</TableHeader>
                 <TableHeader>Open date</TableHeader>
                 <TableHeader>Days from session to deal</TableHeader>
               </TableRow>
@@ -128,6 +128,7 @@ export default function Impact() {
                     {d.matched[0].title}
                     <div style={{ fontSize: '0.75rem', color: 'var(--cds-text-helper)' }}>
                       delivered {fmtDate(d.matched[0].date)}
+                      {d.sourceSessionId === d.matched[0].id ? ' · tied manually' : ''}
                     </div>
                   </TableCell>
                   <TableCell>{fmtDate(d.date)}</TableCell>

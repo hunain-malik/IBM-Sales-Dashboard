@@ -151,7 +151,7 @@ export default function OnePager() {
                 <th>Revenue</th>
                 <th>Use case</th>
                 <th>Stage</th>
-                <th>First matching session</th>
+                <th>Matched session</th>
               </tr>
             </thead>
             <tbody>
@@ -165,7 +165,10 @@ export default function OnePager() {
                   </td>
                   <td>
                     {d.matched[0].title}
-                    <div className="op__sub">delivered {fmtDate(d.matched[0].date)}</div>
+                    <div className="op__sub">
+                      delivered {fmtDate(d.matched[0].date)}
+                      {d.sourceSessionId === d.matched[0].id ? ' · tied manually' : ''}
+                    </div>
                   </td>
                 </tr>
               ))}

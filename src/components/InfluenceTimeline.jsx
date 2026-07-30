@@ -60,10 +60,14 @@ export default function InfluenceTimeline({ deals, enablements }) {
         .filter((d) => d.useCase === u.id && inQuarter(d.date))
         .sort((a, b) => a.date.localeCompare(b.date))
         .map((d) => {
-          // link to a session inside the viewed quarter when there is one;
-          // otherwise the influence is carried over from an earlier quarter
-          const link = d.matched.find((s) => inQuarter(s.date)) ?? null
-          return { ...d, link, carried: d.influenced && !link ? d.matched[0] : null }
+          // a manually tied deal always links to its tied session; automatic
+          // deals link to a session inside the viewed quarter when there is
+          // one — otherwise the touchpoint is carried from an earlier quarter
+          const linked = d.sourceSessionId ? d.matched.find((s) => s.id === d.sourceSessionId) : null
+          const link = linked
+            ? (inQuarter(linked.date) ? linked : null)
+            : (d.matched.find((s) => inQuarter(s.date)) ?? null)
+          return { ...d, link, carried: d.influenced && !link ? (linked ?? d.matched[0]) : null }
         })
       const carriedSessions = [...new Map(laneDeals.filter((d) => d.carried).map((d) => [d.carried.id, d.carried])).values()]
       const carriedQuarters = [...new Set(carriedSessions.map((s) => quarterLabel(quarterStart(toDate(s.date)))))]
