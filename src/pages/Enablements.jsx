@@ -12,13 +12,14 @@ import {
 } from '@carbon/react'
 import { Add, Edit, Email, TrashCan } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
-import { fmtDate, sessionRequestMailto, todayIso } from '../data/constants.js'
+import { fmtDate, sessionRequestMailto, todayIso, authorNote } from '../data/constants.js'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import MonthCalendar from '../components/MonthCalendar.jsx'
 import EnablementModal from '../components/EnablementModal.jsx'
+import RecentlyDeleted from '../components/RecentlyDeleted.jsx'
 
 export default function Enablements() {
-  const { enablements, removeEnablement } = useStore()
+  const { enablements, removeEnablement, deletedEnablements, restoreEnablement } = useStore()
   // null = closed, { date } = create (optionally pre-dated), { session } = edit
   const [modal, setModal] = useState(null)
 
@@ -61,6 +62,9 @@ export default function Enablements() {
                       {e.presenter ? (
                         <div style={{ fontSize: '0.75rem', color: 'var(--cds-text-helper)' }}>{e.presenter}</div>
                       ) : null}
+                      {authorNote(e) ? (
+                        <div style={{ fontSize: '0.75rem', color: 'var(--cds-text-helper)' }}>{authorNote(e)}</div>
+                      ) : null}
                     </TableCell>
                     <TableCell><UseCaseChip id={e.useCase} /></TableCell>
                     <TableCell>
@@ -98,6 +102,17 @@ export default function Enablements() {
       </div>
 
       <MonthCalendar sessions={enablements} onPickDay={openForDate} />
+
+      <RecentlyDeleted
+        title="Recently deleted sessions"
+        rows={deletedEnablements.map((e) => ({
+          id: e.id,
+          label: e.title,
+          deletedAt: e.deletedAt,
+          deletedBy: e.deletedBy,
+        }))}
+        onRestore={restoreEnablement}
+      />
 
       <EnablementModal
         open={modal !== null}

@@ -31,7 +31,10 @@ export const SHARED_MODE = Boolean(API_URL)
 const DATA_KEY = 'enablement-dashboard-data-v3'
 const CACHE_KEY = 'enablement-dashboard-shared-cache-v1'
 const THEME_KEY = 'enablement-dashboard-theme'
+const USER_KEY = 'enablement-dashboard-user'
 const SAVE_DEBOUNCE_MS = 500
+// soft-deleted records are restorable for this long, then purged for good
+const SOFT_DELETE_DAYS = 30
 
 // ?pollMs=2000 lets integration tests speed up cross-client refresh
 const POLL_MS = (() => {
@@ -69,8 +72,16 @@ const newId = () =>
 export function StoreProvider({ children }) {
   const [data, setData] = useState(() => (SHARED_MODE ? loadCache() : loadLocal()))
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) || 'white')
+  // who is using this browser — attached to every record they add/edit/delete
+  const [userName, setUserNameState] = useState(() => localStorage.getItem(USER_KEY) || '')
   // null in standalone mode; 'loading' | 'saving' | 'saved' | 'offline' when shared
   const [syncStatus, setSyncStatus] = useState(SHARED_MODE ? 'loading' : null)
+
+  const setUserName = (name) => {
+    const trimmed = name.trim()
+    setUserNameState(trimmed)
+    localStorage.setItem(USER_KEY, trimmed)
+  }
 
   // ---- shared-mode sync engine -------------------------------------------
   const versionRef = useRef(0) // last server version we based our data on
@@ -221,43 +232,107 @@ export function StoreProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const api = useMemo(
-    () => ({
-      enablements: data.enablements,
-      deals: data.deals,
+  // soft-deleted records past the retention window are purged for good —
+  // checked once per session, synced like any other change
+  const purgedRef = useRef(false)
+  useEffect(() => {
+    if (purgedRef.current) return
+    const cutoff = new Date(Date.now() - SOFT_DELETE_DAYS * 24 * 60 * 60 * 1000).toISOString()
+    const expired = (r) => r.deletedAt && r.deletedAt < cutoff
+    if (![...data.enablements, ...data.deals].some(expired)) return
+    purgedRef.current = true
+    mutate((d) => ({
+      enablements: d.enablements.filter((r) => !expired(r)),
+      deals: d.deals.filter((r) => !expired(r)),
+    }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data])
+
+  const api = useMemo(() => {
+    // audit stamps: who added / last edited / deleted a record, and when
+    const nowIso = () => new Date().toISOString()
+    const addStamp = () => (userName ? { createdBy: userName, createdAt: nowIso() } : { createdAt: nowIso() })
+    const editStamp = () => (userName ? { updatedBy: userName, updatedAt: nowIso() } : { updatedAt: nowIso() })
+
+    // everything the app derives from is the ACTIVE records; soft-deleted ones
+    // live only in the recycle lists below until restored or purged
+    const active = (list) => list.filter((r) => !r.deletedAt)
+    const deleted = (list) =>
+      list.filter((r) => r.deletedAt).sort((a, b) => b.deletedAt.localeCompare(a.deletedAt))
+
+    // the most recent add/edit/delete with a name attached, for the header
+    let lastEdited = null
+    for (const r of [...data.enablements, ...data.deals]) {
+      for (const [at, name] of [
+        [r.deletedAt, r.deletedBy],
+        [r.updatedAt, r.updatedBy],
+        [r.createdAt, r.createdBy],
+      ]) {
+        if (at && name && (!lastEdited || at > lastEdited.at)) lastEdited = { at, name }
+      }
+    }
+
+    const softDelete = (key) => (id) => {
+      const stamp = { deletedAt: nowIso(), ...(userName ? { deletedBy: userName } : {}) }
+      mutate((d) => ({
+        ...d,
+        [key]: d[key].map((x) => (x.id === id ? { ...x, ...stamp } : x)),
+      }))
+    }
+    const restore = (key) => (id) =>
+      // undefined fields are dropped on serialize, so the record comes back clean
+      mutate((d) => ({
+        ...d,
+        [key]: d[key].map((x) => (x.id === id ? { ...x, deletedAt: undefined, deletedBy: undefined } : x)),
+      }))
+
+    return {
+      enablements: active(data.enablements),
+      deals: active(data.deals),
+      deletedEnablements: deleted(data.enablements),
+      deletedDeals: deleted(data.deals),
+      lastEdited,
+      userName,
+      setUserName,
       theme,
       setTheme,
       syncStatus,
       addEnablement: (e) => {
-        const rec = { ...e, id: newId() }
+        const rec = { ...e, id: newId(), ...addStamp() }
         mutate((d) => ({ ...d, enablements: [...d.enablements, rec] }))
       },
-      updateEnablement: (id, patch) =>
+      updateEnablement: (id, patch) => {
+        const stamp = editStamp()
         mutate((d) => ({
           ...d,
-          enablements: d.enablements.map((x) => (x.id === id ? { ...x, ...patch } : x)),
-        })),
-      removeEnablement: (id) =>
-        mutate((d) => ({ ...d, enablements: d.enablements.filter((e) => e.id !== id) })),
+          enablements: d.enablements.map((x) => (x.id === id ? { ...x, ...patch, ...stamp } : x)),
+        }))
+      },
+      removeEnablement: softDelete('enablements'),
+      restoreEnablement: restore('enablements'),
       addDeal: (deal) => {
-        const rec = { ...deal, id: newId() }
+        const rec = { ...deal, id: newId(), ...addStamp() }
         mutate((d) => ({ ...d, deals: [...d.deals, rec] }))
       },
-      updateDeal: (id, patch) =>
+      updateDeal: (id, patch) => {
+        const stamp = editStamp()
         mutate((d) => ({
           ...d,
-          deals: d.deals.map((x) => (x.id === id ? { ...x, ...patch } : x)),
-        })),
-      removeDeal: (id) =>
-        mutate((d) => ({ ...d, deals: d.deals.filter((x) => x.id !== id) })),
+          deals: d.deals.map((x) => (x.id === id ? { ...x, ...patch, ...stamp } : x)),
+        }))
+      },
+      removeDeal: softDelete('deals'),
+      restoreDeal: restore('deals'),
       // standalone-only (the header hides it in shared mode)
       resetToDemo: () => setData({ enablements: seedEnablements, deals: seedDeals }),
       // key-gated admin reset: goes through mutate so in shared mode the wipe
-      // syncs to the store and reaches every other open browser
+      // syncs to the store and reaches every other open browser. Hard wipe —
+      // the recycle bin goes with it, deliberately.
       clearAll: () => mutate(() => ({ enablements: [], deals: [] })),
-    }),
+    }
+  },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data, theme, syncStatus],
+    [data, theme, syncStatus, userName],
   )
 
   return <StoreContext.Provider value={api}>{children}</StoreContext.Provider>

@@ -11,9 +11,10 @@ import {
   Content,
   Theme,
 } from '@carbon/react'
-import { Asleep, Light, Renew, TrashCan } from '@carbon/icons-react'
+import { Asleep, Light, Renew, TrashCan, UserAvatar } from '@carbon/icons-react'
 import { useStore, SHARED_MODE } from './data/store.jsx'
 import AdminResetModal from './components/AdminResetModal.jsx'
+import NameModal from './components/NameModal.jsx'
 import Enablements from './pages/Enablements.jsx'
 import Pipeline from './pages/Pipeline.jsx'
 import Impact from './pages/Impact.jsx'
@@ -61,11 +62,14 @@ function useLatestBuildUrl() {
 }
 
 export default function App() {
-  const { theme, setTheme, resetToDemo, syncStatus } = useStore()
+  const { theme, setTheme, resetToDemo, syncStatus, userName, lastEdited } = useStore()
   const location = useLocation()
   const dark = theme === 'g100'
   const latestUrl = useLatestBuildUrl()
   const [adminReset, setAdminReset] = useState(false)
+  const [nameOpen, setNameOpen] = useState(false)
+  // first visit in shared mode: ask who this is before they enter records
+  const firstRun = SHARED_MODE && !userName
 
   return (
     <>
@@ -88,6 +92,11 @@ export default function App() {
             ))}
           </HeaderNavigation>
           <HeaderGlobalBar>
+            {SHARED_MODE && lastEdited && (
+              <span className="sync-badge" role="status">
+                Last edited by {lastEdited.name}
+              </span>
+            )}
             {SHARED_MODE && syncStatus && (
               <span
                 className={`sync-badge${syncStatus === 'offline' ? ' sync-badge--offline' : ''}`}
@@ -107,6 +116,15 @@ export default function App() {
                 }}
               >
                 <Renew size={20} />
+              </HeaderGlobalAction>
+            )}
+            {SHARED_MODE && (
+              <HeaderGlobalAction
+                aria-label="Change your name"
+                tooltipAlignment="end"
+                onClick={() => setNameOpen(true)}
+              >
+                <UserAvatar size={20} />
               </HeaderGlobalAction>
             )}
             {/* wiping the shared live store requires the administration key */}
@@ -147,6 +165,11 @@ export default function App() {
             <Route path="/glossary" element={<Glossary />} />
           </Routes>
           <AdminResetModal open={adminReset} onClose={() => setAdminReset(false)} />
+          <NameModal
+            open={firstRun || nameOpen}
+            firstRun={firstRun}
+            onClose={() => setNameOpen(false)}
+          />
         </Content>
       </Theme>
     </>

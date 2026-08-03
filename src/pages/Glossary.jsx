@@ -103,6 +103,7 @@ const CONVENTIONS = [
   'Timing is not causation — a deal opening after a session doesn’t prove the session caused it. The touched-vs-untouched comparison exists precisely so the data, not the framing, makes whatever case there is.',
   'Small samples — when either comparison group is small, the view says so: “read as an early signal, not a proven effect.”',
   'Manual entry — v1 figures reflect what has been entered and are only as complete as the entries. Sessions and deals are editable so records stay correct as they progress.',
+  'Edits and deletions — every record carries who added or last edited it. Deleted records move to “Recently deleted” on their page, can be restored for 30 days, and are then removed permanently.',
 ]
 
 // static mini-diagram of the counting rule, in the timeline's visual language

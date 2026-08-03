@@ -13,13 +13,14 @@ import {
 import { Add, Edit, TrashCan } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { attributeDeals } from '../data/attribution.js'
-import { fmtUSD, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
+import { fmtUSD, fmtDate, STAGE_TAG_TYPE, authorNote } from '../data/constants.js'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import DealModal from '../components/DealModal.jsx'
 import InfluenceTimeline from '../components/InfluenceTimeline.jsx'
+import RecentlyDeleted from '../components/RecentlyDeleted.jsx'
 
 export default function Pipeline() {
-  const { deals, enablements, removeDeal } = useStore()
+  const { deals, enablements, removeDeal, deletedDeals, restoreDeal } = useStore()
   // null = closed, 'new' = create, deal object = edit
   const [modal, setModal] = useState(null)
 
@@ -56,7 +57,12 @@ export default function Pipeline() {
             <TableBody>
               {rows.map((d) => (
                 <TableRow key={d.id}>
-                  <TableCell>{d.customer}</TableCell>
+                  <TableCell>
+                    {d.customer}
+                    {authorNote(d) ? (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--cds-text-helper)' }}>{authorNote(d)}</div>
+                    ) : null}
+                  </TableCell>
                   <TableCell>{fmtUSD(d.value)}</TableCell>
                   <TableCell><UseCaseChip id={d.useCase} /></TableCell>
                   <TableCell>{fmtDate(d.date)}</TableCell>
@@ -99,6 +105,17 @@ export default function Pipeline() {
           <InfluenceTimeline deals={deals} enablements={enablements} />
         </div>
       )}
+
+      <RecentlyDeleted
+        title="Recently deleted deals"
+        rows={deletedDeals.map((d) => ({
+          id: d.id,
+          label: `${d.customer} — ${fmtUSD(d.value)}`,
+          deletedAt: d.deletedAt,
+          deletedBy: d.deletedBy,
+        }))}
+        onRestore={restoreDeal}
+      />
 
       <DealModal
         open={modal !== null}

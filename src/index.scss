@@ -390,6 +390,31 @@ html[data-carbon-theme='g100'] body {
   margin-bottom: 1.5rem;
 }
 
+/* Recently-deleted recycle bin rows */
+.rd-note {
+  font-size: 0.75rem;
+  color: var(--cds-text-helper);
+  margin: -0.5rem 0 0.5rem;
+}
+
+.rd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--cds-border-subtle-01);
+}
+
+.rd-row__label {
+  font-size: 0.875rem;
+}
+
+.rd-row__meta {
+  font-size: 0.75rem;
+  color: var(--cds-text-helper);
+}
+
 /* Shared-mode sync status in the header (g100 bar, so fixed light inks) */
 .sync-badge {
   display: flex;

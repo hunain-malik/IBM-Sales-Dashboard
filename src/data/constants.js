@@ -54,6 +54,11 @@ export const fmtPct = (ratio) => `${Math.round(ratio * 100)}%`
 export const fmtDate = (iso) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 
+// Who to ask about a record — the latest edit stamp wins over the add stamp.
+// Returns null for records created before the audit trail existed.
+export const authorNote = (r) =>
+  r.updatedBy ? `edited by ${r.updatedBy}` : r.createdBy ? `added by ${r.createdBy}` : null
+
 // Local-date ISO (YYYY-MM-DD). Not toISOString(): that is UTC and would flip
 // the date near midnight, making a session count as delivered a day early/late.
 export const todayIso = () => {
