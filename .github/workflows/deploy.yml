@@ -79,6 +79,35 @@ jobs:
           echo "BLOB_URL=$url" >> "$GITHUB_ENV"
           echo "shared data store: $url"
 
+      # One-time recovery: while server/RECOVER_FROM.txt exists, merge that
+      # previous store's records into the current one (union by id, current
+      # store wins clashes), then delete the marker so this never re-runs —
+      # a re-merge could resurrect records the team deliberately wiped.
+      - name: One-time data recovery
+        run: |
+          set -euo pipefail
+          MARKER=server/RECOVER_FROM.txt
+          [ -f "$MARKER" ] || { echo "no recovery pending"; exit 0; }
+          SRC=$(cat "$MARKER")
+          DST=$(cat server/shared-blob-url.txt)
+          if src=$(curl -sf "$SRC"); then
+            dst=$(curl -sf "$DST")
+            merged=$(jq -n --argjson a "$src" --argjson b "$dst" '{
+              version: (($b.version // 0) + 1),
+              enablements: ((($b.enablements // []) + ($a.enablements // [])) | unique_by(.id)),
+              deals: ((($b.deals // []) + ($a.deals // [])) | unique_by(.id))
+            }')
+            curl -sf -X PUT "$DST" -H 'Content-Type: application/json' -d "$merged" > /dev/null
+            echo "RECOVERED into current store: $(echo "$merged" | jq -c '{sessions: (.enablements | length), deals: (.deals | length)}')"
+          else
+            echo "::warning::previous store did not answer — nothing could be recovered"
+          fi
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git rm -q "$MARKER"
+          git commit -m "Recovery attempt finished — disarm marker [skip ci]"
+          git push
+
       - name: Build
         # VITE_BUILD_SHA lets a deployed copy recognize when a newer build
         # exists and point visitors of stale sha-pinned links at the fresh one
