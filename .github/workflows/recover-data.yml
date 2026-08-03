@@ -1,15 +1,16 @@
 name: Recover shared data from a previous store
 
-# Manual-only: copies all records from a previous data store into the current
-# one (union by record id; the current store's copy wins on any clash). Used
-# after a store rotation to bring the team's data forward.
+# Manual-only: merges records into the current data store (union by record
+# id; the current store's copy wins on any clash). Source is either a previous
+# store's URL, or — when left blank — the repo's committed backup snapshot
+# (server/data-backup.json, written by the backup-data workflow).
 on:
   workflow_dispatch:
     inputs:
       source_url:
-        description: 'URL of the previous data store to copy records from'
-        required: true
-        default: 'https://jsonblob.com/api/jsonBlob/019fb494-4c51-7fa8-9f9b-881cbfcf7c23'
+        description: 'Previous store URL to copy from (leave blank to restore from the committed backup)'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -26,9 +27,15 @@ jobs:
           set -euo pipefail
           SRC='${{ github.event.inputs.source_url }}'
           DST=$(cat server/shared-blob-url.txt)
-          echo "source: $SRC"
+          if [ -n "$SRC" ]; then
+            echo "source: $SRC"
+            src=$(curl -sf "$SRC") || { echo "::error::source store is not answering — nothing to recover"; exit 1; }
+          else
+            echo "source: committed backup (server/data-backup.json)"
+            [ -f server/data-backup.json ] || { echo "::error::no committed backup exists yet"; exit 1; }
+            src=$(cat server/data-backup.json)
+          fi
           echo "target: $DST"
-          src=$(curl -sf "$SRC") || { echo "::error::source store is not answering — nothing to recover"; exit 1; }
           dst=$(curl -sf "$DST")
           echo "source contents: $(echo "$src" | jq -c '{version, sessions: (.enablements | length), deals: (.deals | length)}')"
           echo "target before:   $(echo "$dst" | jq -c '{version, sessions: (.enablements | length), deals: (.deals | length)}')"

@@ -1,0 +1,35 @@
+name: Back up shared dashboard data
+
+# Snapshots the shared data store into the repo every six hours (and on
+# demand). If the free document store ever drops the data again, the last
+# snapshot is right here — restore it with the "Recover shared data" workflow.
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Snapshot the store into the repo
+        run: |
+          set -euo pipefail
+          URL=$(cat server/shared-blob-url.txt)
+          doc=$(curl -sf "$URL") || { echo "::warning::store not answering — keeping the last backup"; exit 0; }
+          echo "$doc" | jq -e '(.enablements | type == "array") and (.deals | type == "array")' > /dev/null \
+            || { echo "::warning::unexpected payload — keeping the last backup"; exit 0; }
+          echo "$doc" | jq . > server/data-backup.json
+          git status --porcelain server/data-backup.json | grep -q . || { echo "no changes since last backup"; exit 0; }
+          echo "backed up: $(echo "$doc" | jq -c '{version, sessions: (.enablements | length), deals: (.deals | length)}')"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add server/data-backup.json
+          git commit -m "Back up shared dashboard data [skip ci]"
+          git push
