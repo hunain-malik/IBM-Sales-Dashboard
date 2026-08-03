@@ -15,6 +15,7 @@ import { Asleep, Light, Renew, TrashCan, UserAvatar } from '@carbon/icons-react'
 import { useStore, SHARED_MODE } from './data/store.jsx'
 import AdminResetModal from './components/AdminResetModal.jsx'
 import NameModal from './components/NameModal.jsx'
+import ActivityLogModal from './components/ActivityLogModal.jsx'
 import Enablements from './pages/Enablements.jsx'
 import Pipeline from './pages/Pipeline.jsx'
 import Impact from './pages/Impact.jsx'
@@ -68,6 +69,7 @@ export default function App() {
   const latestUrl = useLatestBuildUrl()
   const [adminReset, setAdminReset] = useState(false)
   const [nameOpen, setNameOpen] = useState(false)
+  const [logOpen, setLogOpen] = useState(false)
   // first visit in shared mode: ask who this is before they enter records
   const firstRun = SHARED_MODE && !userName
 
@@ -93,9 +95,14 @@ export default function App() {
           </HeaderNavigation>
           <HeaderGlobalBar>
             {SHARED_MODE && lastEdited && (
-              <span className="sync-badge" role="status">
+              <button
+                type="button"
+                className="sync-badge sync-badge--button"
+                title="Open the activity log"
+                onClick={() => setLogOpen(true)}
+              >
                 Last edited by {lastEdited.name}
-              </span>
+              </button>
             )}
             {SHARED_MODE && syncStatus && (
               <span
@@ -165,6 +172,7 @@ export default function App() {
             <Route path="/glossary" element={<Glossary />} />
           </Routes>
           <AdminResetModal open={adminReset} onClose={() => setAdminReset(false)} />
+          <ActivityLogModal open={logOpen} onClose={() => setLogOpen(false)} />
           <NameModal
             open={firstRun || nameOpen}
             firstRun={firstRun}

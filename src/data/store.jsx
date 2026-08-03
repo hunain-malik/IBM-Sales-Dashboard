@@ -253,6 +253,15 @@ export function StoreProvider({ children }) {
     const nowIso = () => new Date().toISOString()
     const addStamp = () => (userName ? { createdBy: userName, createdAt: nowIso() } : { createdAt: nowIso() })
     const editStamp = () => (userName ? { updatedBy: userName, updatedAt: nowIso() } : { updatedAt: nowIso() })
+    // every add/edit/delete/restore also appends to the record's own history,
+    // capped per record — this rides inside the record through the sync layer
+    // unchanged and is what the activity log is built from
+    const HISTORY_CAP = 20
+    const historyEntry = (action) => ({ at: nowIso(), by: userName || null, action })
+    const withHistory = (record, entry) => ({
+      ...record,
+      history: [...(record.history ?? []), entry].slice(-HISTORY_CAP),
+    })
 
     // everything the app derives from is the ACTIVE records; soft-deleted ones
     // live only in the recycle lists below until restored or purged
@@ -274,17 +283,41 @@ export function StoreProvider({ children }) {
 
     const softDelete = (key) => (id) => {
       const stamp = { deletedAt: nowIso(), ...(userName ? { deletedBy: userName } : {}) }
+      const entry = historyEntry('deleted')
       mutate((d) => ({
         ...d,
-        [key]: d[key].map((x) => (x.id === id ? { ...x, ...stamp } : x)),
+        [key]: d[key].map((x) => (x.id === id ? withHistory({ ...x, ...stamp }, entry) : x)),
       }))
     }
-    const restore = (key) => (id) =>
+    const restore = (key) => (id) => {
+      const entry = historyEntry('restored')
       // undefined fields are dropped on serialize, so the record comes back clean
       mutate((d) => ({
         ...d,
-        [key]: d[key].map((x) => (x.id === id ? { ...x, deletedAt: undefined, deletedBy: undefined } : x)),
+        [key]: d[key].map((x) =>
+          x.id === id ? withHistory({ ...x, deletedAt: undefined, deletedBy: undefined }, entry) : x,
+        ),
       }))
+    }
+
+    // the activity log: every history entry across all records (deleted ones
+    // included), newest first. Records from before per-record history existed
+    // contribute what their stamps still know.
+    const events = []
+    const collect = (list, kind, labelOf) => {
+      for (const r of list) {
+        if (r.history?.length) {
+          for (const h of r.history) events.push({ at: h.at, name: h.by, action: h.action, kind, label: labelOf(r) })
+        } else {
+          if (r.createdAt) events.push({ at: r.createdAt, name: r.createdBy, action: 'added', kind, label: labelOf(r) })
+          if (r.updatedAt) events.push({ at: r.updatedAt, name: r.updatedBy, action: 'edited', kind, label: labelOf(r) })
+          if (r.deletedAt) events.push({ at: r.deletedAt, name: r.deletedBy, action: 'deleted', kind, label: labelOf(r) })
+        }
+      }
+    }
+    collect(data.enablements, 'session', (r) => r.title)
+    collect(data.deals, 'deal', (r) => r.customer)
+    const activityLog = events.sort((a, b) => b.at.localeCompare(a.at)).slice(0, 100)
 
     return {
       enablements: active(data.enablements),
@@ -292,33 +325,36 @@ export function StoreProvider({ children }) {
       deletedEnablements: deleted(data.enablements),
       deletedDeals: deleted(data.deals),
       lastEdited,
+      activityLog,
       userName,
       setUserName,
       theme,
       setTheme,
       syncStatus,
       addEnablement: (e) => {
-        const rec = { ...e, id: newId(), ...addStamp() }
+        const rec = withHistory({ ...e, id: newId(), ...addStamp() }, historyEntry('added'))
         mutate((d) => ({ ...d, enablements: [...d.enablements, rec] }))
       },
       updateEnablement: (id, patch) => {
         const stamp = editStamp()
+        const entry = historyEntry('edited')
         mutate((d) => ({
           ...d,
-          enablements: d.enablements.map((x) => (x.id === id ? { ...x, ...patch, ...stamp } : x)),
+          enablements: d.enablements.map((x) => (x.id === id ? withHistory({ ...x, ...patch, ...stamp }, entry) : x)),
         }))
       },
       removeEnablement: softDelete('enablements'),
       restoreEnablement: restore('enablements'),
       addDeal: (deal) => {
-        const rec = { ...deal, id: newId(), ...addStamp() }
+        const rec = withHistory({ ...deal, id: newId(), ...addStamp() }, historyEntry('added'))
         mutate((d) => ({ ...d, deals: [...d.deals, rec] }))
       },
       updateDeal: (id, patch) => {
         const stamp = editStamp()
+        const entry = historyEntry('edited')
         mutate((d) => ({
           ...d,
-          deals: d.deals.map((x) => (x.id === id ? { ...x, ...patch, ...stamp } : x)),
+          deals: d.deals.map((x) => (x.id === id ? withHistory({ ...x, ...patch, ...stamp }, entry) : x)),
         }))
       },
       removeDeal: softDelete('deals'),

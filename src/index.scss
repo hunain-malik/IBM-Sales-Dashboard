@@ -429,6 +429,49 @@ html[data-carbon-theme='g100'] body {
   color: #ff8389;
 }
 
+/* the last-edited badge doubles as the activity-log trigger */
+.sync-badge--button {
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+}
+
+/* Activity log rows */
+.al-note {
+  font-size: 0.75rem;
+  color: var(--cds-text-helper);
+  margin: 0 0 0.75rem;
+}
+
+.al-empty {
+  font-size: 0.875rem;
+  color: var(--cds-text-secondary);
+  margin: 0;
+}
+
+.al-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--cds-border-subtle-01);
+  font-size: 0.875rem;
+}
+
+.al-row__time {
+  font-size: 0.75rem;
+  color: var(--cds-text-helper);
+  white-space: nowrap;
+}
+
 /* Upcoming sessions strip (Pipeline View landing) */
 .up-head {
   display: flex;
