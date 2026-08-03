@@ -43,10 +43,21 @@ jobs:
           url=""
           if [ -f "$FILE" ]; then
             url=$(cat "$FILE")
-            code=$(curl -s -o /dev/null -w '%{http_code}' "$url" || echo 000)
+            # retry transient failures; NEVER silently rotate an existing store —
+            # a fresh empty store orphans the team's live data. Fail loudly and
+            # let a human decide (the recover-data workflow can merge stores).
+            code=000
+            for attempt in 1 2 3; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' "$url" || echo 000)
+              [ "$code" = "200" ] && break
+              echo "data store check attempt $attempt failed (HTTP $code), retrying…"
+              sleep 15
+            done
             if [ "$code" != "200" ]; then
-              echo "stored data store unreachable (HTTP $code) — creating a new one"
-              url=""
+              echo "::error::The shared data store is not answering (HTTP $code): $url"
+              echo "::error::Refusing to create a replacement automatically — that would orphan the team's data."
+              echo "::error::Re-run this deploy once the store answers, or rotate it deliberately and run the 'Recover shared data' workflow."
+              exit 1
             fi
           fi
           if [ -z "$url" ]; then

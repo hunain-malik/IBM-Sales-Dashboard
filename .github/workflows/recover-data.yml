@@ -1,0 +1,41 @@
+name: Recover shared data from a previous store
+
+# Manual-only: copies all records from a previous data store into the current
+# one (union by record id; the current store's copy wins on any clash). Used
+# after a store rotation to bring the team's data forward.
+on:
+  workflow_dispatch:
+    inputs:
+      source_url:
+        description: 'URL of the previous data store to copy records from'
+        required: true
+        default: 'https://jsonblob.com/api/jsonBlob/019fb494-4c51-7fa8-9f9b-881cbfcf7c23'
+
+permissions:
+  contents: read
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copy records into the current store
+        run: |
+          set -euo pipefail
+          SRC='${{ github.event.inputs.source_url }}'
+          DST=$(cat server/shared-blob-url.txt)
+          echo "source: $SRC"
+          echo "target: $DST"
+          src=$(curl -sf "$SRC") || { echo "::error::source store is not answering — nothing to recover"; exit 1; }
+          dst=$(curl -sf "$DST")
+          echo "source contents: $(echo "$src" | jq -c '{version, sessions: (.enablements | length), deals: (.deals | length)}')"
+          echo "target before:   $(echo "$dst" | jq -c '{version, sessions: (.enablements | length), deals: (.deals | length)}')"
+          merged=$(jq -n --argjson a "$src" --argjson b "$dst" '{
+            version: (($b.version // 0) + 1),
+            enablements: ((($b.enablements // []) + ($a.enablements // [])) | unique_by(.id)),
+            deals: ((($b.deals // []) + ($a.deals // [])) | unique_by(.id))
+          }')
+          curl -sf -X PUT "$DST" -H 'Content-Type: application/json' -d "$merged" > /dev/null
+          echo "target after:    $(echo "$merged" | jq -c '{version, sessions: (.enablements | length), deals: (.deals | length)}')"

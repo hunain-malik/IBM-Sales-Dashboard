@@ -4119,7 +4119,7 @@ build step exactly like this:
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: https://jsonblob.com/api/jsonBlob/019fb494-4c51-7fa8-9f9b-881cbfcf7c23
+          VITE_API_URL: https://jsonblob.com/api/jsonBlob/019fc946-b9be-7a75-ae59-4b15f9e1af49
           VITE_API_KIND: blob
 ```
 
