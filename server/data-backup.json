@@ -1,29 +1,79 @@
 {
-  "version": 7,
+  "version": 14,
   "enablements": [
     {
       "title": "Big Bosses Only",
-      "useCase": "monitoring",
+      "useCase": "cp-vuln-mgmt",
       "date": "2026-06-17",
       "presenter": "Bob",
       "attendees": 234,
       "hours": 16,
       "id": "00d283dc-8a5f-4895-9f57-39fcb824161c",
       "createdBy": "Hunain Ejaz Malik",
-      "createdAt": "2026-08-03T20:28:11.246Z"
+      "createdAt": "2026-08-03T20:28:11.246Z",
+      "history": [
+        {
+          "at": "2026-08-04T17:39:03.759Z",
+          "by": "Hunain Ejaz Malik",
+          "action": "deleted"
+        },
+        {
+          "at": "2026-08-04T17:39:09.942Z",
+          "by": "Hunain Ejaz Malik",
+          "action": "restored"
+        },
+        {
+          "at": "2026-08-04T19:34:19.236Z",
+          "by": "Hunain Ejaz Malik",
+          "action": "edited"
+        }
+      ],
+      "product": "concert-protect",
+      "updatedBy": "Hunain Ejaz Malik",
+      "updatedAt": "2026-08-04T19:34:19.236Z"
     }
   ],
   "deals": [
     {
       "customer": "Walmart",
-      "useCase": "monitoring",
+      "useCase": "cp-vuln-mgmt",
       "value": 1000000,
       "date": "2026-07-16",
       "stage": "Proposal",
       "owner": "",
       "id": "9309be83-3b75-44ae-9eec-12657fcc4cc0",
       "createdBy": "Hunain Ejaz Malik",
-      "createdAt": "2026-08-03T20:47:53.035Z"
+      "createdAt": "2026-08-03T20:47:53.035Z",
+      "history": [
+        {
+          "at": "2026-08-04T17:39:20.554Z",
+          "by": "Hunain Ejaz Malik",
+          "action": "deleted"
+        },
+        {
+          "at": "2026-08-04T17:39:25.766Z",
+          "by": "Hunain Ejaz Malik",
+          "action": "restored"
+        },
+        {
+          "at": "2026-08-04T17:39:28.117Z",
+          "by": "Hunain Ejaz Malik",
+          "action": "deleted"
+        },
+        {
+          "at": "2026-08-04T17:39:30.359Z",
+          "by": "Hunain Ejaz Malik",
+          "action": "restored"
+        },
+        {
+          "at": "2026-08-04T19:34:05.588Z",
+          "by": "Hunain Ejaz Malik",
+          "action": "edited"
+        }
+      ],
+      "product": "concert-protect",
+      "updatedBy": "Hunain Ejaz Malik",
+      "updatedAt": "2026-08-04T19:34:05.588Z"
     }
   ]
 }
