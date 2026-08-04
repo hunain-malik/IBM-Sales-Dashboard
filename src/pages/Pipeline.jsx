@@ -13,7 +13,7 @@ import {
 import { Add, Edit, TrashCan } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { attributeDeals } from '../data/attribution.js'
-import { fmtUSD, fmtDate, STAGE_TAG_TYPE, authorNote } from '../data/constants.js'
+import { fmtUSD, fmtDate, STAGE_TAG_TYPE, authorNote, getProduct } from '../data/constants.js'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import DealModal from '../components/DealModal.jsx'
 import InfluenceTimeline from '../components/InfluenceTimeline.jsx'
@@ -46,6 +46,7 @@ export default function Pipeline() {
                 {/* column order mirrors the add/edit form's field order */}
                 <TableHeader>Customer</TableHeader>
                 <TableHeader>Revenue</TableHeader>
+                <TableHeader>Product</TableHeader>
                 <TableHeader>Use case</TableHeader>
                 <TableHeader>Open date</TableHeader>
                 <TableHeader>Stage</TableHeader>
@@ -64,7 +65,8 @@ export default function Pipeline() {
                     ) : null}
                   </TableCell>
                   <TableCell>{fmtUSD(d.value)}</TableCell>
-                  <TableCell><UseCaseChip id={d.useCase} /></TableCell>
+                  <TableCell>{getProduct(d.product)?.label ?? '—'}</TableCell>
+                  <TableCell><UseCaseChip record={d} /></TableCell>
                   <TableCell>{fmtDate(d.date)}</TableCell>
                   <TableCell>
                     <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>

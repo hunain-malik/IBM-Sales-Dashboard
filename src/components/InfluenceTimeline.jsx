@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { IconButton } from '@carbon/react'
 import { ChevronLeft, ChevronRight } from '@carbon/icons-react'
-import { USE_CASES, getUseCase, getUseCaseColor, fmtUSD, fmtUSDCompact, fmtDate } from '../data/constants.js'
+import { PRODUCTS, getProductColor, getUseCaseLabel, fmtUSD, fmtUSDCompact, fmtDate } from '../data/constants.js'
 import { attributeDeals } from '../data/attribution.js'
 import { quarterStart, nextQuarter, prevQuarter, quarterLabel } from '../data/quarters.js'
 import { useStore } from '../data/store.jsx'
@@ -52,12 +52,16 @@ export default function InfluenceTimeline({ deals, enablements }) {
       return t >= qCursor && t < qEnd
     }
 
-    const lanes = USE_CASES.map((u) => {
+    // one lane per PRODUCT with activity; records logged before the product
+    // dimension existed group into a gray "No product" lane
+    const laneDefs = [...PRODUCTS, { id: null, label: 'No product' }]
+    const lanes = laneDefs.map((u) => {
+      const inLane = (r) => (u.id ? r.product === u.id : !r.product)
       const sessions = enablements
-        .filter((e) => e.useCase === u.id && inQuarter(e.date))
+        .filter((e) => inLane(e) && inQuarter(e.date))
         .sort((a, b) => a.date.localeCompare(b.date))
       const laneDeals = attributed
-        .filter((d) => d.useCase === u.id && inQuarter(d.date))
+        .filter((d) => inLane(d) && inQuarter(d.date))
         .sort((a, b) => a.date.localeCompare(b.date))
         .map((d) => {
           // a manually tied deal always links to its tied session; automatic
@@ -212,10 +216,10 @@ export default function InfluenceTimeline({ deals, enablements }) {
             const top = i * LANE_H
             const dealY = top + 64 // labels sit at dealY-22, clear of the lane header band
             const sessionY = top + 106
-            const color = getUseCaseColor(lane.u.id, theme)
+            const color = getProductColor(lane.u.id, theme)
 
             return (
-              <g key={lane.u.id}>
+              <g key={lane.u.id ?? 'no-product'}>
                 {/* lane header */}
                 <rect x={PAD_L} y={top + 12} width="10" height="10" rx="2" fill={color} />
                 <text x={PAD_L + 16} y={top + 21} fontSize="12" fontWeight="600" style={{ fill: ink.primary }}>
@@ -270,6 +274,7 @@ export default function InfluenceTimeline({ deals, enablements }) {
                 {lane.sessions.map((s) => {
                   const lines = [
                     s.title,
+                    getUseCaseLabel(s),
                     `${fmtDate(s.date)}${s.presenter ? ` · ${s.presenter}` : ''}`,
                     `${s.attendees || 0} attendees · ${Number(s.hours) || 0}h invested`,
                   ]
@@ -312,12 +317,12 @@ export default function InfluenceTimeline({ deals, enablements }) {
                   const lines = [
                     d.customer,
                     `${fmtUSD(d.value)} · ${d.stage}`,
-                    `Opened ${fmtDate(d.date)}`,
+                    `${getUseCaseLabel(d)} · opened ${fmtDate(d.date)}`,
                     d.influenced
                       ? d.link
                         ? `Outbound touched — session: ${d.link.title} (${fmtDate(d.link.date)})`
                         : `Outbound touched — carried from ${quarterLabel(quarterStart(toDate(d.carried.date)))}: ${d.carried.title} (${fmtDate(d.carried.date)})`
-                      : `Not counted — no ${getUseCase(d.useCase).label} session before this deal`,
+                      : 'Not counted — no matching session before this deal',
                   ]
                   return (
                     <g

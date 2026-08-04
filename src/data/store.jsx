@@ -26,9 +26,10 @@ const API_KIND = import.meta.env.VITE_API_KIND || 'server'
 export const SHARED_MODE = Boolean(API_URL)
 
 // v2: enablements gained `hours`, deals gained `closeDate`.
-// v3: seed gained scheduled (future-dated) sessions for the upcoming strip;
-// bumping the key re-seeds browsers that stored the old demo data.
-const DATA_KEY = 'enablement-dashboard-data-v3'
+// v3: seed gained scheduled (future-dated) sessions for the upcoming strip.
+// v4: records gained the product dimension (product + per-product use cases);
+// bumping the key re-seeds standalone browsers that stored old demo data.
+const DATA_KEY = 'enablement-dashboard-data-v4'
 const CACHE_KEY = 'enablement-dashboard-shared-cache-v1'
 const THEME_KEY = 'enablement-dashboard-theme'
 const USER_KEY = 'enablement-dashboard-user'

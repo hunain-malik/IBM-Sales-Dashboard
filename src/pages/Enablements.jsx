@@ -12,7 +12,7 @@ import {
 } from '@carbon/react'
 import { Add, Edit, Email, TrashCan } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
-import { fmtDate, sessionRequestMailto, todayIso, authorNote } from '../data/constants.js'
+import { fmtDate, sessionRequestMailto, todayIso, authorNote, getProduct } from '../data/constants.js'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import MonthCalendar from '../components/MonthCalendar.jsx'
 import EnablementModal from '../components/EnablementModal.jsx'
@@ -47,6 +47,7 @@ export default function Enablements() {
               <TableHead>
                 <TableRow>
                   <TableHeader>Session</TableHeader>
+                  <TableHeader>Product</TableHeader>
                   <TableHeader>Use case</TableHeader>
                   <TableHeader>Date</TableHeader>
                   <TableHeader>Attendees</TableHeader>
@@ -66,7 +67,8 @@ export default function Enablements() {
                         <div style={{ fontSize: '0.75rem', color: 'var(--cds-text-helper)' }}>{authorNote(e)}</div>
                       ) : null}
                     </TableCell>
-                    <TableCell><UseCaseChip id={e.useCase} /></TableCell>
+                    <TableCell>{getProduct(e.product)?.label ?? '—'}</TableCell>
+                    <TableCell><UseCaseChip record={e} /></TableCell>
                     <TableCell>
                       {fmtDate(e.date)}
                       {e.date > todayIso() && (

@@ -1,12 +1,11 @@
 import { Tag } from '@carbon/react'
-import { fmtUSDCompact } from '../data/constants.js'
+import { fmtUSDCompact, getProductColor } from '../data/constants.js'
 import { useStore } from '../data/store.jsx'
-import UseCaseChip from './UseCaseChip.jsx'
 
 const pct1 = (ratio) => `${(ratio * 100).toFixed(0)}%`
 
-// Where to invest next: per use case, customer demand share (deal value) vs.
-// our enablement coverage share (team hours). A use case where demand outruns
+// Where to invest next: per PRODUCT, customer demand share (deal value) vs.
+// our enablement coverage share (team hours). A product where demand outruns
 // coverage is the concrete ask to sales/execs: point more effort here.
 export default function CoveragePanel({ rows }) {
   const { theme } = useStore()
@@ -32,9 +31,16 @@ export default function CoveragePanel({ rows }) {
         </span>
       </div>
       {rows.map((r) => (
-        <div key={r.useCase} className="cmp__row">
+        <div key={r.label} className="cmp__row">
           <div className="cmp__label">
-            <UseCaseChip id={r.useCase} />
+            <span className="uc-chip">
+              <span
+                className="uc-chip__dot"
+                style={{ background: getProductColor(r.product, theme) }}
+                aria-hidden="true"
+              />
+              {r.label}
+            </span>
             <span className="cmp__hint">
               {r.dealCount} deal{r.dealCount === 1 ? '' : 's'} · {fmtUSDCompact(r.demandValue)} · {r.sessionCount} session{r.sessionCount === 1 ? '' : 's'} / {r.hours}h
             </span>

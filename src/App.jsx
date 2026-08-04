@@ -19,6 +19,7 @@ import ActivityLogModal from './components/ActivityLogModal.jsx'
 import Enablements from './pages/Enablements.jsx'
 import Pipeline from './pages/Pipeline.jsx'
 import Impact from './pages/Impact.jsx'
+import Products from './pages/Products.jsx'
 import OnePager from './pages/OnePager.jsx'
 import Glossary from './pages/Glossary.jsx'
 
@@ -28,6 +29,7 @@ const NAV = [
   { path: '/', label: 'Pipeline View' },
   { path: '/enablements', label: 'Enablements' },
   { path: '/pipeline', label: 'Deals' },
+  { path: '/products', label: 'Products' },
 ]
 
 const SYNC_LABEL = {
@@ -166,6 +168,7 @@ export default function App() {
             <Route path="/" element={<Impact />} />
             <Route path="/enablements" element={<Enablements />} />
             <Route path="/pipeline" element={<Pipeline />} />
+            <Route path="/products" element={<Products />} />
             {/* old bookmark support */}
             <Route path="/impact" element={<Impact />} />
             <Route path="/onepager" element={<OnePager />} />

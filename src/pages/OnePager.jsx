@@ -4,7 +4,7 @@ import { Button, Theme, Tag } from '@carbon/react'
 import { Printer, ArrowLeft } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { buildInsights, toneHeading } from '../data/insights.js'
-import { getUseCase, fmtUSD, fmtUSDCompact, fmtPct, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
+import { getProduct, getUseCaseLabel, fmtUSD, fmtUSDCompact, fmtPct, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
 
 const pct0 = (ratio) => `${Math.round(ratio * 100)}%`
 
@@ -101,25 +101,35 @@ export default function OnePager() {
           </section>
 
           <section>
-            <h2>Demand vs. coverage by use case</h2>
+            <h2>By product</h2>
             <table className="op__table">
               <thead>
                 <tr>
-                  <th>Use case</th>
-                  <th>Demand share</th>
-                  <th>Coverage share</th>
+                  <th>Product</th>
+                  <th>Sessions</th>
+                  <th>Touched deals</th>
+                  <th>Won</th>
+                  <th>Open</th>
                 </tr>
               </thead>
               <tbody>
                 {coverage.map((r) => (
-                  <tr key={r.useCase}>
+                  <tr key={r.label}>
                     <td>{r.label}</td>
-                    <td className="op__num">{pct0(r.demandShare)}</td>
-                    <td className="op__num">{pct0(r.coverageShare)}</td>
+                    <td className="op__num">{r.sessionCount}</td>
+                    <td className="op__num">{r.touchedCount} of {r.dealCount}</td>
+                    <td className="op__num">{fmtUSDCompact(r.wonRevenue)}</td>
+                    <td className="op__num">{fmtUSDCompact(r.pipelineRevenue)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            <p className="op__verdict" style={{ marginTop: '0.5rem' }}>
+              <em>
+                Demand vs. coverage:{' '}
+                {coverage.map((r) => `${r.label} ${pct0(r.demandShare)} / ${pct0(r.coverageShare)}`).join(' · ')}
+              </em>
+            </p>
           </section>
         </div>
 
@@ -149,7 +159,7 @@ export default function OnePager() {
               <tr>
                 <th>Customer</th>
                 <th>Revenue</th>
-                <th>Use case</th>
+                <th>Product · use case</th>
                 <th>Stage</th>
                 <th>Matched session</th>
               </tr>
@@ -159,7 +169,10 @@ export default function OnePager() {
                 <tr key={d.id}>
                   <td>{d.customer}</td>
                   <td className="op__num">{fmtUSD(d.value)}</td>
-                  <td>{getUseCase(d.useCase).label}</td>
+                  <td>
+                    {getProduct(d.product)?.label ?? '—'}
+                    <div className="op__sub">{getUseCaseLabel(d)}</div>
+                  </td>
                   <td>
                     <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
                   </td>

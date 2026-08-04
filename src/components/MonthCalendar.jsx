@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { IconButton } from '@carbon/react'
 import { ChevronLeft, ChevronRight } from '@carbon/icons-react'
-import { USE_CASES, getUseCaseColor } from '../data/constants.js'
+import { PRODUCTS, getProductColor } from '../data/constants.js'
 import { useStore } from '../data/store.jsx'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -77,7 +77,7 @@ export default function MonthCalendar({ sessions, onPickDay }) {
                 <span
                   key={e.id}
                   className="cal__event"
-                  style={{ borderLeftColor: getUseCaseColor(e.useCase, theme) }}
+                  style={{ borderLeftColor: getProductColor(e.product, theme) }}
                   title={`${e.title} — ${e.presenter || 'team session'}`}
                 >
                   {e.title}
@@ -88,14 +88,14 @@ export default function MonthCalendar({ sessions, onPickDay }) {
         })}
       </div>
       <div className="cal__legend">
-        {USE_CASES.map((u) => (
-          <span key={u.id} className="uc-chip" style={{ fontSize: '0.75rem' }}>
+        {PRODUCTS.map((p) => (
+          <span key={p.id} className="uc-chip" style={{ fontSize: '0.75rem' }}>
             <span
               className="uc-chip__dot"
-              style={{ background: theme === 'g100' ? u.dark : u.light }}
+              style={{ background: theme === 'g100' ? p.dark : p.light }}
               aria-hidden="true"
             />
-            {u.label}
+            {p.label}
           </span>
         ))}
       </div>

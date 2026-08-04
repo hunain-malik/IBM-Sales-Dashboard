@@ -390,6 +390,68 @@ html[data-carbon-theme='g100'] body {
   margin-bottom: 1.5rem;
 }
 
+/* Products page: per-product quarter cards */
+.pp-dot {
+  display: inline-block;
+  vertical-align: baseline;
+  margin-right: 0.25rem;
+}
+
+.pp-empty {
+  font-size: 0.875rem;
+  color: var(--cds-text-secondary);
+  margin: 0;
+}
+
+.pp-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1px;
+  margin-bottom: 1rem;
+}
+
+.pp-stat {
+  background: var(--cds-layer-02);
+  padding: 0.75rem 1rem;
+}
+
+.pp-stat__value {
+  font-size: 1.75rem;
+  font-weight: 300;
+  line-height: 1.15;
+}
+
+.pp-stat__label {
+  font-size: 0.75rem;
+  color: var(--cds-text-secondary);
+}
+
+.pp-stat__detail {
+  font-size: 0.75rem;
+  color: var(--cds-text-helper);
+  margin-top: 0.25rem;
+}
+
+.pp-table {
+  max-width: 56rem;
+}
+
+.pp-table__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 7rem 8rem 8rem;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--cds-border-subtle-01);
+  font-size: 0.875rem;
+}
+
+.pp-table__row--head {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--cds-text-secondary);
+  border-top: none;
+}
+
 /* Recently-deleted recycle bin rows */
 .rd-note {
   font-size: 0.75rem;

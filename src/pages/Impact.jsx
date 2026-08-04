@@ -13,7 +13,7 @@ import {
 import { Document } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { buildInsights } from '../data/insights.js'
-import { fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
+import { fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE, getProduct } from '../data/constants.js'
 import KpiTile from '../components/KpiTile.jsx'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import ComparisonPanel from '../components/ComparisonPanel.jsx'
@@ -108,6 +108,7 @@ export default function Impact() {
               <TableRow>
                 <TableHeader>Customer</TableHeader>
                 <TableHeader>Revenue</TableHeader>
+                <TableHeader>Product</TableHeader>
                 <TableHeader>Use case</TableHeader>
                 <TableHeader>Stage</TableHeader>
                 <TableHeader>Matched session</TableHeader>
@@ -120,7 +121,8 @@ export default function Impact() {
                 <TableRow key={d.id}>
                   <TableCell>{d.customer}</TableCell>
                   <TableCell>{fmtUSD(d.value)}</TableCell>
-                  <TableCell><UseCaseChip id={d.useCase} /></TableCell>
+                  <TableCell>{getProduct(d.product)?.label ?? '—'}</TableCell>
+                  <TableCell><UseCaseChip record={d} /></TableCell>
                   <TableCell>
                     <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
                   </TableCell>

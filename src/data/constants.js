@@ -1,25 +1,78 @@
-// Use cases the team enables on. The color slots are IBM Carbon data-viz ramp
-// steps, ordered and validated for color-vision-deficiency separation on both
-// the light (white) and dark (g100 #161616) surfaces — keep the order fixed
-// and never assign these hues to anything that isn't a use case.
-export const USE_CASES = [
-  { id: 'vuln-mgmt',    label: 'Vulnerability Management', light: '#6929c4', dark: '#8a3ffc' },
-  { id: 'secure-coder', label: 'Secure Coder',             light: '#1192e8', dark: '#1192e8' },
-  { id: 'monitoring',   label: 'Monitoring',               light: '#b28600', dark: '#b28600' },
-  { id: 'optimization', label: 'Optimization',             light: '#ee538b', dark: '#ee538b' },
-  { id: 'other',        label: 'Other',                    light: '#198038', dark: '#198038' },
+// The products the team enables on. Colors live at the PRODUCT level (three
+// hues stay color-vision-deficiency-safe; a per-use-case palette could not),
+// taken from the CVD-validated IBM Carbon data-viz ramp slots used since v1.
+// Never assign these hues to anything that isn't a product.
+export const PRODUCTS = [
+  { id: 'concert-protect', label: 'Concert Protect', light: '#6929c4', dark: '#8a3ffc' },
+  { id: 'instana',         label: 'Instana',         light: '#1192e8', dark: '#1192e8' },
+  { id: 'turbonomic',      label: 'Turbonomic',      light: '#ee538b', dark: '#ee538b' },
 ]
 
-export const getUseCase = (id) => USE_CASES.find((u) => u.id === id) ?? USE_CASES[USE_CASES.length - 1]
+const NO_PRODUCT_COLOR = '#8d8d8d' // records logged before the product field existed
 
-export const getUseCaseColor = (id, theme) => {
-  const uc = getUseCase(id)
-  return theme === 'g100' ? uc.dark : uc.light
+export const getProduct = (id) => PRODUCTS.find((p) => p.id === id) ?? null
+
+export const getProductColor = (id, theme) => {
+  const p = getProduct(id)
+  if (!p) return NO_PRODUCT_COLOR
+  return theme === 'g100' ? p.dark : p.light
 }
 
-// color scale keyed by use-case label, for Carbon charts options.color.scale
-export const getUseCaseColorScale = (theme) =>
-  Object.fromEntries(USE_CASES.map((u) => [u.label, theme === 'g100' ? u.dark : u.light]))
+// Each product carries its own fixed use-case catalog; 'custom' (free text on
+// the record as customUseCase) covers anything the catalogs don't describe.
+export const USE_CASES_BY_PRODUCT = {
+  'concert-protect': [
+    { id: 'cp-vuln-mgmt',        label: 'Vulnerability Management' },
+    { id: 'cp-compliance',       label: 'Compliance' },
+    { id: 'cp-cert-mgmt',        label: 'Certificate Management' },
+    { id: 'cp-sca',              label: 'Software Composition Analysis' },
+    { id: 'cp-app-resilience',   label: 'Application Resilience' },
+  ],
+  'instana': [
+    { id: 'in-observability',    label: 'Full-Stack Observability' },
+    { id: 'in-incident',         label: 'Incident Investigation' },
+    { id: 'in-performance',      label: 'Performance Optimization' },
+    { id: 'in-k8s-cost',         label: 'Kubernetes Cost Management' },
+    { id: 'in-genai',            label: 'GenAI Observability' },
+    { id: 'in-resilience',       label: 'Resilience & Compliance Automation' },
+  ],
+  'turbonomic': [
+    { id: 'tu-cloud-cost',       label: 'Cloud Cost Optimization' },
+    { id: 'tu-k8s',              label: 'Kubernetes Resource Optimization' },
+    { id: 'tu-gpu',              label: 'GPU Optimization' },
+    { id: 'tu-dc-modernization', label: 'Data Center Modernization' },
+    { id: 'tu-cloud-migration',  label: 'Cloud Migration Planning' },
+    { id: 'tu-vmware',           label: 'VMware Optimization' },
+  ],
+}
+
+const ALL_CATALOG = Object.values(USE_CASES_BY_PRODUCT).flat()
+
+// v1's flat use-case list, kept ONLY so records logged before the product
+// dimension existed still display their original label
+const LEGACY_USE_CASES = {
+  'vuln-mgmt': 'Vulnerability Management',
+  'secure-coder': 'Secure Coder',
+  'monitoring': 'Monitoring',
+  'optimization': 'Optimization',
+  'other': 'Other',
+}
+
+// display label for any record's use case: catalog id, custom text, or legacy
+export const getUseCaseLabel = (r) => {
+  if (r.useCase === 'custom') return r.customUseCase || 'Custom'
+  const hit = ALL_CATALOG.find((u) => u.id === r.useCase)
+  if (hit) return hit.label
+  return LEGACY_USE_CASES[r.useCase] ?? r.useCase ?? '—'
+}
+
+// what has to be equal for a session and a deal to match automatically:
+// catalog use cases match by id (which encodes the product); custom ones
+// match when the product AND the wording (case/space-insensitive) agree
+export const matchKeyOf = (r) =>
+  r.useCase === 'custom'
+    ? `custom:${r.product ?? ''}:${(r.customUseCase ?? '').trim().toLowerCase()}`
+    : r.useCase
 
 export const DEAL_STAGES = [
   'Prospecting',

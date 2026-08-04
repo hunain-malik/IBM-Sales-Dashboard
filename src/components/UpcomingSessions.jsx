@@ -1,7 +1,7 @@
 import { Button } from '@carbon/react'
 import { Email } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
-import { todayIso, sessionRequestMailto, getUseCaseColor } from '../data/constants.js'
+import { todayIso, sessionRequestMailto, getProductColor, getProduct } from '../data/constants.js'
 import UseCaseChip from './UseCaseChip.jsx'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -38,7 +38,7 @@ export default function UpcomingSessions() {
               <div
                 key={s.id}
                 className="up-card"
-                style={{ borderLeftColor: getUseCaseColor(s.useCase, theme) }}
+                style={{ borderLeftColor: getProductColor(s.product, theme) }}
               >
                 <div className="up-card__date" aria-hidden="true">
                   <span className="up-card__day">{d.getDate()}</span>
@@ -46,8 +46,9 @@ export default function UpcomingSessions() {
                 </div>
                 <div className="up-card__body">
                   <div className="up-card__title">{s.title}</div>
-                  <UseCaseChip id={s.useCase} />
+                  <UseCaseChip record={s} />
                   <div className="up-card__meta">
+                    {getProduct(s.product) ? `${getProduct(s.product).label} · ` : ''}
                     {s.presenter ? `${s.presenter} · ` : ''}{inDays(s.date)}
                   </div>
                 </div>

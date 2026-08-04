@@ -11,15 +11,19 @@ import { useStore } from '../data/store.jsx'
 const TERMS = [
   {
     term: 'Outbound-touched deal',
-    def: 'A deal where at least one enablement session on the same use case was delivered on or before the deal’s open date. Deals with no prior session are explicitly not counted — and are shown as excluded, never hidden.',
+    def: 'A deal where at least one enablement session on the same use case was delivered on or before the deal’s open date. Custom use cases match when the product and the wording agree. Deals with no prior session are explicitly not counted — and are shown as excluded, never hidden.',
+  },
+  {
+    term: 'Product',
+    def: 'Every session and deal is tagged with the product it relates to: Concert Protect, Instana, or Turbonomic. Colors throughout the dashboard identify the product, and the Products page breaks activity down per product per quarter.',
   },
   {
     term: 'Use case',
-    def: 'One of five fixed categories both sessions and deals are tagged with: Vulnerability Management, Secure Coder, Monitoring, Optimization, Other. Matching only ever happens within the same use case.',
+    def: 'Product-specific: each product carries its own fixed list (e.g. Vulnerability Management under Concert Protect, Full-Stack Observability under Instana, Cloud Cost Optimization under Turbonomic). When nothing in the list fits, a custom use case can be typed in — custom entries match sessions to deals by product plus identical wording.',
   },
   {
     term: 'Matched session',
-    def: 'The session shown for a touched deal, with its delivery date ("delivered Feb 10, 2026"). By default it is the earliest eligible session — same use case, delivered on or before the open date. When logging or editing a deal, it can instead be tied to any other eligible session; those show "tied manually". A tie that becomes ineligible falls back to automatic.',
+    def: 'The session shown for a touched deal, with its delivery date ("delivered Feb 10, 2026"). By default it is the earliest session on the same use case delivered on or before the open date. When logging or editing a deal, it can instead be tied to any session on the deal’s PRODUCT delivered before the open date; those show "tied manually". A tie that becomes ineligible falls back to automatic.',
   },
   {
     term: 'Open date / Close date',
@@ -78,12 +82,12 @@ const METRICS = [
   },
   {
     name: 'Demand share',
-    formula: 'use case’s deal value ÷ total deal value',
+    formula: 'product’s deal value ÷ total deal value',
     note: 'Across all tracked deals, touched or not.',
   },
   {
     name: 'Coverage share',
-    formula: 'use case’s session hours ÷ total session hours',
+    formula: 'product’s session hours ÷ total session hours',
     note: 'Weighted by session count instead if no hours are recorded.',
   },
   {

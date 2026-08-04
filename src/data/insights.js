@@ -1,5 +1,5 @@
 import { impactSummary, comparisonStats, coverageGaps } from './attribution.js'
-import { USE_CASES, fmtUSDCompact, fmtPct } from './constants.js'
+import { fmtUSDCompact, fmtPct } from './constants.js'
 
 // The executive narrative engine. Everything the dashboard *says* about the
 // numbers is generated here from the numbers, so the story stays true when
@@ -23,7 +23,7 @@ const fmtDays = (v) => `${Math.round(v)} days`
 export function buildInsights(deals, enablements) {
   const summary = impactSummary(deals, enablements)
   const comparison = comparisonStats(deals, enablements)
-  const coverage = coverageGaps(deals, enablements, USE_CASES)
+  const coverage = coverageGaps(deals, enablements)
   const { influenced: a, rest: b } = comparison
 
   const asks = []
