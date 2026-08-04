@@ -1,0 +1,29 @@
+{
+  "version": 7,
+  "enablements": [
+    {
+      "title": "Big Bosses Only",
+      "useCase": "monitoring",
+      "date": "2026-06-17",
+      "presenter": "Bob",
+      "attendees": 234,
+      "hours": 16,
+      "id": "00d283dc-8a5f-4895-9f57-39fcb824161c",
+      "createdBy": "Hunain Ejaz Malik",
+      "createdAt": "2026-08-03T20:28:11.246Z"
+    }
+  ],
+  "deals": [
+    {
+      "customer": "Walmart",
+      "useCase": "monitoring",
+      "value": 1000000,
+      "date": "2026-07-16",
+      "stage": "Proposal",
+      "owner": "",
+      "id": "9309be83-3b75-44ae-9eec-12657fcc4cc0",
+      "createdBy": "Hunain Ejaz Malik",
+      "createdAt": "2026-08-03T20:47:53.035Z"
+    }
+  ]
+}
