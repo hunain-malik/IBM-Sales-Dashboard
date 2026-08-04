@@ -100,6 +100,11 @@ const METRICS = [
     formula: 'Σ value of touched deals, bucketed by open-date month',
     note: 'Shown per fiscal quarter; months that haven’t started show “Coming soon”, not $0.',
   },
+  {
+    name: 'Products view (per quarter)',
+    formula: 'sessions, deals opened, outbound-touched, closed won — per product per fiscal quarter',
+    note: 'Deals count in the quarter they OPENED; “Closed won in quarter” counts by the close date’s quarter (so a deal can open in Q2 and be won in Q3); sessions count when delivered inside the quarter, with scheduled ones shown separately.',
+  },
 ]
 
 const CONVENTIONS = [
@@ -107,7 +112,8 @@ const CONVENTIONS = [
   'Timing is not causation — a deal opening after a session doesn’t prove the session caused it. The touched-vs-untouched comparison exists precisely so the data, not the framing, makes whatever case there is.',
   'Small samples — when either comparison group is small, the view says so: “read as an early signal, not a proven effect.”',
   'Manual entry — v1 figures reflect what has been entered and are only as complete as the entries. Sessions and deals are editable so records stay correct as they progress.',
-  'Edits and deletions — every record carries who added or last edited it. Deleted records move to “Recently deleted” on their page, can be restored for 30 days, and are then removed permanently.',
+  'Shared live data — everyone opening the dashboard link reads and writes the same records. The header badge shows sync status (Saved / Saving… / Offline — changes not saved); entries made offline save automatically once the connection returns. Clearing all data requires the administration key.',
+  'Edits and deletions — every record carries who added or last edited it; clicking “Last edited by” in the header opens the activity log of every add, edit, delete, and restore with who and when. Deleted records move to “Recently deleted” on their page, can be restored for 30 days, and are then removed permanently.',
 ]
 
 // static mini-diagram of the counting rule, in the timeline's visual language
