@@ -21,41 +21,70 @@ is the acceptance checklist.
 - React 19 + Vite, IBM Carbon Design System (`@carbon/react`), light (`white`) and dark
   (`g100`) themes with a header toggle, hash routing, hand-rolled SVG charts (no chart
   library). IBM Plex Sans via Carbon's Akamai CDN. Sass required (`sass-embedded`).
-- Five routes: `/` **Pipeline View** (landing: KPI row, upcoming-sessions strip with a
-  "Request a session" mailto, outbound-touched vs. untouched comparison, quarter-paged
-  monthly pipeline chart, demand-vs-coverage panel, outbound-touched deals table),
-  `/enablements` (sessions table + month calendar + add/edit modal), `/pipeline`
-  **Customer Deals** (all-deals table + session-to-deal timeline + add/edit modal),
-  `/onepager` (print-optimized executive summary), `/glossary` (Methodology & Glossary:
-  counting-rule diagram, terms, formulas, conventions).
+- Four nav tabs and six routes: `/` **Pipeline View** (landing: KPI row,
+  upcoming-sessions strip with a "Request a session" mailto, outbound-touched vs.
+  untouched comparison, quarter-paged monthly pipeline chart, demand-vs-coverage panel
+  by product, outbound-touched deals table), `/enablements` (sessions table + month
+  calendar + add/edit modal + recently-deleted panel), `/pipeline` **Customer Deals**
+  (all-deals table + session-to-deal timeline + add/edit modal + recently-deleted
+  panel), `/products` **Products** (quarter-paged per-product cards: sessions
+  delivered/scheduled, attendees, hours, deals opened, outbound-touched, closed won in
+  quarter, plus a per-use-case breakdown table), `/onepager` (print-optimized executive
+  summary with a "By product" table), `/glossary` (Methodology & Glossary: counting-rule
+  diagram, terms, formulas, conventions). `/impact` is an old-bookmark alias of `/`.
 - Language rules baked into every string: the product is "Outbound Pipeline View"; deals
   that follow a session are "Outbound-touched" (lowercase "outbound-touched"
   mid-sentence); never "GTM", never "influenced/attributed/credit/drove" in visible text.
   All narrative sentences (headlines, verdicts, recommended actions) are GENERATED from
   the data by the insights engine — never hardcoded claims.
 
-## 1.2 Core logic (all implemented in the sources — verify, don't re-derive)
+## 1.2 The product dimension
 
-- **Counting rule:** a deal is outbound-touched when ≥1 session on the SAME use case was
-  delivered ON OR BEFORE the deal's open date. Untouched deals are shown as excluded
-  (hollow markers, em dashes), never hidden.
+- Three products, each with a fixed color pair (light/dark theme) used for every dot,
+  bar, calendar entry, and timeline lane: **Concert Protect** (`#6929c4`/`#8a3ffc`),
+  **Instana** (`#1192e8`), **Turbonomic** (`#ee538b`). Records without a product
+  (legacy rows) render neutral gray `#8d8d8d` as "No product".
+- Every session and deal carries `product` + `useCase`. Use cases are product-specific
+  catalogs in `USE_CASES_BY_PRODUCT`: Concert Protect has 5 (Vulnerability Management,
+  Compliance, Certificate Management, Software Composition Analysis, Application
+  Resilience), Instana 6 (Full-Stack Observability, Incident Investigation, Performance
+  Optimization, Kubernetes Cost Management, GenAI Observability, Resilience & Compliance
+  Automation), Turbonomic 6 (Cloud Cost Optimization, Kubernetes Resource Optimization,
+  GPU Optimization, Data Center Modernization, Cloud Migration Planning, VMware
+  Optimization). In both add/edit modals the product dropdown drives the use-case
+  dropdown, and a "custom use case" checkbox swaps the dropdown for a free-text field
+  (`useCase: 'custom'` + `customUseCase`). Old records with pre-product use-case ids
+  keep their labels via a legacy map and can be edited (they surface as custom text).
+
+## 1.3 Core logic (all implemented in the sources — verify, don't re-derive)
+
+- **Counting rule:** a deal is outbound-touched when ≥1 session with the SAME match key
+  was delivered ON OR BEFORE the deal's open date. The match key is the catalog use-case
+  id, or for custom entries `product + trimmed-lowercased text` — so custom sessions and
+  deals match when the product and the wording agree. Untouched deals are shown as
+  excluded (hollow markers, em dashes), never hidden.
 - **Matched session:** by default the earliest eligible session; a deal may optionally be
-  tied to a specific eligible session via `sourceSessionId` (deal form dropdown whose
-  "Automatic" option NAMES the earliest session and whose manual list EXCLUDES it).
-  Tied deals show " · tied manually"; stale ties fall back to automatic silently.
+  tied to a specific session via `sourceSessionId`. Tie eligibility is any session on the
+  deal's PRODUCT delivered on or before the open date (not just the same use case). The
+  deal form's dropdown "Automatic" option NAMES the earliest automatic match and the
+  manual list EXCLUDES that session. Tied deals show " · tied manually"; stale ties fall
+  back to automatic silently.
 - **Scheduled sessions:** sessions dated after today appear in the Upcoming strip, the
-  sessions table (blue "Scheduled" tag, em-dash attendees), and the calendar — but are
-  excluded from every delivered total (count, attendees, hours, value/hour, coverage).
-- **Fiscal calendar:** FY = calendar year; quarter-paged charts bounded between the
-  earliest data quarter and the current quarter; "Today" marker in the current quarter;
-  cross-quarter touchpoints drawn as dashed carried curves labeled "from Qn".
+  sessions table (blue "Scheduled" tag, em-dash attendees), the calendar, and the
+  Products cards' "scheduled" counts — but are excluded from every delivered total
+  (count, attendees, hours, value/hour, coverage).
+- **Fiscal calendar:** FY = calendar year; quarter-paged charts and the Products view are
+  bounded between the earliest data quarter and the current quarter; "Today" marker in
+  the current quarter; cross-quarter touchpoints drawn as dashed carried curves labeled
+  "from Qn". On the Products page, deals count in the quarter they OPENED; "Closed won
+  in quarter" counts by close-date quarter.
 - **Insights engine:** tones strong/mixed/weak/even/early/none from per-metric outcomes
   with epsilons (win rate ±2 pts, size ±5%, cycle ±2 days); small-sample caveat when
-  touched n < 4 or untouched n < 2; generated recommended actions (invest where demand
-  outruns coverage by ≥5 pts, uncovered use cases, review stalled touched deals, data
-  hygiene asks).
+  touched n < 4 or untouched n < 2; generated recommended actions (invest where a
+  product's demand outruns coverage by ≥5 pts, products with deals but no sessions,
+  review stalled touched deals, data hygiene asks).
 
-## 1.3 Persistence — two modes, decided at build time
+## 1.4 Persistence — two modes, decided at build time
 
 - **Shared mode (the production deployment):** when `VITE_API_URL` is set, ALL users read
   and write ONE shared document `{version, enablements[], deals[]}`. No demo data; no
@@ -76,7 +105,25 @@ is the acceptance checklist.
   currently in use by the team; keep it EXACTLY as-is so the existing key keeps working.
   The wipe goes through the synced store so it reaches every open browser.
 
-## 1.4 Hard-won implementation warnings (each of these broke a previous build)
+## 1.5 Audit trail, recycle bin, activity log (shared mode)
+
+- **Who is editing:** on first visit in shared mode a name modal asks "Who is this?"
+  before records can be entered; the name lives in localStorage (`USER_KEY`) and can be
+  changed anytime via the header's user-avatar action. Every add stamps
+  `createdBy/createdAt`, every edit `updatedBy/updatedAt`; tables show a helper-text
+  sub-line ("added by X" / "edited by Y" via `authorNote`).
+- **Soft delete:** deleting a record sets `deletedAt/deletedBy` instead of removing it.
+  Each table page has a "Recently deleted" panel listing deleted rows with who/when and
+  a Restore button (restore drops the deletion fields). Records deleted more than 30
+  days ago (`SOFT_DELETE_DAYS`) are purged permanently by a once-per-session synced
+  sweep. The admin "Reset all data" is the only hard wipe.
+- **Activity log:** every mutation appends `{at, by, action}` to a per-record `history`
+  (capped at 20, synced inside the record). The header shows a clickable "Last edited by
+  {name}" badge that opens a modal listing every add/edit/delete/restore across all
+  records, newest first, capped at 100, with a stamps fallback for records that predate
+  `history`.
+
+## 1.6 Hard-won implementation warnings (each of these broke a previous build)
 
 1. `src/main.jsx` MUST import `./index.scss` first, and `sass-embedded` must be a dev
    dependency — if ANY text renders in a serif font, the stylesheet is not loading; stop
@@ -90,9 +137,14 @@ is the acceptance checklist.
    frozen-snapshot-URL deployments only and must stay dormant on a Pages deployment that
    updates in place.
 5. All neutral colors come from Carbon theme tokens (`--cds-*`); the only hardcoded hexes
-   are the five use-case pairs, the accent pair `#0f62fe`/`#4589ff`, context grays
+   are the three product color pairs, the accent pair `#0f62fe`/`#4589ff`, context grays
    `#a8a8a8`/`#6f6f6f`, neutral `#8d8d8d`, warning `#f1c21b`, and the always-light
    one-pager palette. Hardcoding neutrals breaks dark mode (black-on-black).
+6. Helper names starting with `use` (e.g. `useCaseLabelOf`) get lint-flagged as React
+   hooks — the sources use `getUseCaseLabel` etc.; keep those names.
+7. Never point the app at a NEW empty data store, and never auto-create one when the
+   configured store fails a reachability check — that is how live team data was lost
+   once. If the store does not answer, fail loudly and stop.
 
 # Part 2 — The complete source code (transcribe verbatim)
 
@@ -123,9 +175,13 @@ src/components/MonthCalendar.jsx
 src/components/EnablementModal.jsx
 src/components/DealModal.jsx
 src/components/AdminResetModal.jsx
+src/components/NameModal.jsx
+src/components/RecentlyDeleted.jsx
+src/components/ActivityLogModal.jsx
 src/pages/Impact.jsx
 src/pages/Enablements.jsx
 src/pages/Pipeline.jsx
+src/pages/Products.jsx
 src/pages/OnePager.jsx
 src/pages/Glossary.jsx
 server/server.mjs        (optional alternative backend — NOT used in the Part 3 deployment)
@@ -235,12 +291,15 @@ import {
   Content,
   Theme,
 } from '@carbon/react'
-import { Asleep, Light, Renew, TrashCan } from '@carbon/icons-react'
+import { Asleep, Light, Renew, TrashCan, UserAvatar } from '@carbon/icons-react'
 import { useStore, SHARED_MODE } from './data/store.jsx'
 import AdminResetModal from './components/AdminResetModal.jsx'
+import NameModal from './components/NameModal.jsx'
+import ActivityLogModal from './components/ActivityLogModal.jsx'
 import Enablements from './pages/Enablements.jsx'
 import Pipeline from './pages/Pipeline.jsx'
 import Impact from './pages/Impact.jsx'
+import Products from './pages/Products.jsx'
 import OnePager from './pages/OnePager.jsx'
 import Glossary from './pages/Glossary.jsx'
 
@@ -250,6 +309,7 @@ const NAV = [
   { path: '/', label: 'Pipeline View' },
   { path: '/enablements', label: 'Enablements' },
   { path: '/pipeline', label: 'Deals' },
+  { path: '/products', label: 'Products' },
 ]
 
 const SYNC_LABEL = {
@@ -285,11 +345,15 @@ function useLatestBuildUrl() {
 }
 
 export default function App() {
-  const { theme, setTheme, resetToDemo, syncStatus } = useStore()
+  const { theme, setTheme, resetToDemo, syncStatus, userName, lastEdited } = useStore()
   const location = useLocation()
   const dark = theme === 'g100'
   const latestUrl = useLatestBuildUrl()
   const [adminReset, setAdminReset] = useState(false)
+  const [nameOpen, setNameOpen] = useState(false)
+  const [logOpen, setLogOpen] = useState(false)
+  // first visit in shared mode: ask who this is before they enter records
+  const firstRun = SHARED_MODE && !userName
 
   return (
     <>
@@ -312,6 +376,16 @@ export default function App() {
             ))}
           </HeaderNavigation>
           <HeaderGlobalBar>
+            {SHARED_MODE && lastEdited && (
+              <button
+                type="button"
+                className="sync-badge sync-badge--button"
+                title="Open the activity log"
+                onClick={() => setLogOpen(true)}
+              >
+                Last edited by {lastEdited.name}
+              </button>
+            )}
             {SHARED_MODE && syncStatus && (
               <span
                 className={`sync-badge${syncStatus === 'offline' ? ' sync-badge--offline' : ''}`}
@@ -331,6 +405,15 @@ export default function App() {
                 }}
               >
                 <Renew size={20} />
+              </HeaderGlobalAction>
+            )}
+            {SHARED_MODE && (
+              <HeaderGlobalAction
+                aria-label="Change your name"
+                tooltipAlignment="end"
+                onClick={() => setNameOpen(true)}
+              >
+                <UserAvatar size={20} />
               </HeaderGlobalAction>
             )}
             {/* wiping the shared live store requires the administration key */}
@@ -365,12 +448,19 @@ export default function App() {
             <Route path="/" element={<Impact />} />
             <Route path="/enablements" element={<Enablements />} />
             <Route path="/pipeline" element={<Pipeline />} />
+            <Route path="/products" element={<Products />} />
             {/* old bookmark support */}
             <Route path="/impact" element={<Impact />} />
             <Route path="/onepager" element={<OnePager />} />
             <Route path="/glossary" element={<Glossary />} />
           </Routes>
           <AdminResetModal open={adminReset} onClose={() => setAdminReset(false)} />
+          <ActivityLogModal open={logOpen} onClose={() => setLogOpen(false)} />
+          <NameModal
+            open={firstRun || nameOpen}
+            firstRun={firstRun}
+            onClose={() => setNameOpen(false)}
+          />
         </Content>
       </Theme>
     </>
@@ -773,6 +863,93 @@ html[data-carbon-theme='g100'] body {
   margin-bottom: 1.5rem;
 }
 
+/* Products page: per-product quarter cards */
+.pp-dot {
+  display: inline-block;
+  vertical-align: baseline;
+  margin-right: 0.25rem;
+}
+
+.pp-empty {
+  font-size: 0.875rem;
+  color: var(--cds-text-secondary);
+  margin: 0;
+}
+
+.pp-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1px;
+  margin-bottom: 1rem;
+}
+
+.pp-stat {
+  background: var(--cds-layer-02);
+  padding: 0.75rem 1rem;
+}
+
+.pp-stat__value {
+  font-size: 1.75rem;
+  font-weight: 300;
+  line-height: 1.15;
+}
+
+.pp-stat__label {
+  font-size: 0.75rem;
+  color: var(--cds-text-secondary);
+}
+
+.pp-stat__detail {
+  font-size: 0.75rem;
+  color: var(--cds-text-helper);
+  margin-top: 0.25rem;
+}
+
+.pp-table {
+  max-width: 56rem;
+}
+
+.pp-table__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 7rem 8rem 8rem;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--cds-border-subtle-01);
+  font-size: 0.875rem;
+}
+
+.pp-table__row--head {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--cds-text-secondary);
+  border-top: none;
+}
+
+/* Recently-deleted recycle bin rows */
+.rd-note {
+  font-size: 0.75rem;
+  color: var(--cds-text-helper);
+  margin: -0.5rem 0 0.5rem;
+}
+
+.rd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--cds-border-subtle-01);
+}
+
+.rd-row__label {
+  font-size: 0.875rem;
+}
+
+.rd-row__meta {
+  font-size: 0.75rem;
+  color: var(--cds-text-helper);
+}
+
 /* Shared-mode sync status in the header (g100 bar, so fixed light inks) */
 .sync-badge {
   display: flex;
@@ -785,6 +962,49 @@ html[data-carbon-theme='g100'] body {
 
 .sync-badge--offline {
   color: #ff8389;
+}
+
+/* the last-edited badge doubles as the activity-log trigger */
+.sync-badge--button {
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+}
+
+/* Activity log rows */
+.al-note {
+  font-size: 0.75rem;
+  color: var(--cds-text-helper);
+  margin: 0 0 0.75rem;
+}
+
+.al-empty {
+  font-size: 0.875rem;
+  color: var(--cds-text-secondary);
+  margin: 0;
+}
+
+.al-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--cds-border-subtle-01);
+  font-size: 0.875rem;
+}
+
+.al-row__time {
+  font-size: 0.75rem;
+  color: var(--cds-text-helper);
+  white-space: nowrap;
 }
 
 /* Upcoming sessions strip (Pipeline View landing) */
@@ -1222,28 +1442,81 @@ html[data-carbon-theme='g100'] body {
 ## `src/data/constants.js`
 
 ```js
-// Use cases the team enables on. The color slots are IBM Carbon data-viz ramp
-// steps, ordered and validated for color-vision-deficiency separation on both
-// the light (white) and dark (g100 #161616) surfaces — keep the order fixed
-// and never assign these hues to anything that isn't a use case.
-export const USE_CASES = [
-  { id: 'vuln-mgmt',    label: 'Vulnerability Management', light: '#6929c4', dark: '#8a3ffc' },
-  { id: 'secure-coder', label: 'Secure Coder',             light: '#1192e8', dark: '#1192e8' },
-  { id: 'monitoring',   label: 'Monitoring',               light: '#b28600', dark: '#b28600' },
-  { id: 'optimization', label: 'Optimization',             light: '#ee538b', dark: '#ee538b' },
-  { id: 'other',        label: 'Other',                    light: '#198038', dark: '#198038' },
+// The products the team enables on. Colors live at the PRODUCT level (three
+// hues stay color-vision-deficiency-safe; a per-use-case palette could not),
+// taken from the CVD-validated IBM Carbon data-viz ramp slots used since v1.
+// Never assign these hues to anything that isn't a product.
+export const PRODUCTS = [
+  { id: 'concert-protect', label: 'Concert Protect', light: '#6929c4', dark: '#8a3ffc' },
+  { id: 'instana',         label: 'Instana',         light: '#1192e8', dark: '#1192e8' },
+  { id: 'turbonomic',      label: 'Turbonomic',      light: '#ee538b', dark: '#ee538b' },
 ]
 
-export const getUseCase = (id) => USE_CASES.find((u) => u.id === id) ?? USE_CASES[USE_CASES.length - 1]
+const NO_PRODUCT_COLOR = '#8d8d8d' // records logged before the product field existed
 
-export const getUseCaseColor = (id, theme) => {
-  const uc = getUseCase(id)
-  return theme === 'g100' ? uc.dark : uc.light
+export const getProduct = (id) => PRODUCTS.find((p) => p.id === id) ?? null
+
+export const getProductColor = (id, theme) => {
+  const p = getProduct(id)
+  if (!p) return NO_PRODUCT_COLOR
+  return theme === 'g100' ? p.dark : p.light
 }
 
-// color scale keyed by use-case label, for Carbon charts options.color.scale
-export const getUseCaseColorScale = (theme) =>
-  Object.fromEntries(USE_CASES.map((u) => [u.label, theme === 'g100' ? u.dark : u.light]))
+// Each product carries its own fixed use-case catalog; 'custom' (free text on
+// the record as customUseCase) covers anything the catalogs don't describe.
+export const USE_CASES_BY_PRODUCT = {
+  'concert-protect': [
+    { id: 'cp-vuln-mgmt',        label: 'Vulnerability Management' },
+    { id: 'cp-compliance',       label: 'Compliance' },
+    { id: 'cp-cert-mgmt',        label: 'Certificate Management' },
+    { id: 'cp-sca',              label: 'Software Composition Analysis' },
+    { id: 'cp-app-resilience',   label: 'Application Resilience' },
+  ],
+  'instana': [
+    { id: 'in-observability',    label: 'Full-Stack Observability' },
+    { id: 'in-incident',         label: 'Incident Investigation' },
+    { id: 'in-performance',      label: 'Performance Optimization' },
+    { id: 'in-k8s-cost',         label: 'Kubernetes Cost Management' },
+    { id: 'in-genai',            label: 'GenAI Observability' },
+    { id: 'in-resilience',       label: 'Resilience & Compliance Automation' },
+  ],
+  'turbonomic': [
+    { id: 'tu-cloud-cost',       label: 'Cloud Cost Optimization' },
+    { id: 'tu-k8s',              label: 'Kubernetes Resource Optimization' },
+    { id: 'tu-gpu',              label: 'GPU Optimization' },
+    { id: 'tu-dc-modernization', label: 'Data Center Modernization' },
+    { id: 'tu-cloud-migration',  label: 'Cloud Migration Planning' },
+    { id: 'tu-vmware',           label: 'VMware Optimization' },
+  ],
+}
+
+const ALL_CATALOG = Object.values(USE_CASES_BY_PRODUCT).flat()
+
+// v1's flat use-case list, kept ONLY so records logged before the product
+// dimension existed still display their original label
+const LEGACY_USE_CASES = {
+  'vuln-mgmt': 'Vulnerability Management',
+  'secure-coder': 'Secure Coder',
+  'monitoring': 'Monitoring',
+  'optimization': 'Optimization',
+  'other': 'Other',
+}
+
+// display label for any record's use case: catalog id, custom text, or legacy
+export const getUseCaseLabel = (r) => {
+  if (r.useCase === 'custom') return r.customUseCase || 'Custom'
+  const hit = ALL_CATALOG.find((u) => u.id === r.useCase)
+  if (hit) return hit.label
+  return LEGACY_USE_CASES[r.useCase] ?? r.useCase ?? '—'
+}
+
+// what has to be equal for a session and a deal to match automatically:
+// catalog use cases match by id (which encodes the product); custom ones
+// match when the product AND the wording (case/space-insensitive) agree
+export const matchKeyOf = (r) =>
+  r.useCase === 'custom'
+    ? `custom:${r.product ?? ''}:${(r.customUseCase ?? '').trim().toLowerCase()}`
+    : r.useCase
 
 export const DEAL_STAGES = [
   'Prospecting',
@@ -1277,6 +1550,11 @@ export const fmtPct = (ratio) => `${Math.round(ratio * 100)}%`
 
 export const fmtDate = (iso) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+
+// Who to ask about a record — the latest edit stamp wins over the add stamp.
+// Returns null for records created before the audit trail existed.
+export const authorNote = (r) =>
+  r.updatedBy ? `edited by ${r.updatedBy}` : r.createdBy ? `added by ${r.createdBy}` : null
 
 // Local-date ISO (YYYY-MM-DD). Not toISOString(): that is UTC and would flip
 // the date near midnight, making a session count as delivered a day early/late.
@@ -1331,64 +1609,84 @@ export const quarterLabel = (q) => `Q${Math.floor(q.getMonth() / 3) + 1} ${q.get
 ## `src/data/seed.js`
 
 ```js
-// Demo data so the dashboard tells its story on first load.
-// Replace or clear via the reset control in the header.
-// `hours` is the team effort invested in a session (prep + delivery) and
-// feeds the value-per-enablement-hour and coverage-gap views.
+// Demo data so the dashboard tells its story on first load (standalone/dev
+// mode only — the shared deployment starts from the server). Records carry
+// the product dimension: product id + a use case from that product's catalog,
+// or useCase 'custom' with the text in customUseCase.
+// `hours` is the team effort invested in a session (prep + delivery).
 export const seedEnablements = [
-  { id: 'e1', title: 'Vulnerability Management 101 Workshop', useCase: 'vuln-mgmt',    date: '2026-02-10', presenter: 'A. Chen',      attendees: 18, hours: 6 },
-  { id: 'e2', title: 'Secure Coder Hands-on Lab',             useCase: 'secure-coder', date: '2026-02-24', presenter: 'M. Rodriguez', attendees: 24, hours: 8 },
-  { id: 'e3', title: 'Monitoring Deep Dive',                  useCase: 'monitoring',   date: '2026-03-05', presenter: 'S. Patel',     attendees: 15, hours: 5 },
-  { id: 'e4', title: 'Advanced Vulnerability Management',     useCase: 'vuln-mgmt',    date: '2026-03-18', presenter: 'A. Chen',      attendees: 12, hours: 4 },
-  { id: 'e5', title: 'Optimization Cost-Savings Workshop',    useCase: 'optimization', date: '2026-04-02', presenter: 'J. Kim',       attendees: 20, hours: 6 },
-  { id: 'e6', title: 'Secure Coder Certification Bootcamp',   useCase: 'secure-coder', date: '2026-04-21', presenter: 'M. Rodriguez', attendees: 30, hours: 12 },
-  { id: 'e7', title: 'Observability Clinic',                  useCase: 'monitoring',   date: '2026-05-12', presenter: 'S. Patel',     attendees: 17, hours: 4 },
-  { id: 'e8', title: 'FinOps Optimization Enablement',        useCase: 'optimization', date: '2026-06-09', presenter: 'J. Kim',       attendees: 22, hours: 6 },
-  { id: 'e9', title: 'Secure Coder Office Hours',             useCase: 'secure-coder', date: '2026-07-08', presenter: 'M. Rodriguez', attendees: 14, hours: 2 },
-  // Scheduled sessions (future-dated): they appear in "Upcoming sessions" and
-  // on the calendar, and are excluded from every delivered total until their
-  // date passes — attendees stays 0 until the session actually runs.
-  { id: 'e10', title: 'Vulnerability Management Threat Briefing', useCase: 'vuln-mgmt',  date: '2026-07-30', presenter: 'A. Chen',  attendees: 0, hours: 3 },
-  { id: 'e11', title: 'Monitoring War-Room Simulation',          useCase: 'monitoring', date: '2026-08-13', presenter: 'S. Patel', attendees: 0, hours: 4 },
+  { id: 'e1',  title: 'Concert Protect Vulnerability Deep Dive',      product: 'concert-protect', useCase: 'cp-vuln-mgmt',    date: '2026-02-10', presenter: 'T. Almeida',  attendees: 18, hours: 6 },
+  { id: 'e2',  title: 'Instana Observability Workshop',               product: 'instana',         useCase: 'in-observability', date: '2026-02-24', presenter: 'P. Kowalska', attendees: 24, hours: 8 },
+  { id: 'e3',  title: 'Turbonomic Cloud Cost Clinic',                 product: 'turbonomic',      useCase: 'tu-cloud-cost',    date: '2026-03-05', presenter: 'T. Almeida',  attendees: 15, hours: 5 },
+  { id: 'e4',  title: 'Concert Protect Compliance Lab',               product: 'concert-protect', useCase: 'cp-compliance',    date: '2026-03-18', presenter: 'P. Kowalska', attendees: 12, hours: 4 },
+  { id: 'e5',  title: 'Instana Incident Investigation Bootcamp',      product: 'instana',         useCase: 'in-incident',      date: '2026-04-02', presenter: 'P. Kowalska', attendees: 20, hours: 6 },
+  { id: 'e6',  title: 'Turbonomic Kubernetes Optimization Workshop',  product: 'turbonomic',      useCase: 'tu-k8s',           date: '2026-04-21', presenter: 'J. Kim',      attendees: 30, hours: 12 },
+  { id: 'e7',  title: 'Instana GenAI Observability Briefing',         product: 'instana',         useCase: 'in-genai',         date: '2026-05-12', presenter: 'P. Kowalska', attendees: 17, hours: 4 },
+  { id: 'e8',  title: 'Concert Protect SCA Hands-on',                 product: 'concert-protect', useCase: 'cp-sca',           date: '2026-06-09', presenter: 'T. Almeida',  attendees: 22, hours: 6 },
+  // a custom use case: nothing in the Instana catalog says "mainframe"
+  { id: 'e9',  title: 'Mainframe Observability Roundtable',           product: 'instana',         useCase: 'custom', customUseCase: 'Mainframe observability', date: '2026-07-08', presenter: 'P. Kowalska', attendees: 14, hours: 2 },
+  // Scheduled sessions (future-dated): shown in "Upcoming sessions" and on
+  // the calendar, excluded from every delivered total until their date passes.
+  { id: 'e10', title: 'Turbonomic GPU Optimization Briefing',         product: 'turbonomic',      useCase: 'tu-gpu',           date: '2026-08-12', presenter: 'J. Kim',      attendees: 0, hours: 3 },
+  { id: 'e11', title: 'Concert Protect Certificate Management Demo',  product: 'concert-protect', useCase: 'cp-cert-mgmt',     date: '2026-08-27', presenter: 'T. Almeida',  attendees: 0, hours: 2 },
 ]
 
 // `closeDate` is set once a deal reaches Closed Won / Closed Lost and is used
-// to compare sales-cycle length between influenced and non-influenced deals.
+// to compare sales-cycle length between touched and untouched deals.
 export const seedDeals = [
-  { id: 'd1',  customer: 'Acme Financial',        useCase: 'vuln-mgmt',    value: 420000, date: '2026-03-02', stage: 'Negotiation',   owner: 'T. Nguyen' },
-  { id: 'd2',  customer: 'Globex Retail',         useCase: 'secure-coder', value: 250000, date: '2026-03-14', stage: 'Closed Won',    owner: 'L. Ortiz',  closeDate: '2026-05-02' },
-  { id: 'd3',  customer: 'Initech Manufacturing', useCase: 'monitoring',   value: 180000, date: '2026-04-08', stage: 'Proposal',      owner: 'T. Nguyen' },
-  { id: 'd4',  customer: 'Umbrella Health',       useCase: 'vuln-mgmt',    value: 610000, date: '2026-04-27', stage: 'Closed Won',    owner: 'R. Walker', closeDate: '2026-06-20' },
-  { id: 'd5',  customer: 'Stark Industries',      useCase: 'optimization', value: 340000, date: '2026-05-06', stage: 'Negotiation',   owner: 'L. Ortiz' },
-  { id: 'd6',  customer: 'Wayne Enterprises',     useCase: 'secure-coder', value: 520000, date: '2026-05-22', stage: 'Closed Won',    owner: 'R. Walker', closeDate: '2026-07-08' },
-  { id: 'd7',  customer: 'Soylent Foods',         useCase: 'monitoring',   value: 95000,  date: '2026-06-15', stage: 'Qualification', owner: 'T. Nguyen' },
-  { id: 'd8',  customer: 'Hooli Cloud',           useCase: 'optimization', value: 275000, date: '2026-07-01', stage: 'Proposal',      owner: 'L. Ortiz' },
-  { id: 'd9',  customer: 'Pied Piper',            useCase: 'other',        value: 60000,  date: '2026-05-19', stage: 'Prospecting',   owner: 'R. Walker' },
-  { id: 'd10', customer: 'Vandelay Imports',      useCase: 'secure-coder', value: 130000, date: '2026-02-12', stage: 'Closed Lost',   owner: 'T. Nguyen', closeDate: '2026-04-30' },
-  { id: 'd11', customer: 'Cyberdyne Systems',     useCase: 'vuln-mgmt',    value: 150000, date: '2026-03-25', stage: 'Closed Lost',   owner: 'R. Walker', closeDate: '2026-05-15' },
+  { id: 'd1',  customer: 'Acme Financial',        product: 'concert-protect', useCase: 'cp-vuln-mgmt',    value: 420000, date: '2026-03-02', stage: 'Negotiation',   owner: 'T. Nguyen' },
+  { id: 'd2',  customer: 'Globex Retail',         product: 'instana',         useCase: 'in-observability', value: 250000, date: '2026-03-14', stage: 'Closed Won',    owner: 'L. Ortiz',  closeDate: '2026-05-02' },
+  { id: 'd3',  customer: 'Initech Manufacturing', product: 'turbonomic',      useCase: 'tu-cloud-cost',    value: 180000, date: '2026-04-08', stage: 'Proposal',      owner: 'T. Nguyen' },
+  { id: 'd4',  customer: 'Umbrella Health',       product: 'concert-protect', useCase: 'cp-compliance',    value: 610000, date: '2026-04-27', stage: 'Closed Won',    owner: 'R. Walker', closeDate: '2026-06-20' },
+  { id: 'd5',  customer: 'Stark Industries',      product: 'instana',         useCase: 'in-incident',      value: 340000, date: '2026-05-06', stage: 'Negotiation',   owner: 'L. Ortiz' },
+  { id: 'd6',  customer: 'Wayne Enterprises',     product: 'turbonomic',      useCase: 'tu-k8s',           value: 520000, date: '2026-05-22', stage: 'Closed Won',    owner: 'R. Walker', closeDate: '2026-07-08' },
+  { id: 'd7',  customer: 'Soylent Foods',         product: 'instana',         useCase: 'in-genai',         value: 95000,  date: '2026-06-15', stage: 'Qualification', owner: 'T. Nguyen' },
+  { id: 'd8',  customer: 'Hooli Cloud',           product: 'concert-protect', useCase: 'cp-sca',           value: 275000, date: '2026-07-01', stage: 'Proposal',      owner: 'L. Ortiz' },
+  // NOT touched: no VMware Optimization session has been delivered
+  { id: 'd9',  customer: 'Pied Piper',            product: 'turbonomic',      useCase: 'tu-vmware',        value: 60000,  date: '2026-05-19', stage: 'Prospecting',   owner: 'R. Walker' },
+  // NOT touched: opened before the first Instana observability session
+  { id: 'd10', customer: 'Vandelay Imports',      product: 'instana',         useCase: 'in-observability', value: 130000, date: '2026-02-12', stage: 'Closed Lost',   owner: 'T. Nguyen', closeDate: '2026-04-30' },
+  // touched AND lost — shown honestly
+  { id: 'd11', customer: 'Cyberdyne Systems',     product: 'concert-protect', useCase: 'cp-vuln-mgmt',    value: 150000, date: '2026-03-25', stage: 'Closed Lost',   owner: 'R. Walker', closeDate: '2026-05-15' },
+  // touched via CUSTOM use-case matching (same product + same wording as e9)
+  { id: 'd12', customer: 'Pier 57 Logistics',     product: 'instana',         useCase: 'custom', customUseCase: 'Mainframe observability', value: 90000, date: '2026-07-20', stage: 'Qualification', owner: 'L. Ortiz' },
 ]
 ```
 
 ## `src/data/attribution.js`
 
 ```js
-import { OPEN_STAGES, todayIso } from './constants.js'
+import { OPEN_STAGES, todayIso, matchKeyOf, PRODUCTS } from './constants.js'
 
 // A deal is "enablement-influenced" when at least one enablement session on
-// the same use case took place on or before the deal date.
+// the same use case took place on or before the deal date. Use cases match
+// by their match key (catalog id, or product + wording for custom ones).
 export function attributeDeals(deals, enablements) {
   return deals.map((deal) => {
+    const key = matchKeyOf(deal)
     const matched = enablements
-      .filter((e) => e.useCase === deal.useCase && e.date <= deal.date)
+      .filter((e) => matchKeyOf(e) === key && e.date <= deal.date)
       .sort((a, b) => a.date.localeCompare(b.date))
-    // A deal can be tied to one specific eligible session (sourceSessionId):
-    // it moves to the front and becomes the deal's matched session everywhere,
-    // instead of the automatic earliest. A stale tie (session deleted, or no
-    // longer eligible after a date/use-case edit) silently falls back to
-    // automatic — findIndex misses and the order is untouched.
+    // A deal can be tied to one specific session (sourceSessionId). Tie
+    // eligibility is broader than automatic matching: any session on the
+    // SAME PRODUCT delivered on or before the open date qualifies — the tie
+    // is a human assertion of which session mattered, and product is the
+    // boundary leadership reports on. The tied session moves to the front
+    // (added if the automatic rule didn't find it). A stale tie (session
+    // deleted, product/date changed) silently falls back to automatic.
     if (deal.sourceSessionId) {
       const i = matched.findIndex((s) => s.id === deal.sourceSessionId)
-      if (i > 0) matched.unshift(matched.splice(i, 1)[0])
+      if (i > 0) {
+        matched.unshift(matched.splice(i, 1)[0])
+      } else if (i === -1) {
+        const tied = enablements.find(
+          (s) =>
+            s.id === deal.sourceSessionId &&
+            s.date <= deal.date &&
+            (deal.product ? s.product === deal.product : matchKeyOf(s) === key),
+        )
+        if (tied) matched.unshift(tied)
+      }
     }
     return { ...deal, matched, influenced: matched.length > 0 }
   })
@@ -1447,23 +1745,27 @@ export function comparisonStats(deals, enablements) {
   }
 }
 
-// Where to invest next: per use case, the share of customer demand (deal
+// Where to invest next: per PRODUCT, the share of customer demand (deal
 // value) vs. the share of enablement effort. A positive gap means customers
-// want more of a use case than we currently enable on. Coverage share is
+// want more of a product than we currently enable on. Coverage share is
 // hour-weighted when hours are recorded, session-weighted otherwise.
 // Only delivered sessions count as coverage — a session on the calendar
-// hasn't covered anything yet.
-export function coverageGaps(deals, enablements, useCases) {
+// hasn't covered anything yet. Records logged before the product field
+// existed group under a "No product" row (shown only when present).
+export function coverageGaps(deals, enablements) {
   const delivered = enablements.filter((e) => e.date <= todayIso())
+  const attributed = attributeDeals(deals, enablements)
   const totalValue = deals.reduce((s, d) => s + d.value, 0)
   const totalHours = delivered.reduce((s, e) => s + (Number(e.hours) || 0), 0)
   const byHours = totalHours > 0
   const totalSessions = delivered.length
-  return useCases
-    .map((u) => {
-      const ucDeals = deals.filter((d) => d.useCase === u.id)
-      const sessions = delivered.filter((e) => e.useCase === u.id)
-      const demandValue = ucDeals.reduce((s, d) => s + d.value, 0)
+  const groups = [...PRODUCTS, { id: null, label: 'No product' }]
+  return groups
+    .map((p) => {
+      const inGroup = (r) => (p.id ? r.product === p.id : !r.product)
+      const pDeals = attributed.filter(inGroup)
+      const sessions = delivered.filter(inGroup)
+      const demandValue = pDeals.reduce((s, d) => s + d.value, 0)
       const hours = sessions.reduce((s, e) => s + (Number(e.hours) || 0), 0)
       const demandShare = totalValue ? demandValue / totalValue : 0
       const coverageShare = byHours
@@ -1471,16 +1773,21 @@ export function coverageGaps(deals, enablements, useCases) {
         : totalSessions
           ? sessions.length / totalSessions
           : 0
+      const touched = pDeals.filter((d) => d.influenced)
       return {
-        useCase: u.id,
-        label: u.label,
+        product: p.id,
+        label: p.label,
         demandValue,
-        dealCount: ucDeals.length,
+        dealCount: pDeals.length,
         sessionCount: sessions.length,
         hours,
         demandShare,
         coverageShare,
         gap: demandShare - coverageShare,
+        // per-product outcome figures for the one-pager and Products view
+        touchedCount: touched.length,
+        wonRevenue: touched.filter((d) => d.stage === 'Closed Won').reduce((s, d) => s + d.value, 0),
+        pipelineRevenue: touched.filter((d) => OPEN_STAGES.includes(d.stage)).reduce((s, d) => s + d.value, 0),
       }
     })
     .filter((r) => r.dealCount > 0 || r.sessionCount > 0)
@@ -1496,7 +1803,7 @@ export function coverageGaps(deals, enablements, useCases) {
 
 ```js
 import { impactSummary, comparisonStats, coverageGaps } from './attribution.js'
-import { USE_CASES, fmtUSDCompact, fmtPct } from './constants.js'
+import { fmtUSDCompact, fmtPct } from './constants.js'
 
 // The executive narrative engine. Everything the dashboard *says* about the
 // numbers is generated here from the numbers, so the story stays true when
@@ -1520,7 +1827,7 @@ const fmtDays = (v) => `${Math.round(v)} days`
 export function buildInsights(deals, enablements) {
   const summary = impactSummary(deals, enablements)
   const comparison = comparisonStats(deals, enablements)
-  const coverage = coverageGaps(deals, enablements, USE_CASES)
+  const coverage = coverageGaps(deals, enablements)
   const { influenced: a, rest: b } = comparison
 
   const asks = []
@@ -1663,12 +1970,16 @@ const API_KIND = import.meta.env.VITE_API_KIND || 'server'
 export const SHARED_MODE = Boolean(API_URL)
 
 // v2: enablements gained `hours`, deals gained `closeDate`.
-// v3: seed gained scheduled (future-dated) sessions for the upcoming strip;
-// bumping the key re-seeds browsers that stored the old demo data.
-const DATA_KEY = 'enablement-dashboard-data-v3'
+// v3: seed gained scheduled (future-dated) sessions for the upcoming strip.
+// v4: records gained the product dimension (product + per-product use cases);
+// bumping the key re-seeds standalone browsers that stored old demo data.
+const DATA_KEY = 'enablement-dashboard-data-v4'
 const CACHE_KEY = 'enablement-dashboard-shared-cache-v1'
 const THEME_KEY = 'enablement-dashboard-theme'
+const USER_KEY = 'enablement-dashboard-user'
 const SAVE_DEBOUNCE_MS = 500
+// soft-deleted records are restorable for this long, then purged for good
+const SOFT_DELETE_DAYS = 30
 
 // ?pollMs=2000 lets integration tests speed up cross-client refresh
 const POLL_MS = (() => {
@@ -1706,8 +2017,16 @@ const newId = () =>
 export function StoreProvider({ children }) {
   const [data, setData] = useState(() => (SHARED_MODE ? loadCache() : loadLocal()))
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) || 'white')
+  // who is using this browser — attached to every record they add/edit/delete
+  const [userName, setUserNameState] = useState(() => localStorage.getItem(USER_KEY) || '')
   // null in standalone mode; 'loading' | 'saving' | 'saved' | 'offline' when shared
   const [syncStatus, setSyncStatus] = useState(SHARED_MODE ? 'loading' : null)
+
+  const setUserName = (name) => {
+    const trimmed = name.trim()
+    setUserNameState(trimmed)
+    localStorage.setItem(USER_KEY, trimmed)
+  }
 
   // ---- shared-mode sync engine -------------------------------------------
   const versionRef = useRef(0) // last server version we based our data on
@@ -1858,43 +2177,143 @@ export function StoreProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const api = useMemo(
-    () => ({
-      enablements: data.enablements,
-      deals: data.deals,
+  // soft-deleted records past the retention window are purged for good —
+  // checked once per session, synced like any other change
+  const purgedRef = useRef(false)
+  useEffect(() => {
+    if (purgedRef.current) return
+    const cutoff = new Date(Date.now() - SOFT_DELETE_DAYS * 24 * 60 * 60 * 1000).toISOString()
+    const expired = (r) => r.deletedAt && r.deletedAt < cutoff
+    if (![...data.enablements, ...data.deals].some(expired)) return
+    purgedRef.current = true
+    mutate((d) => ({
+      enablements: d.enablements.filter((r) => !expired(r)),
+      deals: d.deals.filter((r) => !expired(r)),
+    }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data])
+
+  const api = useMemo(() => {
+    // audit stamps: who added / last edited / deleted a record, and when
+    const nowIso = () => new Date().toISOString()
+    const addStamp = () => (userName ? { createdBy: userName, createdAt: nowIso() } : { createdAt: nowIso() })
+    const editStamp = () => (userName ? { updatedBy: userName, updatedAt: nowIso() } : { updatedAt: nowIso() })
+    // every add/edit/delete/restore also appends to the record's own history,
+    // capped per record — this rides inside the record through the sync layer
+    // unchanged and is what the activity log is built from
+    const HISTORY_CAP = 20
+    const historyEntry = (action) => ({ at: nowIso(), by: userName || null, action })
+    const withHistory = (record, entry) => ({
+      ...record,
+      history: [...(record.history ?? []), entry].slice(-HISTORY_CAP),
+    })
+
+    // everything the app derives from is the ACTIVE records; soft-deleted ones
+    // live only in the recycle lists below until restored or purged
+    const active = (list) => list.filter((r) => !r.deletedAt)
+    const deleted = (list) =>
+      list.filter((r) => r.deletedAt).sort((a, b) => b.deletedAt.localeCompare(a.deletedAt))
+
+    // the most recent add/edit/delete with a name attached, for the header
+    let lastEdited = null
+    for (const r of [...data.enablements, ...data.deals]) {
+      for (const [at, name] of [
+        [r.deletedAt, r.deletedBy],
+        [r.updatedAt, r.updatedBy],
+        [r.createdAt, r.createdBy],
+      ]) {
+        if (at && name && (!lastEdited || at > lastEdited.at)) lastEdited = { at, name }
+      }
+    }
+
+    const softDelete = (key) => (id) => {
+      const stamp = { deletedAt: nowIso(), ...(userName ? { deletedBy: userName } : {}) }
+      const entry = historyEntry('deleted')
+      mutate((d) => ({
+        ...d,
+        [key]: d[key].map((x) => (x.id === id ? withHistory({ ...x, ...stamp }, entry) : x)),
+      }))
+    }
+    const restore = (key) => (id) => {
+      const entry = historyEntry('restored')
+      // undefined fields are dropped on serialize, so the record comes back clean
+      mutate((d) => ({
+        ...d,
+        [key]: d[key].map((x) =>
+          x.id === id ? withHistory({ ...x, deletedAt: undefined, deletedBy: undefined }, entry) : x,
+        ),
+      }))
+    }
+
+    // the activity log: every history entry across all records (deleted ones
+    // included), newest first. Records from before per-record history existed
+    // contribute what their stamps still know.
+    const events = []
+    const collect = (list, kind, labelOf) => {
+      for (const r of list) {
+        if (r.history?.length) {
+          for (const h of r.history) events.push({ at: h.at, name: h.by, action: h.action, kind, label: labelOf(r) })
+        } else {
+          if (r.createdAt) events.push({ at: r.createdAt, name: r.createdBy, action: 'added', kind, label: labelOf(r) })
+          if (r.updatedAt) events.push({ at: r.updatedAt, name: r.updatedBy, action: 'edited', kind, label: labelOf(r) })
+          if (r.deletedAt) events.push({ at: r.deletedAt, name: r.deletedBy, action: 'deleted', kind, label: labelOf(r) })
+        }
+      }
+    }
+    collect(data.enablements, 'session', (r) => r.title)
+    collect(data.deals, 'deal', (r) => r.customer)
+    const activityLog = events.sort((a, b) => b.at.localeCompare(a.at)).slice(0, 100)
+
+    return {
+      enablements: active(data.enablements),
+      deals: active(data.deals),
+      deletedEnablements: deleted(data.enablements),
+      deletedDeals: deleted(data.deals),
+      lastEdited,
+      activityLog,
+      userName,
+      setUserName,
       theme,
       setTheme,
       syncStatus,
       addEnablement: (e) => {
-        const rec = { ...e, id: newId() }
+        const rec = withHistory({ ...e, id: newId(), ...addStamp() }, historyEntry('added'))
         mutate((d) => ({ ...d, enablements: [...d.enablements, rec] }))
       },
-      updateEnablement: (id, patch) =>
+      updateEnablement: (id, patch) => {
+        const stamp = editStamp()
+        const entry = historyEntry('edited')
         mutate((d) => ({
           ...d,
-          enablements: d.enablements.map((x) => (x.id === id ? { ...x, ...patch } : x)),
-        })),
-      removeEnablement: (id) =>
-        mutate((d) => ({ ...d, enablements: d.enablements.filter((e) => e.id !== id) })),
+          enablements: d.enablements.map((x) => (x.id === id ? withHistory({ ...x, ...patch, ...stamp }, entry) : x)),
+        }))
+      },
+      removeEnablement: softDelete('enablements'),
+      restoreEnablement: restore('enablements'),
       addDeal: (deal) => {
-        const rec = { ...deal, id: newId() }
+        const rec = withHistory({ ...deal, id: newId(), ...addStamp() }, historyEntry('added'))
         mutate((d) => ({ ...d, deals: [...d.deals, rec] }))
       },
-      updateDeal: (id, patch) =>
+      updateDeal: (id, patch) => {
+        const stamp = editStamp()
+        const entry = historyEntry('edited')
         mutate((d) => ({
           ...d,
-          deals: d.deals.map((x) => (x.id === id ? { ...x, ...patch } : x)),
-        })),
-      removeDeal: (id) =>
-        mutate((d) => ({ ...d, deals: d.deals.filter((x) => x.id !== id) })),
+          deals: d.deals.map((x) => (x.id === id ? withHistory({ ...x, ...patch, ...stamp }, entry) : x)),
+        }))
+      },
+      removeDeal: softDelete('deals'),
+      restoreDeal: restore('deals'),
       // standalone-only (the header hides it in shared mode)
       resetToDemo: () => setData({ enablements: seedEnablements, deals: seedDeals }),
       // key-gated admin reset: goes through mutate so in shared mode the wipe
-      // syncs to the store and reaches every other open browser
+      // syncs to the store and reaches every other open browser. Hard wipe —
+      // the recycle bin goes with it, deliberately.
       clearAll: () => mutate(() => ({ enablements: [], deals: [] })),
-    }),
+    }
+  },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data, theme, syncStatus],
+    [data, theme, syncStatus, userName],
   )
 
   return <StoreContext.Provider value={api}>{children}</StoreContext.Provider>
@@ -1924,17 +2343,23 @@ export default function KpiTile({ label, value, detail }) {
 ## `src/components/UseCaseChip.jsx`
 
 ```jsx
-import { getUseCase, getUseCaseColor } from '../data/constants.js'
+import { getProductColor, getUseCaseLabel } from '../data/constants.js'
 import { useStore } from '../data/store.jsx'
 
-// Identity swatch: exact validated hex + the label in text ink,
-// so a use case is never identified by color alone.
-export default function UseCaseChip({ id }) {
+// Identity swatch for a record: the dot carries the PRODUCT color (three
+// products stay color-vision-safe; per-use-case hues could not), the text is
+// the record's use-case label — catalog, custom, or legacy. Color is never
+// the only signal.
+export default function UseCaseChip({ record }) {
   const { theme } = useStore()
   return (
     <span className="uc-chip">
-      <span className="uc-chip__dot" style={{ background: getUseCaseColor(id, theme) }} aria-hidden="true" />
-      {getUseCase(id).label}
+      <span
+        className="uc-chip__dot"
+        style={{ background: getProductColor(record.product, theme) }}
+        aria-hidden="true"
+      />
+      {getUseCaseLabel(record)}
     </span>
   )
 }
@@ -1946,7 +2371,7 @@ export default function UseCaseChip({ id }) {
 import { Button } from '@carbon/react'
 import { Email } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
-import { todayIso, sessionRequestMailto, getUseCaseColor } from '../data/constants.js'
+import { todayIso, sessionRequestMailto, getProductColor, getProduct } from '../data/constants.js'
 import UseCaseChip from './UseCaseChip.jsx'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -1983,7 +2408,7 @@ export default function UpcomingSessions() {
               <div
                 key={s.id}
                 className="up-card"
-                style={{ borderLeftColor: getUseCaseColor(s.useCase, theme) }}
+                style={{ borderLeftColor: getProductColor(s.product, theme) }}
               >
                 <div className="up-card__date" aria-hidden="true">
                   <span className="up-card__day">{d.getDate()}</span>
@@ -1991,8 +2416,9 @@ export default function UpcomingSessions() {
                 </div>
                 <div className="up-card__body">
                   <div className="up-card__title">{s.title}</div>
-                  <UseCaseChip id={s.useCase} />
+                  <UseCaseChip record={s} />
                   <div className="up-card__meta">
+                    {getProduct(s.product) ? `${getProduct(s.product).label} · ` : ''}
                     {s.presenter ? `${s.presenter} · ` : ''}{inDays(s.date)}
                   </div>
                 </div>
@@ -2114,14 +2540,13 @@ export default function ComparisonPanel({ stats }) {
 
 ```jsx
 import { Tag } from '@carbon/react'
-import { fmtUSDCompact } from '../data/constants.js'
+import { fmtUSDCompact, getProductColor } from '../data/constants.js'
 import { useStore } from '../data/store.jsx'
-import UseCaseChip from './UseCaseChip.jsx'
 
 const pct1 = (ratio) => `${(ratio * 100).toFixed(0)}%`
 
-// Where to invest next: per use case, customer demand share (deal value) vs.
-// our enablement coverage share (team hours). A use case where demand outruns
+// Where to invest next: per PRODUCT, customer demand share (deal value) vs.
+// our enablement coverage share (team hours). A product where demand outruns
 // coverage is the concrete ask to sales/execs: point more effort here.
 export default function CoveragePanel({ rows }) {
   const { theme } = useStore()
@@ -2147,9 +2572,16 @@ export default function CoveragePanel({ rows }) {
         </span>
       </div>
       {rows.map((r) => (
-        <div key={r.useCase} className="cmp__row">
+        <div key={r.label} className="cmp__row">
           <div className="cmp__label">
-            <UseCaseChip id={r.useCase} />
+            <span className="uc-chip">
+              <span
+                className="uc-chip__dot"
+                style={{ background: getProductColor(r.product, theme) }}
+                aria-hidden="true"
+              />
+              {r.label}
+            </span>
             <span className="cmp__hint">
               {r.dealCount} deal{r.dealCount === 1 ? '' : 's'} · {fmtUSDCompact(r.demandValue)} · {r.sessionCount} session{r.sessionCount === 1 ? '' : 's'} / {r.hours}h
             </span>
@@ -2322,7 +2754,7 @@ export default function QuarterlyPipeline({ deals, enablements }) {
 import { useMemo, useRef, useState } from 'react'
 import { IconButton } from '@carbon/react'
 import { ChevronLeft, ChevronRight } from '@carbon/icons-react'
-import { USE_CASES, getUseCase, getUseCaseColor, fmtUSD, fmtUSDCompact, fmtDate } from '../data/constants.js'
+import { PRODUCTS, getProductColor, getUseCaseLabel, fmtUSD, fmtUSDCompact, fmtDate } from '../data/constants.js'
 import { attributeDeals } from '../data/attribution.js'
 import { quarterStart, nextQuarter, prevQuarter, quarterLabel } from '../data/quarters.js'
 import { useStore } from '../data/store.jsx'
@@ -2373,12 +2805,16 @@ export default function InfluenceTimeline({ deals, enablements }) {
       return t >= qCursor && t < qEnd
     }
 
-    const lanes = USE_CASES.map((u) => {
+    // one lane per PRODUCT with activity; records logged before the product
+    // dimension existed group into a gray "No product" lane
+    const laneDefs = [...PRODUCTS, { id: null, label: 'No product' }]
+    const lanes = laneDefs.map((u) => {
+      const inLane = (r) => (u.id ? r.product === u.id : !r.product)
       const sessions = enablements
-        .filter((e) => e.useCase === u.id && inQuarter(e.date))
+        .filter((e) => inLane(e) && inQuarter(e.date))
         .sort((a, b) => a.date.localeCompare(b.date))
       const laneDeals = attributed
-        .filter((d) => d.useCase === u.id && inQuarter(d.date))
+        .filter((d) => inLane(d) && inQuarter(d.date))
         .sort((a, b) => a.date.localeCompare(b.date))
         .map((d) => {
           // a manually tied deal always links to its tied session; automatic
@@ -2533,10 +2969,10 @@ export default function InfluenceTimeline({ deals, enablements }) {
             const top = i * LANE_H
             const dealY = top + 64 // labels sit at dealY-22, clear of the lane header band
             const sessionY = top + 106
-            const color = getUseCaseColor(lane.u.id, theme)
+            const color = getProductColor(lane.u.id, theme)
 
             return (
-              <g key={lane.u.id}>
+              <g key={lane.u.id ?? 'no-product'}>
                 {/* lane header */}
                 <rect x={PAD_L} y={top + 12} width="10" height="10" rx="2" fill={color} />
                 <text x={PAD_L + 16} y={top + 21} fontSize="12" fontWeight="600" style={{ fill: ink.primary }}>
@@ -2591,6 +3027,7 @@ export default function InfluenceTimeline({ deals, enablements }) {
                 {lane.sessions.map((s) => {
                   const lines = [
                     s.title,
+                    getUseCaseLabel(s),
                     `${fmtDate(s.date)}${s.presenter ? ` · ${s.presenter}` : ''}`,
                     `${s.attendees || 0} attendees · ${Number(s.hours) || 0}h invested`,
                   ]
@@ -2633,12 +3070,12 @@ export default function InfluenceTimeline({ deals, enablements }) {
                   const lines = [
                     d.customer,
                     `${fmtUSD(d.value)} · ${d.stage}`,
-                    `Opened ${fmtDate(d.date)}`,
+                    `${getUseCaseLabel(d)} · opened ${fmtDate(d.date)}`,
                     d.influenced
                       ? d.link
                         ? `Outbound touched — session: ${d.link.title} (${fmtDate(d.link.date)})`
                         : `Outbound touched — carried from ${quarterLabel(quarterStart(toDate(d.carried.date)))}: ${d.carried.title} (${fmtDate(d.carried.date)})`
-                      : `Not counted — no ${getUseCase(d.useCase).label} session before this deal`,
+                      : 'Not counted — no matching session before this deal',
                   ]
                   return (
                     <g
@@ -2680,7 +3117,7 @@ export default function InfluenceTimeline({ deals, enablements }) {
 import { useState } from 'react'
 import { IconButton } from '@carbon/react'
 import { ChevronLeft, ChevronRight } from '@carbon/icons-react'
-import { USE_CASES, getUseCaseColor } from '../data/constants.js'
+import { PRODUCTS, getProductColor } from '../data/constants.js'
 import { useStore } from '../data/store.jsx'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -2756,7 +3193,7 @@ export default function MonthCalendar({ sessions, onPickDay }) {
                 <span
                   key={e.id}
                   className="cal__event"
-                  style={{ borderLeftColor: getUseCaseColor(e.useCase, theme) }}
+                  style={{ borderLeftColor: getProductColor(e.product, theme) }}
                   title={`${e.title} — ${e.presenter || 'team session'}`}
                 >
                   {e.title}
@@ -2767,14 +3204,14 @@ export default function MonthCalendar({ sessions, onPickDay }) {
         })}
       </div>
       <div className="cal__legend">
-        {USE_CASES.map((u) => (
-          <span key={u.id} className="uc-chip" style={{ fontSize: '0.75rem' }}>
+        {PRODUCTS.map((p) => (
+          <span key={p.id} className="uc-chip" style={{ fontSize: '0.75rem' }}>
             <span
               className="uc-chip__dot"
-              style={{ background: theme === 'g100' ? u.dark : u.light }}
+              style={{ background: theme === 'g100' ? p.dark : p.light }}
               aria-hidden="true"
             />
-            {u.label}
+            {p.label}
           </span>
         ))}
       </div>
@@ -2794,14 +3231,27 @@ import {
   DatePicker,
   DatePickerInput,
   NumberInput,
+  Checkbox,
 } from '@carbon/react'
-import { USE_CASES } from '../data/constants.js'
+import { PRODUCTS, USE_CASES_BY_PRODUCT, getUseCaseLabel } from '../data/constants.js'
 import { useStore } from '../data/store.jsx'
 
-const blank = { title: '', useCase: null, date: '', presenter: '', attendees: 10, hours: 4 }
+const blank = {
+  title: '',
+  product: null, // PRODUCTS entry
+  useCase: null, // catalog entry for the chosen product
+  customChecked: false,
+  customText: '',
+  date: '',
+  presenter: '',
+  attendees: 10,
+  hours: 4,
+}
 
 // Create a new session, or edit an existing one when `session` is passed —
 // hours and dates feed the ROI and attribution math, so they must be fixable.
+// Use case is product-scoped: pick the product first, then one of its use
+// cases — or tick the checkbox and type a custom one when none fits.
 export default function EnablementModal({ open, onClose, initialDate, session = null }) {
   const { addEnablement, updateEnablement } = useStore()
   const [form, setForm] = useState(blank)
@@ -2809,30 +3259,44 @@ export default function EnablementModal({ open, onClose, initialDate, session = 
 
   useEffect(() => {
     if (open) {
-      setForm(
-        session
-          ? {
-              title: session.title,
-              useCase: USE_CASES.find((u) => u.id === session.useCase) ?? null,
-              date: session.date,
-              presenter: session.presenter ?? '',
-              attendees: session.attendees ?? 0,
-              hours: session.hours ?? 0,
-            }
-          : { ...blank, date: initialDate || '' },
-      )
+      if (session) {
+        const product = PRODUCTS.find((p) => p.id === session.product) ?? null
+        const catalog = product ? USE_CASES_BY_PRODUCT[product.id] : []
+        const inCatalog = catalog.find((u) => u.id === session.useCase) ?? null
+        // custom entries — and legacy records from before product-scoped
+        // catalogs — edit as custom text so nothing is silently lost
+        const custom = session.useCase === 'custom' || (!inCatalog && session.useCase)
+        setForm({
+          title: session.title,
+          product,
+          useCase: inCatalog,
+          customChecked: Boolean(custom),
+          customText: custom ? (session.customUseCase ?? getUseCaseLabel(session)) : '',
+          date: session.date,
+          presenter: session.presenter ?? '',
+          attendees: session.attendees ?? 0,
+          hours: session.hours ?? 0,
+        })
+      } else {
+        setForm({ ...blank, date: initialDate || '' })
+      }
       setInvalid(false)
     }
   }, [open, initialDate, session])
 
+  const catalog = form.product ? USE_CASES_BY_PRODUCT[form.product.id] : []
+  const useCaseOk = form.customChecked ? Boolean(form.customText.trim()) : Boolean(form.useCase)
+
   const submit = () => {
-    if (!form.title.trim() || !form.useCase || !form.date) {
+    if (!form.title.trim() || !form.product || !useCaseOk || !form.date) {
       setInvalid(true)
       return
     }
     const payload = {
       title: form.title.trim(),
-      useCase: form.useCase.id,
+      product: form.product.id,
+      useCase: form.customChecked ? 'custom' : form.useCase.id,
+      customUseCase: form.customChecked ? form.customText.trim() : undefined,
       date: form.date,
       presenter: form.presenter.trim(),
       attendees: Number(form.attendees) || 0,
@@ -2857,7 +3321,7 @@ export default function EnablementModal({ open, onClose, initialDate, session = 
         <TextInput
           id="en-title"
           labelText="Session title"
-          placeholder="e.g. Vulnerability Management 101 Workshop"
+          placeholder="e.g. Instana Observability Workshop"
           value={form.title}
           invalid={invalid && !form.title.trim()}
           invalidText="A session title is required."
@@ -2871,16 +3335,50 @@ export default function EnablementModal({ open, onClose, initialDate, session = 
           onChange={(e) => setForm({ ...form, presenter: e.target.value })}
         />
         <Dropdown
-          id="en-usecase"
-          titleText="Use case"
-          label="Select a use case"
-          items={USE_CASES}
+          id="en-product"
+          titleText="Product"
+          label="Select a product"
+          items={PRODUCTS}
           itemToString={(i) => (i ? i.label : '')}
-          selectedItem={form.useCase}
-          invalid={invalid && !form.useCase}
-          invalidText="Pick the use case this session enables on."
-          onChange={({ selectedItem }) => setForm({ ...form, useCase: selectedItem })}
+          selectedItem={form.product}
+          invalid={invalid && !form.product}
+          invalidText="Pick the product this session is about."
+          onChange={({ selectedItem }) =>
+            // switching product resets the catalog pick; custom text survives
+            setForm({ ...form, product: selectedItem, useCase: null })
+          }
         />
+        {!form.customChecked && (
+          <Dropdown
+            id="en-usecase"
+            titleText="Use case"
+            label={form.product ? 'Select a use case' : 'Pick a product first'}
+            disabled={!form.product}
+            items={catalog}
+            itemToString={(i) => (i ? i.label : '')}
+            selectedItem={form.useCase}
+            invalid={invalid && !useCaseOk}
+            invalidText="Pick a use case, or tick the box below to type your own."
+            onChange={({ selectedItem }) => setForm({ ...form, useCase: selectedItem })}
+          />
+        )}
+        <Checkbox
+          id="en-usecase-custom"
+          labelText="The use case isn’t in the list"
+          checked={form.customChecked}
+          onChange={(_e, { checked }) => setForm({ ...form, customChecked: checked })}
+        />
+        {form.customChecked && (
+          <TextInput
+            id="en-usecase-custom-text"
+            labelText="Custom use case"
+            placeholder="Describe the use case in a few words"
+            value={form.customText}
+            invalid={invalid && !useCaseOk}
+            invalidText="Describe the use case, or untick the box and pick from the list."
+            onChange={(e) => setForm({ ...form, customText: e.target.value })}
+          />
+        )}
         <DatePicker
           datePickerType="single"
           dateFormat="Y-m-d"
@@ -2932,16 +3430,36 @@ import {
   DatePicker,
   DatePickerInput,
   NumberInput,
+  Checkbox,
 } from '@carbon/react'
-import { USE_CASES, DEAL_STAGES, fmtDate } from '../data/constants.js'
+import {
+  PRODUCTS,
+  USE_CASES_BY_PRODUCT,
+  DEAL_STAGES,
+  fmtDate,
+  matchKeyOf,
+  getUseCaseLabel,
+} from '../data/constants.js'
 import { useStore } from '../data/store.jsx'
 
-const blank = { customer: '', useCase: null, value: 100000, date: '', stage: 'Prospecting', owner: '', closeDate: '', sourceSessionId: '' }
-
+const blank = {
+  customer: '',
+  product: null, // PRODUCTS entry
+  useCase: null, // catalog entry for the chosen product
+  customChecked: false,
+  customText: '',
+  value: 100000,
+  date: '',
+  stage: 'Prospecting',
+  owner: '',
+  closeDate: '',
+  sourceSessionId: '',
+}
 
 // Create a new deal, or edit an existing one when `deal` is passed — stages
 // change over a deal's life, and stale stages silently corrupt the win-rate
-// comparison, so editing in place matters.
+// comparison, so editing in place matters. Use case is product-scoped, with
+// a custom option; the session tie offers any session on the deal's product.
 export default function DealModal({ open, onClose, deal = null }) {
   const { addDeal, updateDeal, enablements } = useStore()
   const [form, setForm] = useState(blank)
@@ -2949,58 +3467,84 @@ export default function DealModal({ open, onClose, deal = null }) {
 
   useEffect(() => {
     if (open) {
-      setForm(
-        deal
-          ? {
-              customer: deal.customer,
-              useCase: USE_CASES.find((u) => u.id === deal.useCase) ?? null,
-              value: deal.value,
-              date: deal.date,
-              stage: deal.stage,
-              owner: deal.owner ?? '',
-              closeDate: deal.closeDate ?? '',
-              sourceSessionId: deal.sourceSessionId ?? '',
-            }
-          : blank,
-      )
+      if (deal) {
+        const product = PRODUCTS.find((p) => p.id === deal.product) ?? null
+        const catalog = product ? USE_CASES_BY_PRODUCT[product.id] : []
+        const inCatalog = catalog.find((u) => u.id === deal.useCase) ?? null
+        const custom = deal.useCase === 'custom' || (!inCatalog && deal.useCase)
+        setForm({
+          customer: deal.customer,
+          product,
+          useCase: inCatalog,
+          customChecked: Boolean(custom),
+          customText: custom ? (deal.customUseCase ?? getUseCaseLabel(deal)) : '',
+          value: deal.value,
+          date: deal.date,
+          stage: deal.stage,
+          owner: deal.owner ?? '',
+          closeDate: deal.closeDate ?? '',
+          sourceSessionId: deal.sourceSessionId ?? '',
+        })
+      } else {
+        setForm(blank)
+      }
       setInvalid(false)
     }
   }, [open, deal])
 
-  // sessions this deal COULD be tied to: same use case, delivered on or
-  // before the open date — the same eligibility the counting rule uses, so a
-  // manual tie can never create a match the rule wouldn't count
+  const catalog = form.product ? USE_CASES_BY_PRODUCT[form.product.id] : []
+  const useCaseOk = form.customChecked ? Boolean(form.customText.trim()) : Boolean(form.useCase)
+
+  // what this deal would look like to the matching rule right now
+  const formRecord = {
+    product: form.product?.id,
+    useCase: form.customChecked ? 'custom' : form.useCase?.id,
+    customUseCase: form.customChecked ? form.customText : undefined,
+  }
+
+  // sessions this deal COULD be tied to: any session on the SAME PRODUCT
+  // delivered on or before the open date — the tie is a human assertion of
+  // which session mattered, and product is the boundary leadership reports on
   const eligibleSessions = useMemo(
     () =>
-      form.useCase && form.date
+      form.product && form.date
         ? enablements
-            .filter((e) => e.useCase === form.useCase.id && e.date <= form.date)
+            .filter((e) => e.product === form.product.id && e.date <= form.date)
             .sort((a, b) => a.date.localeCompare(b.date))
         : [],
-    [enablements, form.useCase, form.date],
+    [enablements, form.product, form.date],
   )
-  // the Automatic option names the session the timing rule resolves to (the
-  // earliest eligible one), and that session is left OUT of the manual list —
-  // picking it by hand would be the same choice twice
-  const earliest = eligibleSessions[0] ?? null
+
+  // the Automatic option names what the timing rule resolves to: the earliest
+  // session matching the deal's use case; the manual list excludes it
+  const formKey = matchKeyOf(formRecord)
+  const earliestAuto = eligibleSessions.find((e) => matchKeyOf(e) === formKey) ?? null
   const autoTie = {
     id: '',
-    label: earliest ? `Automatic — ${earliest.title} (${fmtDate(earliest.date)})` : 'Automatic',
+    label: earliestAuto
+      ? `Automatic — ${earliestAuto.title} (${fmtDate(earliestAuto.date)})`
+      : 'Automatic — no session matches this use case yet',
   }
-  const tieItems = [autoTie, ...eligibleSessions.slice(1).map((e) => ({ id: e.id, label: `${e.title} — ${fmtDate(e.date)}` }))]
-  // a tie that stopped being eligible (use case / date changed) — or one that
-  // points at the earliest session, which IS automatic — reads as Automatic
-  // and is dropped on save
+  const tieItems = [
+    autoTie,
+    ...eligibleSessions
+      .filter((e) => e.id !== earliestAuto?.id)
+      .map((e) => ({ id: e.id, label: `${e.title} — ${fmtDate(e.date)}` })),
+  ]
+  // a tie that stopped being eligible (product / date changed) — or one that
+  // points at the automatic pick — reads as Automatic and is dropped on save
   const selectedTie = tieItems.find((i) => i.id === form.sourceSessionId) ?? autoTie
 
   const submit = () => {
-    if (!form.customer.trim() || !form.useCase || !form.date || !(Number(form.value) > 0)) {
+    if (!form.customer.trim() || !form.product || !useCaseOk || !form.date || !(Number(form.value) > 0)) {
       setInvalid(true)
       return
     }
     const payload = {
       customer: form.customer.trim(),
-      useCase: form.useCase.id,
+      product: form.product.id,
+      useCase: form.customChecked ? 'custom' : form.useCase.id,
+      customUseCase: form.customChecked ? form.customText.trim() : undefined,
       value: Number(form.value),
       date: form.date,
       stage: form.stage,
@@ -3045,16 +3589,49 @@ export default function DealModal({ open, onClose, deal = null }) {
           onChange={(_e, { value }) => setForm({ ...form, value })}
         />
         <Dropdown
-          id="deal-usecase"
-          titleText="Use case the customer is interested in"
-          label="Select a use case"
-          items={USE_CASES}
+          id="deal-product"
+          titleText="Product"
+          label="Select a product"
+          items={PRODUCTS}
           itemToString={(i) => (i ? i.label : '')}
-          selectedItem={form.useCase}
-          invalid={invalid && !form.useCase}
-          invalidText="Pick the use case the customer is interested in."
-          onChange={({ selectedItem }) => setForm({ ...form, useCase: selectedItem })}
+          selectedItem={form.product}
+          invalid={invalid && !form.product}
+          invalidText="Pick the product this deal relates to."
+          onChange={({ selectedItem }) =>
+            setForm({ ...form, product: selectedItem, useCase: null, sourceSessionId: '' })
+          }
         />
+        {!form.customChecked && (
+          <Dropdown
+            id="deal-usecase"
+            titleText="Use case the customer is interested in"
+            label={form.product ? 'Select a use case' : 'Pick a product first'}
+            disabled={!form.product}
+            items={catalog}
+            itemToString={(i) => (i ? i.label : '')}
+            selectedItem={form.useCase}
+            invalid={invalid && !useCaseOk}
+            invalidText="Pick a use case, or tick the box below to type your own."
+            onChange={({ selectedItem }) => setForm({ ...form, useCase: selectedItem })}
+          />
+        )}
+        <Checkbox
+          id="deal-usecase-custom"
+          labelText="The use case isn’t in the list"
+          checked={form.customChecked}
+          onChange={(_e, { checked }) => setForm({ ...form, customChecked: checked })}
+        />
+        {form.customChecked && (
+          <TextInput
+            id="deal-usecase-custom-text"
+            labelText="Custom use case"
+            placeholder="Describe the use case in a few words"
+            value={form.customText}
+            invalid={invalid && !useCaseOk}
+            invalidText="Describe the use case, or untick the box and pick from the list."
+            onChange={(e) => setForm({ ...form, customText: e.target.value })}
+          />
+        )}
         <DatePicker
           datePickerType="single"
           dateFormat="Y-m-d"
@@ -3079,7 +3656,7 @@ export default function DealModal({ open, onClose, deal = null }) {
           <Dropdown
             id="deal-source-session"
             titleText="Tie to a specific session (optional)"
-            helperText="Pick a different session if the deal came out of a later one."
+            helperText="Any session on this product delivered before the open date qualifies."
             label={autoTie.label}
             items={tieItems}
             itemToString={(i) => (i ? i.label : '')}
@@ -3200,6 +3777,150 @@ export default function AdminResetModal({ open, onClose }) {
 }
 ```
 
+## `src/components/NameModal.jsx`
+
+```jsx
+import { useEffect, useState } from 'react'
+import { Modal, TextInput } from '@carbon/react'
+import { useStore } from '../data/store.jsx'
+
+// Asks for the user's full name on first visit (shared mode). The name is
+// stored in this browser and attached to every record the person adds, edits,
+// or deletes — the audit trail that makes shared numbers trustworthy. It can
+// be changed later via the person icon in the header.
+export default function NameModal({ open, onClose, firstRun }) {
+  const { userName, setUserName } = useStore()
+  const [name, setName] = useState('')
+  const [invalid, setInvalid] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setName(userName)
+      setInvalid(false)
+    }
+  }, [open, userName])
+
+  const submit = () => {
+    if (!name.trim()) {
+      setInvalid(true)
+      return
+    }
+    setUserName(name)
+    onClose()
+  }
+
+  return (
+    <Modal
+      open={open}
+      modalLabel="Identity"
+      modalHeading={firstRun ? 'Welcome — who are you?' : 'Change your name'}
+      primaryButtonText="Continue"
+      secondaryButtonText={firstRun ? undefined : 'Cancel'}
+      preventCloseOnClickOutside={firstRun}
+      onRequestClose={firstRun ? () => {} : onClose}
+      onRequestSubmit={submit}
+    >
+      <p style={{ marginBottom: '1rem', fontSize: '0.875rem' }}>
+        Your full name is attached to the records you add or edit, so the team can see who to ask
+        about a change.
+      </p>
+      <TextInput
+        id="user-name"
+        labelText="Full name"
+        placeholder="e.g. Hunain Malik"
+        value={name}
+        invalid={invalid}
+        invalidText="Please enter your name."
+        onChange={(e) => {
+          setName(e.target.value)
+          setInvalid(false)
+        }}
+      />
+    </Modal>
+  )
+}
+```
+
+## `src/components/RecentlyDeleted.jsx`
+
+```jsx
+import { Button } from '@carbon/react'
+import { Reset } from '@carbon/icons-react'
+import { fmtDate } from '../data/constants.js'
+
+// The recycle bin: soft-deleted records for one page, restorable in one
+// click. Records are purged for good 30 days after deletion; until then an
+// accidental delete costs nothing. Renders nothing when the bin is empty.
+export default function RecentlyDeleted({ title, rows, onRestore }) {
+  if (!rows.length) return null
+  return (
+    <div className="chart-card" style={{ marginTop: '1rem' }}>
+      <h4 className="section-title">{title}</h4>
+      <p className="rd-note">
+        Deleted records can be restored for 30 days, then they are removed permanently.
+      </p>
+      {rows.map((r) => (
+        <div key={r.id} className="rd-row">
+          <div>
+            <div className="rd-row__label">{r.label}</div>
+            <div className="rd-row__meta">
+              deleted {fmtDate(r.deletedAt.slice(0, 10))}
+              {r.deletedBy ? ` by ${r.deletedBy}` : ''}
+            </div>
+          </div>
+          <Button kind="ghost" size="sm" renderIcon={Reset} onClick={() => onRestore(r.id)}>
+            Restore
+          </Button>
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
+## `src/components/ActivityLogModal.jsx`
+
+```jsx
+import { Modal } from '@carbon/react'
+import { useStore } from '../data/store.jsx'
+
+const fmtWhen = (iso) =>
+  new Date(iso).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+
+// The audit log behind the "Last edited by" badge: every add, edit, delete,
+// and restore across the dashboard, newest first, with who and exactly when.
+export default function ActivityLogModal({ open, onClose }) {
+  const { activityLog } = useStore()
+
+  return (
+    <Modal open={open} passiveModal modalLabel="Audit" modalHeading="Activity log" onRequestClose={onClose}>
+      <p className="al-note">
+        The {activityLog.length >= 100 ? 'most recent 100' : `last ${activityLog.length}`} changes to
+        this dashboard. Permanently removed records leave the log with them.
+      </p>
+      {activityLog.length === 0 ? (
+        <p className="al-empty">No recorded changes yet.</p>
+      ) : (
+        activityLog.map((e, i) => (
+          <div key={i} className="al-row">
+            <span>
+              <strong>{e.name ?? 'Someone'}</strong> {e.action} the {e.kind} “{e.label}”
+            </span>
+            <span className="al-row__time">{fmtWhen(e.at)}</span>
+          </div>
+        ))
+      )}
+    </Modal>
+  )
+}
+```
+
 ## `src/pages/Impact.jsx`
 
 ```jsx
@@ -3218,7 +3939,7 @@ import {
 import { Document } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { buildInsights } from '../data/insights.js'
-import { fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
+import { fmtUSD, fmtUSDCompact, fmtDate, STAGE_TAG_TYPE, getProduct } from '../data/constants.js'
 import KpiTile from '../components/KpiTile.jsx'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import ComparisonPanel from '../components/ComparisonPanel.jsx'
@@ -3313,6 +4034,7 @@ export default function Impact() {
               <TableRow>
                 <TableHeader>Customer</TableHeader>
                 <TableHeader>Revenue</TableHeader>
+                <TableHeader>Product</TableHeader>
                 <TableHeader>Use case</TableHeader>
                 <TableHeader>Stage</TableHeader>
                 <TableHeader>Matched session</TableHeader>
@@ -3325,7 +4047,8 @@ export default function Impact() {
                 <TableRow key={d.id}>
                   <TableCell>{d.customer}</TableCell>
                   <TableCell>{fmtUSD(d.value)}</TableCell>
-                  <TableCell><UseCaseChip id={d.useCase} /></TableCell>
+                  <TableCell>{getProduct(d.product)?.label ?? '—'}</TableCell>
+                  <TableCell><UseCaseChip record={d} /></TableCell>
                   <TableCell>
                     <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
                   </TableCell>
@@ -3375,13 +4098,14 @@ import {
 } from '@carbon/react'
 import { Add, Edit, Email, TrashCan } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
-import { fmtDate, sessionRequestMailto, todayIso } from '../data/constants.js'
+import { fmtDate, sessionRequestMailto, todayIso, authorNote, getProduct } from '../data/constants.js'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import MonthCalendar from '../components/MonthCalendar.jsx'
 import EnablementModal from '../components/EnablementModal.jsx'
+import RecentlyDeleted from '../components/RecentlyDeleted.jsx'
 
 export default function Enablements() {
-  const { enablements, removeEnablement } = useStore()
+  const { enablements, removeEnablement, deletedEnablements, restoreEnablement } = useStore()
   // null = closed, { date } = create (optionally pre-dated), { session } = edit
   const [modal, setModal] = useState(null)
 
@@ -3409,6 +4133,7 @@ export default function Enablements() {
               <TableHead>
                 <TableRow>
                   <TableHeader>Session</TableHeader>
+                  <TableHeader>Product</TableHeader>
                   <TableHeader>Use case</TableHeader>
                   <TableHeader>Date</TableHeader>
                   <TableHeader>Attendees</TableHeader>
@@ -3424,8 +4149,12 @@ export default function Enablements() {
                       {e.presenter ? (
                         <div style={{ fontSize: '0.75rem', color: 'var(--cds-text-helper)' }}>{e.presenter}</div>
                       ) : null}
+                      {authorNote(e) ? (
+                        <div style={{ fontSize: '0.75rem', color: 'var(--cds-text-helper)' }}>{authorNote(e)}</div>
+                      ) : null}
                     </TableCell>
-                    <TableCell><UseCaseChip id={e.useCase} /></TableCell>
+                    <TableCell>{getProduct(e.product)?.label ?? '—'}</TableCell>
+                    <TableCell><UseCaseChip record={e} /></TableCell>
                     <TableCell>
                       {fmtDate(e.date)}
                       {e.date > todayIso() && (
@@ -3462,6 +4191,17 @@ export default function Enablements() {
 
       <MonthCalendar sessions={enablements} onPickDay={openForDate} />
 
+      <RecentlyDeleted
+        title="Recently deleted sessions"
+        rows={deletedEnablements.map((e) => ({
+          id: e.id,
+          label: e.title,
+          deletedAt: e.deletedAt,
+          deletedBy: e.deletedBy,
+        }))}
+        onRestore={restoreEnablement}
+      />
+
       <EnablementModal
         open={modal !== null}
         initialDate={modal?.date ?? ''}
@@ -3491,13 +4231,14 @@ import {
 import { Add, Edit, TrashCan } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { attributeDeals } from '../data/attribution.js'
-import { fmtUSD, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
+import { fmtUSD, fmtDate, STAGE_TAG_TYPE, authorNote, getProduct } from '../data/constants.js'
 import UseCaseChip from '../components/UseCaseChip.jsx'
 import DealModal from '../components/DealModal.jsx'
 import InfluenceTimeline from '../components/InfluenceTimeline.jsx'
+import RecentlyDeleted from '../components/RecentlyDeleted.jsx'
 
 export default function Pipeline() {
-  const { deals, enablements, removeDeal } = useStore()
+  const { deals, enablements, removeDeal, deletedDeals, restoreDeal } = useStore()
   // null = closed, 'new' = create, deal object = edit
   const [modal, setModal] = useState(null)
 
@@ -3523,6 +4264,7 @@ export default function Pipeline() {
                 {/* column order mirrors the add/edit form's field order */}
                 <TableHeader>Customer</TableHeader>
                 <TableHeader>Revenue</TableHeader>
+                <TableHeader>Product</TableHeader>
                 <TableHeader>Use case</TableHeader>
                 <TableHeader>Open date</TableHeader>
                 <TableHeader>Stage</TableHeader>
@@ -3534,9 +4276,15 @@ export default function Pipeline() {
             <TableBody>
               {rows.map((d) => (
                 <TableRow key={d.id}>
-                  <TableCell>{d.customer}</TableCell>
+                  <TableCell>
+                    {d.customer}
+                    {authorNote(d) ? (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--cds-text-helper)' }}>{authorNote(d)}</div>
+                    ) : null}
+                  </TableCell>
                   <TableCell>{fmtUSD(d.value)}</TableCell>
-                  <TableCell><UseCaseChip id={d.useCase} /></TableCell>
+                  <TableCell>{getProduct(d.product)?.label ?? '—'}</TableCell>
+                  <TableCell><UseCaseChip record={d} /></TableCell>
                   <TableCell>{fmtDate(d.date)}</TableCell>
                   <TableCell>
                     <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
@@ -3578,6 +4326,17 @@ export default function Pipeline() {
         </div>
       )}
 
+      <RecentlyDeleted
+        title="Recently deleted deals"
+        rows={deletedDeals.map((d) => ({
+          id: d.id,
+          label: `${d.customer} — ${fmtUSD(d.value)}`,
+          deletedAt: d.deletedAt,
+          deletedBy: d.deletedBy,
+        }))}
+        onRestore={restoreDeal}
+      />
+
       <DealModal
         open={modal !== null}
         deal={modal && modal !== 'new' ? modal : null}
@@ -3585,6 +4344,180 @@ export default function Pipeline() {
       />
     </div>
   )
+}
+```
+
+## `src/pages/Products.jsx`
+
+```jsx
+import { useMemo, useState } from 'react'
+import { IconButton } from '@carbon/react'
+import { ChevronLeft, ChevronRight } from '@carbon/icons-react'
+import { useStore } from '../data/store.jsx'
+import { attributeDeals } from '../data/attribution.js'
+import { quarterStart, nextQuarter, prevQuarter, quarterLabel } from '../data/quarters.js'
+import {
+  PRODUCTS,
+  getProductColor,
+  getUseCaseLabel,
+  fmtUSDCompact,
+  todayIso,
+  OPEN_STAGES,
+} from '../data/constants.js'
+
+const toDate = (iso) => new Date(`${iso}T00:00:00`)
+
+// The per-product view leadership asked for: one fiscal quarter at a time,
+// what each product did — sessions delivered, deals opened, outbound-touched,
+// closed won — with a use-case breakdown underneath. Same quarter navigation
+// as the charts, so it lines up with the executive one-pager's cadence.
+export default function Products() {
+  const { deals, enablements } = useStore()
+  const [qCursor, setQCursor] = useState(() => quarterStart(new Date()))
+
+  const view = useMemo(() => {
+    const attributed = attributeDeals(deals, enablements)
+    const qEnd = nextQuarter(qCursor)
+    const inQuarter = (iso) => {
+      const t = toDate(iso)
+      return t >= qCursor && t < qEnd
+    }
+    const today = todayIso()
+
+    const cards = PRODUCTS.map((p) => {
+      const sessions = enablements.filter((e) => e.product === p.id && inQuarter(e.date) && e.date <= today)
+      const scheduled = enablements.filter((e) => e.product === p.id && inQuarter(e.date) && e.date > today)
+      const opened = attributed.filter((d) => d.product === p.id && inQuarter(d.date))
+      const touched = opened.filter((d) => d.influenced)
+      const won = attributed.filter((d) => d.product === p.id && d.stage === 'Closed Won' && d.closeDate && inQuarter(d.closeDate))
+      const openPipeline = touched.filter((d) => OPEN_STAGES.includes(d.stage))
+
+      // use-case breakdown across this quarter's sessions and opened deals
+      const byUseCase = new Map()
+      const bucket = (label) => {
+        if (!byUseCase.has(label)) byUseCase.set(label, { label, sessions: 0, deals: 0, value: 0 })
+        return byUseCase.get(label)
+      }
+      for (const s of sessions) bucket(getUseCaseLabel(s)).sessions += 1
+      for (const d of opened) {
+        const b = bucket(getUseCaseLabel(d))
+        b.deals += 1
+        b.value += d.value
+      }
+
+      return {
+        p,
+        sessions,
+        scheduledCount: scheduled.length,
+        attendees: sessions.reduce((s, e) => s + (Number(e.attendees) || 0), 0),
+        hours: sessions.reduce((s, e) => s + (Number(e.hours) || 0), 0),
+        opened,
+        openedValue: opened.reduce((s, d) => s + d.value, 0),
+        touched,
+        touchedValue: touched.reduce((s, d) => s + d.value, 0),
+        openPipelineValue: openPipeline.reduce((s, d) => s + d.value, 0),
+        won,
+        wonValue: won.reduce((s, d) => s + d.value, 0),
+        breakdown: [...byUseCase.values()].sort((a, b) => b.value - a.value || b.sessions - a.sessions),
+      }
+    })
+
+    const currentQ = quarterStart(new Date())
+    const allDates = [...deals.map((d) => toDate(d.date)), ...enablements.map((e) => toDate(e.date))]
+    const earliestQ = allDates.length ? quarterStart(new Date(Math.min(...allDates))) : currentQ
+
+    return { cards, canPrev: qCursor > earliestQ, canNext: qCursor < currentQ }
+  }, [deals, enablements, qCursor])
+
+  return (
+    <div>
+      <div className="page-header page-header--actions">
+        <div>
+          <h1>Products</h1>
+          <p>What each product did in the quarter — sessions delivered, deals opened, and outcomes.</p>
+        </div>
+        <div className="tl-head__nav">
+          <IconButton kind="ghost" size="sm" label="Previous quarter" disabled={!view.canPrev} onClick={() => setQCursor((q) => prevQuarter(q))}>
+            <ChevronLeft />
+          </IconButton>
+          <span className="tl-head__label">{quarterLabel(qCursor)}</span>
+          <IconButton kind="ghost" size="sm" label="Next quarter" disabled={!view.canNext} onClick={() => setQCursor((q) => nextQuarter(q))}>
+            <ChevronRight />
+          </IconButton>
+        </div>
+      </div>
+
+      <div className="card-stack">
+        {view.cards.map(({ p, ...c }) => (
+          <div key={p.id} className="chart-card">
+            <h4 className="section-title">
+              <ProductDot id={p.id} /> {p.label}
+            </h4>
+            {c.sessions.length === 0 && c.opened.length === 0 && c.won.length === 0 ? (
+              <p className="pp-empty">
+                No activity in {quarterLabel(qCursor)}.
+                {c.scheduledCount > 0 ? ` ${c.scheduledCount} session${c.scheduledCount === 1 ? '' : 's'} scheduled.` : ''}
+              </p>
+            ) : (
+              <>
+                <div className="pp-stats">
+                  <div className="pp-stat">
+                    <div className="pp-stat__value">{c.sessions.length}</div>
+                    <div className="pp-stat__label">Sessions delivered</div>
+                    <div className="pp-stat__detail">
+                      {c.attendees} attendees · {c.hours}h
+                      {c.scheduledCount > 0 ? ` · ${c.scheduledCount} scheduled` : ''}
+                    </div>
+                  </div>
+                  <div className="pp-stat">
+                    <div className="pp-stat__value">{c.opened.length}</div>
+                    <div className="pp-stat__label">Deals opened</div>
+                    <div className="pp-stat__detail">{fmtUSDCompact(c.openedValue)} value</div>
+                  </div>
+                  <div className="pp-stat">
+                    <div className="pp-stat__value">{c.touched.length}</div>
+                    <div className="pp-stat__label">Outbound-touched</div>
+                    <div className="pp-stat__detail">
+                      {fmtUSDCompact(c.touchedValue)} · {fmtUSDCompact(c.openPipelineValue)} still open
+                    </div>
+                  </div>
+                  <div className="pp-stat">
+                    <div className="pp-stat__value">{c.won.length}</div>
+                    <div className="pp-stat__label">Closed won in quarter</div>
+                    <div className="pp-stat__detail">{fmtUSDCompact(c.wonValue)} revenue</div>
+                  </div>
+                </div>
+
+                {c.breakdown.length > 0 && (
+                  <div className="pp-table">
+                    <div className="pp-table__row pp-table__row--head">
+                      <span>Use case</span>
+                      <span>Sessions</span>
+                      <span>Deals opened</span>
+                      <span>Deal value</span>
+                    </div>
+                    {c.breakdown.map((b) => (
+                      <div key={b.label} className="pp-table__row">
+                        <span>{b.label}</span>
+                        <span>{b.sessions || '—'}</span>
+                        <span>{b.deals || '—'}</span>
+                        <span>{b.value ? fmtUSDCompact(b.value) : '—'}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ProductDot({ id }) {
+  const { theme } = useStore()
+  return <span className="uc-chip__dot pp-dot" style={{ background: getProductColor(id, theme) }} aria-hidden="true" />
 }
 ```
 
@@ -3597,7 +4530,7 @@ import { Button, Theme, Tag } from '@carbon/react'
 import { Printer, ArrowLeft } from '@carbon/icons-react'
 import { useStore } from '../data/store.jsx'
 import { buildInsights, toneHeading } from '../data/insights.js'
-import { getUseCase, fmtUSD, fmtUSDCompact, fmtPct, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
+import { getProduct, getUseCaseLabel, fmtUSD, fmtUSDCompact, fmtPct, fmtDate, STAGE_TAG_TYPE } from '../data/constants.js'
 
 const pct0 = (ratio) => `${Math.round(ratio * 100)}%`
 
@@ -3694,25 +4627,35 @@ export default function OnePager() {
           </section>
 
           <section>
-            <h2>Demand vs. coverage by use case</h2>
+            <h2>By product</h2>
             <table className="op__table">
               <thead>
                 <tr>
-                  <th>Use case</th>
-                  <th>Demand share</th>
-                  <th>Coverage share</th>
+                  <th>Product</th>
+                  <th>Sessions</th>
+                  <th>Touched deals</th>
+                  <th>Won</th>
+                  <th>Open</th>
                 </tr>
               </thead>
               <tbody>
                 {coverage.map((r) => (
-                  <tr key={r.useCase}>
+                  <tr key={r.label}>
                     <td>{r.label}</td>
-                    <td className="op__num">{pct0(r.demandShare)}</td>
-                    <td className="op__num">{pct0(r.coverageShare)}</td>
+                    <td className="op__num">{r.sessionCount}</td>
+                    <td className="op__num">{r.touchedCount} of {r.dealCount}</td>
+                    <td className="op__num">{fmtUSDCompact(r.wonRevenue)}</td>
+                    <td className="op__num">{fmtUSDCompact(r.pipelineRevenue)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            <p className="op__verdict" style={{ marginTop: '0.5rem' }}>
+              <em>
+                Demand vs. coverage:{' '}
+                {coverage.map((r) => `${r.label} ${pct0(r.demandShare)} / ${pct0(r.coverageShare)}`).join(' · ')}
+              </em>
+            </p>
           </section>
         </div>
 
@@ -3742,7 +4685,7 @@ export default function OnePager() {
               <tr>
                 <th>Customer</th>
                 <th>Revenue</th>
-                <th>Use case</th>
+                <th>Product · use case</th>
                 <th>Stage</th>
                 <th>Matched session</th>
               </tr>
@@ -3752,7 +4695,10 @@ export default function OnePager() {
                 <tr key={d.id}>
                   <td>{d.customer}</td>
                   <td className="op__num">{fmtUSD(d.value)}</td>
-                  <td>{getUseCase(d.useCase).label}</td>
+                  <td>
+                    {getProduct(d.product)?.label ?? '—'}
+                    <div className="op__sub">{getUseCaseLabel(d)}</div>
+                  </td>
                   <td>
                     <Tag type={STAGE_TAG_TYPE[d.stage] ?? 'gray'} size="sm">{d.stage}</Tag>
                   </td>
@@ -3798,15 +4744,19 @@ import { useStore } from '../data/store.jsx'
 const TERMS = [
   {
     term: 'Outbound-touched deal',
-    def: 'A deal where at least one enablement session on the same use case was delivered on or before the deal’s open date. Deals with no prior session are explicitly not counted — and are shown as excluded, never hidden.',
+    def: 'A deal where at least one enablement session on the same use case was delivered on or before the deal’s open date. Custom use cases match when the product and the wording agree. Deals with no prior session are explicitly not counted — and are shown as excluded, never hidden.',
+  },
+  {
+    term: 'Product',
+    def: 'Every session and deal is tagged with the product it relates to: Concert Protect, Instana, or Turbonomic. Colors throughout the dashboard identify the product, and the Products page breaks activity down per product per quarter.',
   },
   {
     term: 'Use case',
-    def: 'One of five fixed categories both sessions and deals are tagged with: Vulnerability Management, Secure Coder, Monitoring, Optimization, Other. Matching only ever happens within the same use case.',
+    def: 'Product-specific: each product carries its own fixed list (e.g. Vulnerability Management under Concert Protect, Full-Stack Observability under Instana, Cloud Cost Optimization under Turbonomic). When nothing in the list fits, a custom use case can be typed in — custom entries match sessions to deals by product plus identical wording.',
   },
   {
     term: 'Matched session',
-    def: 'The session shown for a touched deal, with its delivery date ("delivered Feb 10, 2026"). By default it is the earliest eligible session — same use case, delivered on or before the open date. When logging or editing a deal, it can instead be tied to any other eligible session; those show "tied manually". A tie that becomes ineligible falls back to automatic.',
+    def: 'The session shown for a touched deal, with its delivery date ("delivered Feb 10, 2026"). By default it is the earliest session on the same use case delivered on or before the open date. When logging or editing a deal, it can instead be tied to any session on the deal’s PRODUCT delivered before the open date; those show "tied manually". A tie that becomes ineligible falls back to automatic.',
   },
   {
     term: 'Open date / Close date',
@@ -3865,12 +4815,12 @@ const METRICS = [
   },
   {
     name: 'Demand share',
-    formula: 'use case’s deal value ÷ total deal value',
+    formula: 'product’s deal value ÷ total deal value',
     note: 'Across all tracked deals, touched or not.',
   },
   {
     name: 'Coverage share',
-    formula: 'use case’s session hours ÷ total session hours',
+    formula: 'product’s session hours ÷ total session hours',
     note: 'Weighted by session count instead if no hours are recorded.',
   },
   {
@@ -3883,6 +4833,11 @@ const METRICS = [
     formula: 'Σ value of touched deals, bucketed by open-date month',
     note: 'Shown per fiscal quarter; months that haven’t started show “Coming soon”, not $0.',
   },
+  {
+    name: 'Products view (per quarter)',
+    formula: 'sessions, deals opened, outbound-touched, closed won — per product per fiscal quarter',
+    note: 'Deals count in the quarter they OPENED; “Closed won in quarter” counts by the close date’s quarter (so a deal can open in Q2 and be won in Q3); sessions count when delivered inside the quarter, with scheduled ones shown separately.',
+  },
 ]
 
 const CONVENTIONS = [
@@ -3890,6 +4845,8 @@ const CONVENTIONS = [
   'Timing is not causation — a deal opening after a session doesn’t prove the session caused it. The touched-vs-untouched comparison exists precisely so the data, not the framing, makes whatever case there is.',
   'Small samples — when either comparison group is small, the view says so: “read as an early signal, not a proven effect.”',
   'Manual entry — v1 figures reflect what has been entered and are only as complete as the entries. Sessions and deals are editable so records stay correct as they progress.',
+  'Shared live data — everyone opening the dashboard link reads and writes the same records. The header badge shows sync status (Saved / Saving… / Offline — changes not saved); entries made offline save automatically once the connection returns. Clearing all data requires the administration key.',
+  'Edits and deletions — every record carries who added or last edited it; clicking “Last edited by” in the header opens the activity log of every add, edit, delete, and restore with who and when. Deleted records move to “Recently deleted” on their page, can be restored for 30 days, and are then removed permanently.',
 ]
 
 // static mini-diagram of the counting rule, in the timeline's visual language
@@ -4126,43 +5083,51 @@ build step exactly like this:
 Rules:
 - That `VITE_API_URL` value is an EXISTING store already holding the team's live data.
   Do NOT create a new store, do NOT write to that URL during the build, do NOT modify its
-  contents. The full value ends in `...4c51-7fa8-9f9b-881cbfcf7c23` — no trailing slash.
+  contents. The full value ends in `...b9be-7a75-ae59-4b15f9e1af49` — no trailing slash.
 - `VITE_API_KIND` is the literal string `blob`.
 - Do not set `VITE_BUILD_SHA` (see warning 4).
 - Deploy `dist` to the SAME Pages URL each time, replacing in place.
+- If the store fails a reachability check during deployment, STOP AND REPORT — never
+  create a replacement store (see warning 7). Recommended extras (already in use by the
+  team, optional for a rebuild): a scheduled workflow that commits a JSON backup of the
+  store to the repo every 6 hours, and a manual restore workflow that merges a backup
+  into the store by record id with the current store winning ties.
 
 Pre-deploy gate (run locally on the built `dist`):
 1. The built JS contains the jsonblob URL above.
 2. Runtime check — serve `dist` locally (`npx vite preview`) and open it in a fresh
-   browser profile: the page shows the shared store's live data (NOT demo rows like
+   browser profile: the name modal ("Who is this?") appears first — enter a test name;
+   the page then shows the shared store's live data (NOT demo rows like
    "Acme Financial" — note the demo seed strings legitimately exist inside the bundle
    for dev mode; the requirement is that they never RENDER in shared mode); the header
    sync badge reaches `Saved`; the header has NO reset-demo (circular-arrows) action;
-   the trash-can admin action IS present.
+   the user-avatar and trash-can admin actions ARE present.
 
 Post-deploy verification (requires a human with a browser — report the checklist for
 them if you cannot do it): open the live Pages URL fresh → live team data visible, badge
 `Saved`; add ONE clearly-labeled test session → hard-refresh → still there → visible in a
-second browser within ~20 s → delete it individually from either browser and confirm it
-vanishes from both. NEVER use the admin "Reset all data" during deployment verification —
-the store holds live team data. If the badge sticks on `Offline — changes not saved`, the
-network cannot reach jsonblob.com: stop and report exactly that.
+second browser within ~20 s → delete it individually from either browser (it moves to
+"Recently deleted"), confirm the deletion syncs, then Restore-and-delete or leave it to
+purge. NEVER use the admin "Reset all data" during deployment verification — the store
+holds live team data. If the badge sticks on `Offline — changes not saved`, the network
+cannot reach jsonblob.com: stop and report exactly that.
 
 # Part 4 — Acceptance checklist (the build is not done until every item passes)
 
 Visual / styling:
 1. No serif text anywhere (IBM Plex Sans everywhere); fixed 3 rem black header bar with
-   "IBM Outbound Pipeline View", three nav tabs (active underlined blue), sync badge,
-   trash-can and theme-toggle icon actions.
+   "IBM Outbound Pipeline View", four nav tabs (Pipeline View, Enablements, Deals,
+   Products — active underlined blue), "Last edited by" badge + sync badge, user-avatar,
+   trash-can and theme-toggle icon actions (shared mode).
 2. Both themes fully legible when toggled (white page/light-gray cards/near-black text;
    #161616 page/#262626 cards/near-white text), including chart inks and the calendar.
 3. KPI tiles: flat cards separated by 1 px hairline seams, values 2.625 rem weight 300.
 4. Comparison/coverage rows: 1 px divider per row, all bars starting at the same x,
-   accent-blue vs context-gray bars, adverse deltas shown in calm ink (never hidden).
+   accent-blue vs context-gray bars, adverse deltas shown in calm ink (never hidden);
+   coverage rows and every use-case chip carry the product color dot.
 5. Modals open centered over a dimmed overlay with styled Carbon inputs.
 6. No overlapping text anywhere: monthly chart ("Current month" tag at the band top,
-   value label 8 px above its bar), timeline two-track label collision handling,
-   glossary diagram.
+   value label 8 px above its bar), timeline label collision handling, glossary diagram.
 
 Language:
 7. "GTM" appears nowhere; "influenced", "attributed", "credit", "drove" appear nowhere in
@@ -4171,26 +5136,49 @@ Language:
    the same use case." with no credit/ownership disclaimers anywhere.
 
 Mechanics (test in standalone dev mode with the seed, where the expected numbers are
-known): with the demo dataset — 9 of 11 outbound-touched (82%), $1.38M touched won,
-$1.31M open, Sessions delivered 9 with 172 attendees and 53 h (the two future-dated seed
-sessions are excluded and appear in the Upcoming strip), $50.75K/hour, win rate 75% vs
-0%, 3.3× larger, 27 days faster, Vulnerability Management tagged "Invest here · +20 pts
-demand":
-8. Adding a session on a use case that has deals but no sessions flips those deals to
-   touched everywhere instantly; deleting reverts everything exactly.
-9. Editing a deal's open date re-sorts every table and moves it on both charts; a closed
-   stage reveals the close-date field and clears it if reopened.
-10. The tie dropdown for a two-delivered-session use case shows exactly two options —
-    "Automatic — {earliest} ({date})" and the one later session (scheduled sessions
-    excluded); tying updates the Matched session column (with " · tied manually"), the
-    day count, and the timeline curve (dashed carried from the tied session's quarter
-    when out of view); reverting to Automatic restores the earliest, unflagged.
-11. The one-pager prints to one page, light-themed, with the generated verdict heading
-    and recommended actions.
+known — figures below assume today's date is between 2026-08-13 and 2026-08-26; outside
+that window the two seed sessions dated 2026-08-12 and 2026-08-27 cross the
+scheduled/delivered line and shift the totals): 10 of 12 outbound-touched (83%), $1.38M
+touched won, $1.4M open, Sessions delivered 10 with 172 attendees and 56 h (the
+2026-08-27 session is scheduled and appears in the Upcoming strip), $49.64K/hour, win
+rate 75% vs 0%, average size $293K vs $95K, cycle 50 vs 77 days, and on the coverage
+panel Concert Protect tagged "Invest here · +18 pts demand" with Instana and Turbonomic
+"Well covered":
+8. Product → use case: in both modals the product dropdown drives the use-case list
+   (Concert Protect 5 options, Instana 6, Turbonomic 6); ticking the custom checkbox
+   swaps the dropdown for a text field. "Pier 57 Logistics" is outbound-touched through
+   CUSTOM matching — its custom text equals the "Mainframe Observability Roundtable"
+   session's (same product, same wording).
+9. Adding a session on a use case that has deals but no sessions (e.g. Turbonomic /
+   VMware Optimization, before 2026-05-19) flips those deals to touched everywhere
+   instantly; deleting it reverts everything exactly.
+10. Editing a deal's open date re-sorts every table and moves it on both charts; a closed
+    stage reveals the close-date field and clears it if reopened.
+11. The tie dropdown lists sessions on the deal's PRODUCT delivered on or before its open
+    date: "Automatic — {earliest same-use-case session} ({date})" first, then the other
+    eligible sessions with the automatic one EXCLUDED (scheduled sessions never appear);
+    tying updates the Matched session column (with " · tied manually"), the day count,
+    and the timeline curve (dashed carried from the tied session's quarter when out of
+    view); reverting to Automatic restores the earliest, unflagged.
+12. Products tab: one card per product for the shown quarter with sessions
+    delivered/scheduled, attendees, hours, deals opened + value, outbound-touched +
+    value + still-open, closed won in quarter (by CLOSE date — a deal opened in Q2 and
+    won in Q3 counts in Q3's card) + revenue, and a use-case breakdown table; quarter
+    navigation bounded like the charts; products with no activity say "No activity in
+    {quarter}".
+13. The one-pager prints to one page, light-themed, with the generated verdict heading,
+    the "By product" table, and recommended actions.
 
 Shared mode (test against a local instance of `server/server.mjs` or the blob contract):
-12. Entry → hard-refresh → persists; second browser sees it on load and receives new
+14. Entry → hard-refresh → persists; second browser sees it on load and receives new
     entries within one poll without reloading; two browsers adding simultaneously both
     keep their entries; killing the API shows the offline badge and the queued entry
     saves automatically on recovery; wrong admin key rejected in place with data intact;
     correct key empties the store for every open browser.
+15. Audit trail: first visit asks for a name and blocks record entry until given; rows
+    show "added by X" and switch to "edited by Y" after an edit; the header "Last edited
+    by" badge opens the activity log listing adds/edits/deletes/restores newest-first
+    with name, date, and time.
+16. Soft delete: deleting a row moves it to that page's "Recently deleted" panel with
+    who/when; Restore brings it back with its history intact; the panel notes removal
+    after 30 days; the admin reset (and nothing else) removes records outright.
