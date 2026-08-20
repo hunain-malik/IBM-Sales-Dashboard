@@ -34,7 +34,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # Shared mode against the team's EXISTING live store — same values as
+      # deploy.yml. Without these the site builds in standalone demo mode.
+      # VITE_BUILD_SHA is deliberately NOT set: Enterprise Pages replaces the
+      # site in place, so the stale-copy banner must stay dormant.
       - run: npm run build
+        env:
+          VITE_API_URL: https://jsonblob.com/api/jsonBlob/019fc946-b9be-7a75-ae59-4b15f9e1af49
+          VITE_API_KIND: blob
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
