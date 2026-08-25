@@ -162,7 +162,9 @@ export function StoreProvider({ children }) {
       try {
         const res = await fetch(API_URL)
         if (!res.ok) throw new Error(`load failed (${res.status})`)
-        const server = await res.json()
+        // a brand-new document path (e.g. Firebase REST) returns the JSON
+        // literal null before the first write — treat it as an empty store
+        const server = (await res.json()) ?? { version: 0, enablements: [], deals: [] }
         if (stopped || !validDoc(server)) return
         if (first || server.version !== versionRef.current) {
           versionRef.current = server.version

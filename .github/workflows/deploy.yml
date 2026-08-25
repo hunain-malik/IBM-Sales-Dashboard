@@ -30,12 +30,11 @@ jobs:
         run: npm ci
 
       # The deployed site uses a shared JSON-document store so everyone with
-      # the link sees the same live data. The store is created once (an
-      # anonymous jsonblob.com document holding {version, enablements, deals})
-      # and its URL is committed to the repo; later deploys reuse it so the
-      # data survives redeployments. If the stored URL ever stops answering
-      # (blobs expire after ~30 days without any reads/writes), a fresh empty
-      # one is created automatically.
+      # the link sees the same live data: one document URL where GET returns
+      # {version, enablements, deals} and PUT replaces it. The URL lives in
+      # server/shared-blob-url.txt (today: a Firebase Realtime Database REST
+      # path — see server/README-store.md) and every deploy reuses it so the
+      # data survives redeployments.
       - name: Ensure the shared data store exists
         run: |
           set -euo pipefail
@@ -64,20 +63,13 @@ jobs:
             fi
           fi
           if [ -z "$url" ]; then
-            loc=$(curl -s -D - -o /dev/null -X POST https://jsonblob.com/api/jsonBlob \
-              -H 'Content-Type: application/json' -H 'Accept: application/json' \
-              -d '{"version":0,"enablements":[],"deals":[]}' | tr -d '\r' | awk 'tolower($1)=="location:" {print $2}')
-            [ -n "$loc" ] || { echo "failed to create the shared data store"; exit 1; }
-            case "$loc" in
-              http*) url="$loc" ;;
-              *) url="https://jsonblob.com$loc" ;;
-            esac
-            echo "$url" > "$FILE"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git config user.name "github-actions[bot]"
-            git add "$FILE"
-            git commit -m "Store the shared data store URL [skip ci]"
-            git push
+            # No auto-creation: the anonymous-store era (jsonblob) died twice.
+            # The store is now a document URL someone owns (Firebase Realtime
+            # Database REST path, e.g. https://<project>.firebaseio.com/outbound.json)
+            # committed to $FILE by hand.
+            echo "::error::No shared data store is configured."
+            echo "::error::Put the store's document URL in $FILE and push (see server/README-store.md)."
+            exit 1
           fi
           echo "BLOB_URL=$url" >> "$GITHUB_ENV"
           echo "shared data store: $url"
