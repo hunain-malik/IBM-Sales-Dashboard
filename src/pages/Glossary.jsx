@@ -35,7 +35,7 @@ const TERMS = [
   },
   {
     term: 'Touchpoint carried from an earlier quarter',
-    def: 'In quarter views: a deal that opened in the displayed quarter whose matching session happened in a previous quarter. Drawn as a dashed line entering from the left edge, labeled with the session’s quarter.',
+    def: 'In quarter views: a deal that opened in the displayed quarter whose matching session happened in a previous quarter. Drawn as a dashed line entering from the left edge, with a caption naming the session and its delivery date. Clicking the caption opens that session’s quarter with the session highlighted.',
   },
 ]
 

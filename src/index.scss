@@ -742,6 +742,32 @@ html[data-carbon-theme='g100'] body {
   }
 }
 
+/* Carried-touchpoint marker: clickable — jumps to the origin quarter and
+   rings the session the dashed line comes from */
+.tl-carried {
+  cursor: pointer;
+
+  &:hover .tl-carried__caption {
+    text-decoration: underline;
+    fill: var(--cds-link-primary);
+  }
+}
+
+.tl-origin-ring {
+  animation: tl-origin-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes tl-origin-pulse {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+
+  50% {
+    opacity: 0.2;
+  }
+}
+
 /* Executive one-pager */
 .op-wrap {
   min-height: calc(100vh - 3rem);
