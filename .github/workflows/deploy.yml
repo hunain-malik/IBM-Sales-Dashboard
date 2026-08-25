@@ -41,8 +41,11 @@ jobs:
           set -euo pipefail
           FILE=server/shared-blob-url.txt
           url=""
-          if [ -f "$FILE" ]; then
-            url=$(cat "$FILE")
+          [ -f "$FILE" ] && url=$(cat "$FILE")
+          # An EMPTIED url file is a deliberate rotation request: a fresh store
+          # is created below (pair it with a RECOVER_FROM.txt marker holding
+          # "backup" to seed it from the committed snapshot).
+          if [ -n "$url" ]; then
             # retry transient failures; NEVER silently rotate an existing store —
             # a fresh empty store orphans the team's live data. Fail loudly and
             # let a human decide (the recover-data workflow can merge stores).
@@ -80,9 +83,12 @@ jobs:
           echo "shared data store: $url"
 
       # One-time recovery: while server/RECOVER_FROM.txt exists, merge that
-      # previous store's records into the current one (union by id, current
-      # store wins clashes), then delete the marker so this never re-runs —
-      # a re-merge could resurrect records the team deliberately wiped.
+      # source's records into the current store (union by id, current store
+      # wins clashes), then delete the marker so this never re-runs — a
+      # re-merge could resurrect records the team deliberately wiped. The
+      # marker holds either a previous store's URL, or the literal word
+      # "backup" to restore from the committed snapshot (server/data-backup.json)
+      # — the path used when the previous store is already dead.
       - name: One-time data recovery
         run: |
           set -euo pipefail
@@ -90,7 +96,13 @@ jobs:
           [ -f "$MARKER" ] || { echo "no recovery pending"; exit 0; }
           SRC=$(cat "$MARKER")
           DST=$(cat server/shared-blob-url.txt)
-          if src=$(curl -sf "$SRC"); then
+          if [ "$SRC" = "backup" ]; then
+            src=$(cat server/data-backup.json)
+            echo "recovering from the committed backup snapshot"
+          else
+            src=$(curl -sf "$SRC") || src=""
+          fi
+          if [ -n "$src" ]; then
             dst=$(curl -sf "$DST")
             merged=$(jq -n --argjson a "$src" --argjson b "$dst" '{
               version: (($b.version // 0) + 1),
