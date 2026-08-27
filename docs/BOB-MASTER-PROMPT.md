@@ -2071,7 +2071,18 @@ export function StoreProvider({ children }) {
     })
 
   const docVersion = (d) => (Number.isInteger(d?.version) ? d.version : 0)
-  const asDoc = (d) => (validDoc(d) ? { enablements: d.enablements, deals: d.deals } : { enablements: [], deals: [] })
+  // Server documents can arrive pruned: Firebase stores arrays as objects and
+  // DROPS empty ones entirely, and a brand-new path is the JSON literal null.
+  // Normalize every server read so an empty list round-trips as [].
+  const normalizeDoc = (d) => ({
+    version: docVersion(d),
+    enablements: Array.isArray(d?.enablements) ? d.enablements : [],
+    deals: Array.isArray(d?.deals) ? d.deals : [],
+  })
+  const asDoc = (d) => {
+    const n = normalizeDoc(d)
+    return { enablements: n.enablements, deals: n.deals }
+  }
 
   // Save `doc` on top of `baseVersion`. Resolves { version } on success or
   // { conflict, server } when someone else saved first; throws on network or
@@ -2086,7 +2097,19 @@ export function StoreProvider({ children }) {
       const remote = await cur.json()
       if (docVersion(remote) !== baseVersion) return { conflict: true, server: remote }
       const res = await putJson({ version: baseVersion + 1, ...doc })
-      if (!res.ok) throw new Error(`save failed (${res.status})`)
+      if (!res.ok) {
+        // a store with server-side version rules (Firebase) rejects a write
+        // that lost the pre-flight race — surface it as a conflict so the
+        // queue adopts and replays instead of reporting offline
+        if (res.status === 400 || res.status === 401 || res.status === 403) {
+          const again = await fetch(API_URL)
+          if (again.ok) {
+            const server = normalizeDoc(await again.json())
+            if (server.version !== baseVersion) return { conflict: true, server }
+          }
+        }
+        throw new Error(`save failed (${res.status})`)
+      }
       return { version: baseVersion + 1 }
     }
     const res = await putJson({ version: baseVersion, ...doc })
@@ -2132,10 +2155,8 @@ export function StoreProvider({ children }) {
       try {
         const res = await fetch(API_URL)
         if (!res.ok) throw new Error(`load failed (${res.status})`)
-        // a brand-new document path (e.g. Firebase REST) returns the JSON
-        // literal null before the first write — treat it as an empty store
-        const server = (await res.json()) ?? { version: 0, enablements: [], deals: [] }
-        if (stopped || !validDoc(server)) return
+        const server = normalizeDoc(await res.json())
+        if (stopped) return
         if (first || server.version !== versionRef.current) {
           versionRef.current = server.version
           baseRef.current = { enablements: server.enablements, deals: server.deals }
