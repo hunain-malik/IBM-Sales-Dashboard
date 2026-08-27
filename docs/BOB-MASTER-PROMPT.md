@@ -1215,6 +1215,32 @@ html[data-carbon-theme='g100'] body {
   }
 }
 
+/* Carried-touchpoint marker: clickable — jumps to the origin quarter and
+   rings the session the dashed line comes from */
+.tl-carried {
+  cursor: pointer;
+
+  &:hover .tl-carried__caption {
+    text-decoration: underline;
+    fill: var(--cds-link-primary);
+  }
+}
+
+.tl-origin-ring {
+  animation: tl-origin-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes tl-origin-pulse {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+
+  50% {
+    opacity: 0.2;
+  }
+}
+
 /* Executive one-pager */
 .op-wrap {
   min-height: calc(100vh - 3rem);
@@ -2106,7 +2132,9 @@ export function StoreProvider({ children }) {
       try {
         const res = await fetch(API_URL)
         if (!res.ok) throw new Error(`load failed (${res.status})`)
-        const server = await res.json()
+        // a brand-new document path (e.g. Firebase REST) returns the JSON
+        // literal null before the first write — treat it as an empty store
+        const server = (await res.json()) ?? { version: 0, enablements: [], deals: [] }
         if (stopped || !validDoc(server)) return
         if (first || server.version !== versionRef.current) {
           versionRef.current = server.version
@@ -2773,6 +2801,7 @@ const PAD_R = 24
 const AXIS_H = 36
 
 const toDate = (iso) => new Date(`${iso}T00:00:00`)
+const trunc = (s, n) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s)
 
 export default function InfluenceTimeline({ deals, enablements }) {
   const { theme } = useStore()
@@ -2781,6 +2810,13 @@ export default function InfluenceTimeline({ deals, enablements }) {
   const gray = '#8d8d8d'
 
   const [qCursor, setQCursor] = useState(() => quarterStart(new Date()))
+  // sessions to spotlight after clicking a carried-touchpoint marker: the
+  // click jumps to the origin quarter and rings the session(s) it came from
+  const [originIds, setOriginIds] = useState([])
+  const pageQuarter = (step) => {
+    setOriginIds([])
+    setQCursor((q) => (step < 0 ? prevQuarter(q) : nextQuarter(q)))
+  }
 
   // custom hover tooltip — native SVG <title> is too slow and unreliable
   const wrapRef = useRef(null)
@@ -2919,11 +2955,11 @@ export default function InfluenceTimeline({ deals, enablements }) {
           )}
         </div>
         <div className="tl-head__nav">
-          <IconButton kind="ghost" size="sm" label="Previous quarter" disabled={!canPrev} onClick={() => setQCursor((q) => prevQuarter(q))}>
+          <IconButton kind="ghost" size="sm" label="Previous quarter" disabled={!canPrev} onClick={() => pageQuarter(-1)}>
             <ChevronLeft />
           </IconButton>
           <span className="tl-head__label">{quarterLabel(qCursor)}</span>
-          <IconButton kind="ghost" size="sm" label="Next quarter" disabled={!canNext} onClick={() => setQCursor((q) => nextQuarter(q))}>
+          <IconButton kind="ghost" size="sm" label="Next quarter" disabled={!canNext} onClick={() => pageQuarter(1)}>
             <ChevronRight />
           </IconButton>
         </div>
@@ -3001,30 +3037,57 @@ export default function InfluenceTimeline({ deals, enablements }) {
                   )
                 })}
 
-                {/* carried-influence entry marker at the quarter boundary */}
+                {/* carried-influence entry marker at the quarter boundary: a
+                    hollow session diamond (the session lives off-screen to the
+                    left), a caption NAMING the session, and a click-through
+                    that opens the origin quarter with that session ringed */}
                 {lane.carriedSessions.length > 0 && (() => {
+                  const latest = lane.carriedSessions.reduce((a, s) => (s.date > a.date ? s : a))
+                  const targetQ = quarterStart(toDate(latest.date))
+                  const targetIds = lane.carriedSessions
+                    .filter((s) => quarterStart(toDate(s.date)).getTime() === targetQ.getTime())
+                    .map((s) => s.id)
                   const lines = [
                     `Touchpoint carried from ${lane.carriedQuarters.join(', ')}`,
                     ...lane.carriedSessions.map((s) => `${s.title} — ${fmtDate(s.date)}`),
+                    `Click to open ${quarterLabel(targetQ)} with the session highlighted`,
                   ]
+                  const caption =
+                    lane.carriedSessions.length === 1
+                      ? `${shortFrom(lane.carriedQuarters)} — ${trunc(latest.title, 42)} · ${fmtDate(latest.date)}`
+                      : `${shortFrom(lane.carriedQuarters)} — ${lane.carriedSessions.length} earlier sessions`
                   return (
                     <g
                       data-hover="carried"
+                      className="tl-carried"
+                      role="button"
+                      aria-label={`Open ${quarterLabel(targetQ)} to see the session this touchpoint carries from`}
+                      onClick={() => {
+                        hideTip()
+                        setOriginIds(targetIds)
+                        setQCursor(targetQ)
+                      }}
                       onMouseEnter={(e) => showTip(e, lines)}
                       onMouseMove={(e) => showTip(e, lines)}
                       onMouseLeave={hideTip}
                     >
                       <circle cx={PLOT_L - 5} cy={sessionY} r="14" fill="transparent" />
-                      <path d={`M ${PLOT_L - 12} ${sessionY} L ${PLOT_L - 2} ${sessionY - 5.5} L ${PLOT_L - 2} ${sessionY + 5.5} Z`} fill={color} />
-                      <text x={PLOT_L - 14} y={sessionY + 4} fontSize="10" textAnchor="end" style={{ fill: ink.helper }}>
-                        {shortFrom(lane.carriedQuarters)}
+                      <g transform={`translate(${PLOT_L - 8} ${sessionY})`}>
+                        <rect x="-4.5" y="-4.5" width="9" height="9" transform="rotate(45)" fill="var(--cds-layer-01)" stroke={color} strokeWidth="1.5" />
+                      </g>
+                      <text className="tl-carried__caption" x={PAD_L} y={sessionY + 18} fontSize="10" style={{ fill: ink.helper }}>
+                        {caption}
                       </text>
                     </g>
                   )
                 })()}
 
-                {/* sessions */}
+                {/* sessions — ringed and named when arrived at via a
+                    carried-marker click from a later quarter */}
                 {lane.sessions.map((s) => {
+                  const origin = originIds.includes(s.id)
+                  const px = x(s.date)
+                  const labelOff = Math.max(PLOT_L + 90, Math.min(W - 130, px)) - px
                   const lines = [
                     s.title,
                     getUseCaseLabel(s),
@@ -3035,14 +3098,20 @@ export default function InfluenceTimeline({ deals, enablements }) {
                     <g
                       key={s.id}
                       data-hover="session"
-                      transform={`translate(${x(s.date)} ${sessionY})`}
+                      transform={`translate(${px} ${sessionY})`}
                       onMouseEnter={(e) => showTip(e, lines)}
                       onMouseMove={(e) => showTip(e, lines)}
                       onMouseLeave={hideTip}
                     >
                       {/* oversized invisible hit target */}
                       <circle r="16" fill="transparent" />
+                      {origin && <circle r="12" className="tl-origin-ring" fill="none" stroke={color} strokeWidth="2" />}
                       <rect x="-5" y="-5" width="10" height="10" transform="rotate(45)" fill={color} />
+                      {origin && (
+                        <text x={labelOff} y="24" fontSize="10" fontWeight="600" textAnchor="middle" style={{ fill: ink.secondary }}>
+                          {trunc(s.title, 34)} · {fmtDate(s.date)}
+                        </text>
+                      )}
                     </g>
                   )
                 })}
@@ -4768,7 +4837,7 @@ const TERMS = [
   },
   {
     term: 'Touchpoint carried from an earlier quarter',
-    def: 'In quarter views: a deal that opened in the displayed quarter whose matching session happened in a previous quarter. Drawn as a dashed line entering from the left edge, labeled with the session’s quarter.',
+    def: 'In quarter views: a deal that opened in the displayed quarter whose matching session happened in a previous quarter. Drawn as a dashed line entering from the left edge, with a caption naming the session and its delivery date. Clicking the caption opens that session’s quarter with the session highlighted.',
   },
 ]
 
@@ -5076,14 +5145,16 @@ build step exactly like this:
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: https://jsonblob.com/api/jsonBlob/019fc946-b9be-7a75-ae59-4b15f9e1af49
+          VITE_API_URL: https://outbound-dashboard-44190-default-rtdb.firebaseio.com/outbound.json
           VITE_API_KIND: blob
 ```
 
 Rules:
-- That `VITE_API_URL` value is an EXISTING store already holding the team's live data.
-  Do NOT create a new store, do NOT write to that URL during the build, do NOT modify its
-  contents. The full value ends in `...b9be-7a75-ae59-4b15f9e1af49` — no trailing slash.
+- That `VITE_API_URL` value is an EXISTING store already holding the team's live data —
+  a Firebase Realtime Database REST path (GET returns the document, PUT replaces it).
+  Do NOT create a new store or Firebase project, do NOT write to that URL during the
+  build, do NOT modify its contents. The full value ends in
+  `-default-rtdb.firebaseio.com/outbound.json` — the `.json` suffix is required.
 - `VITE_API_KIND` is the literal string `blob`.
 - Do not set `VITE_BUILD_SHA` (see warning 4).
 - Deploy `dist` to the SAME Pages URL each time, replacing in place.
