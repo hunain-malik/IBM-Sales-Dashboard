@@ -1,79 +1,507 @@
 {
-  "version": 14,
-  "enablements": [
-    {
-      "title": "Big Bosses Only",
-      "useCase": "cp-vuln-mgmt",
-      "date": "2026-06-17",
-      "presenter": "Bob",
-      "attendees": 234,
-      "hours": 16,
-      "id": "00d283dc-8a5f-4895-9f57-39fcb824161c",
-      "createdBy": "Hunain Ejaz Malik",
-      "createdAt": "2026-08-03T20:28:11.246Z",
-      "history": [
-        {
-          "at": "2026-08-04T17:39:03.759Z",
-          "by": "Hunain Ejaz Malik",
-          "action": "deleted"
-        },
-        {
-          "at": "2026-08-04T17:39:09.942Z",
-          "by": "Hunain Ejaz Malik",
-          "action": "restored"
-        },
-        {
-          "at": "2026-08-04T19:34:19.236Z",
-          "by": "Hunain Ejaz Malik",
-          "action": "edited"
-        }
-      ],
-      "product": "concert-protect",
-      "updatedBy": "Hunain Ejaz Malik",
-      "updatedAt": "2026-08-04T19:34:19.236Z"
-    }
-  ],
   "deals": [
     {
-      "customer": "Walmart",
-      "useCase": "cp-vuln-mgmt",
-      "value": 1000000,
-      "date": "2026-07-16",
-      "stage": "Proposal",
-      "owner": "",
-      "id": "9309be83-3b75-44ae-9eec-12657fcc4cc0",
-      "createdBy": "Hunain Ejaz Malik",
       "createdAt": "2026-08-03T20:47:53.035Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "customer": "Walmart",
+      "date": "2026-07-16",
       "history": [
         {
+          "action": "deleted",
           "at": "2026-08-04T17:39:20.554Z",
-          "by": "Hunain Ejaz Malik",
-          "action": "deleted"
+          "by": "Hunain Ejaz Malik"
         },
         {
+          "action": "restored",
           "at": "2026-08-04T17:39:25.766Z",
-          "by": "Hunain Ejaz Malik",
-          "action": "restored"
+          "by": "Hunain Ejaz Malik"
         },
         {
+          "action": "deleted",
           "at": "2026-08-04T17:39:28.117Z",
-          "by": "Hunain Ejaz Malik",
-          "action": "deleted"
+          "by": "Hunain Ejaz Malik"
         },
         {
+          "action": "restored",
           "at": "2026-08-04T17:39:30.359Z",
-          "by": "Hunain Ejaz Malik",
-          "action": "restored"
+          "by": "Hunain Ejaz Malik"
         },
         {
+          "action": "edited",
           "at": "2026-08-04T19:34:05.588Z",
-          "by": "Hunain Ejaz Malik",
-          "action": "edited"
+          "by": "Hunain Ejaz Malik"
         }
       ],
+      "id": "9309be83-3b75-44ae-9eec-12657fcc4cc0",
+      "owner": "",
       "product": "concert-protect",
+      "stage": "Proposal",
+      "updatedAt": "2026-08-04T19:34:05.588Z",
       "updatedBy": "Hunain Ejaz Malik",
-      "updatedAt": "2026-08-04T19:34:05.588Z"
+      "useCase": "cp-vuln-mgmt",
+      "value": 1000000
+    },
+    {
+      "createdAt": "2026-08-27T23:50:03.239Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "customer": "Northwind Health",
+      "date": "2026-07-10",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:50:03.239Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "id": "4b9a2870-e6fe-4964-b524-84a31af86820",
+      "owner": "Elena Vasquez",
+      "product": "instana",
+      "stage": "Proposal",
+      "useCase": "in-observability",
+      "value": 850000
+    },
+    {
+      "createdAt": "2026-08-27T23:50:37.017Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "customer": "Blue Ridge Logistics",
+      "date": "2026-07-20",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:50:37.017Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "id": "18531d1c-0d45-4576-af1b-856c7acefb87",
+      "owner": "Owen Bradley",
+      "product": "turbonomic",
+      "stage": "Qualification",
+      "useCase": "tu-cloud-cost",
+      "value": 420000
+    },
+    {
+      "createdAt": "2026-08-27T23:51:03.571Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "customer": "Summit Foods Group",
+      "date": "2026-08-10",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:51:03.571Z",
+          "by": "Hunain Ejaz Malik"
+        },
+        {
+          "action": "edited",
+          "at": "2026-08-28T00:04:43.109Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "id": "f45e86fc-f3e4-49a9-942c-26bbea48b093",
+      "owner": "Nina Patel",
+      "product": "turbonomic",
+      "stage": "Proposal",
+      "updatedAt": "2026-08-28T00:04:43.109Z",
+      "updatedBy": "Hunain Ejaz Malik",
+      "useCase": "tu-cloud-cost",
+      "value": 530000
+    },
+    {
+      "createdAt": "2026-08-27T23:51:32.032Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "customer": "Cascadia Bank",
+      "date": "2026-07-27",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:51:32.032Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "id": "f3bc2dfb-0150-425a-ba2b-7dcdb634af32",
+      "owner": "Priyanka Shah",
+      "product": "concert-protect",
+      "stage": "Negotiation",
+      "useCase": "cp-compliance",
+      "value": 1250000
+    },
+    {
+      "createdAt": "2026-08-27T23:52:03.241Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "customer": "Meridian Insurance",
+      "date": "2026-08-03",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:52:03.241Z",
+          "by": "Hunain Ejaz Malik"
+        },
+        {
+          "action": "edited",
+          "at": "2026-08-27T23:54:25.230Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "id": "e67f0098-c762-4435-814f-f15eabd6b987",
+      "owner": "Sam Whitaker",
+      "product": "concert-protect",
+      "stage": "Closed Won",
+      "updatedAt": "2026-08-27T23:54:25.230Z",
+      "updatedBy": "Hunain Ejaz Malik",
+      "useCase": "cp-cert-mgmt",
+      "value": 340000
+    },
+    {
+      "createdAt": "2026-08-27T23:53:06.246Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "customer": "Vantage Aerospace",
+      "date": "2026-08-07",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:53:06.246Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "id": "77f21477-8f9d-4b55-ae03-46c05f1e7f7a",
+      "owner": "Amara Okafor",
+      "product": "turbonomic",
+      "stage": "Qualification",
+      "useCase": "tu-gpu",
+      "value": 2000000
+    },
+    {
+      "createdAt": "2026-08-27T23:53:47.256Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "customer": "Helios Retail Group",
+      "date": "2026-08-03",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:53:47.256Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "id": "95c8b2b2-d2b8-45a2-a64c-32d2bae9c97b",
+      "owner": "Derek Lin",
+      "product": "instana",
+      "stage": "Prospecting",
+      "useCase": "in-k8s-cost",
+      "value": 610000
+    },
+    {
+      "createdAt": "2026-08-27T23:55:26.501Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "customer": "Lumen Biotech",
+      "date": "2026-08-17",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:55:26.502Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "id": "4d56694b-eac0-4bab-9b1b-3fe632e74305",
+      "owner": "Grace Kimani",
+      "product": "instana",
+      "stage": "Prospecting",
+      "useCase": "in-genai",
+      "value": 780000
+    },
+    {
+      "createdAt": "2026-08-27T23:55:55.029Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "customer": "Ironclad Manufacturing",
+      "date": "2026-08-20",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:55:55.029Z",
+          "by": "Hunain Ejaz Malik"
+        },
+        {
+          "action": "edited",
+          "at": "2026-08-27T23:57:00.164Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "id": "043a461f-b9c4-4da3-bff3-e7ea349455bb",
+      "owner": "Victor Alvarez",
+      "product": "turbonomic",
+      "stage": "Prospecting",
+      "updatedAt": "2026-08-27T23:57:00.164Z",
+      "updatedBy": "Hunain Ejaz Malik",
+      "useCase": "tu-vmware",
+      "value": 1490000
+    },
+    {
+      "closeDate": "2026-08-26",
+      "createdAt": "2026-08-27T23:59:06.195Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "customer": "Riverstone Media",
+      "date": "2026-08-24",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:59:06.195Z",
+          "by": "Hunain Ejaz Malik"
+        },
+        {
+          "action": "edited",
+          "at": "2026-08-28T00:00:30.283Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "id": "8bf4bc1a-1500-44d4-b905-e8051f4fc389",
+      "owner": "Julia Moreau",
+      "product": "concert-protect",
+      "stage": "Closed Lost",
+      "updatedAt": "2026-08-28T00:00:30.283Z",
+      "updatedBy": "Hunain Ejaz Malik",
+      "useCase": "cp-sca",
+      "value": 260000
+    },
+    {
+      "createdAt": "2026-08-27T23:59:33.673Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "customer": "Atlas Energy",
+      "date": "2026-08-26",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:59:33.673Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "id": "87c18281-44f3-4201-8241-976070977609",
+      "owner": "Hassan Ali",
+      "product": "instana",
+      "stage": "Negotiation",
+      "useCase": "in-incident",
+      "value": 950000
     }
-  ]
+  ],
+  "enablements": [
+    {
+      "attendees": 234,
+      "createdAt": "2026-08-03T20:28:11.246Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "date": "2026-06-17",
+      "history": [
+        {
+          "action": "deleted",
+          "at": "2026-08-04T17:39:03.759Z",
+          "by": "Hunain Ejaz Malik"
+        },
+        {
+          "action": "restored",
+          "at": "2026-08-04T17:39:09.942Z",
+          "by": "Hunain Ejaz Malik"
+        },
+        {
+          "action": "edited",
+          "at": "2026-08-04T19:34:19.236Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "hours": 16,
+      "id": "00d283dc-8a5f-4895-9f57-39fcb824161c",
+      "presenter": "Bob",
+      "product": "concert-protect",
+      "title": "Big Bosses Only",
+      "updatedAt": "2026-08-04T19:34:19.236Z",
+      "updatedBy": "Hunain Ejaz Malik",
+      "useCase": "cp-vuln-mgmt"
+    },
+    {
+      "attendees": 42,
+      "createdAt": "2026-08-27T23:07:53.147Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "date": "2026-06-24",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:07:53.147Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "hours": 12,
+      "id": "2729ec26-3126-4651-958c-c41cff88baca",
+      "presenter": "Priya Raman",
+      "product": "instana",
+      "title": "Instana Observability Deep Dive",
+      "useCase": "in-observability"
+    },
+    {
+      "attendees": 28,
+      "createdAt": "2026-08-27T23:10:11.079Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "date": "2026-07-01",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:10:11.079Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "hours": 8,
+      "id": "d1dc6aa6-d9d2-4c6e-a01a-656ea6130160",
+      "presenter": "Marcus Webb",
+      "product": "turbonomic",
+      "title": "Turbonomic Cloud Cost Clinic",
+      "useCase": "tu-cloud-cost"
+    },
+    {
+      "attendees": 55,
+      "createdAt": "2026-08-27T23:23:45.948Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "date": "2026-07-08",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:23:45.948Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "hours": 14,
+      "id": "4120ab79-ccb3-49b4-adc4-86b44ae74343",
+      "presenter": "Dana Whitfield",
+      "product": "concert-protect",
+      "title": "Concert Protect Compliance Workshop",
+      "useCase": "cp-compliance"
+    },
+    {
+      "attendees": 36,
+      "createdAt": "2026-08-27T23:24:37.362Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "date": "2026-07-15",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:24:37.362Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "hours": 10,
+      "id": "61dfec31-2a7c-4038-aa0f-8ed9d27695d5",
+      "presenter": "Ana Ferreira",
+      "product": "instana",
+      "title": "Kubernetes Cost Bootcamp",
+      "useCase": "in-k8s-cost"
+    },
+    {
+      "attendees": 21,
+      "createdAt": "2026-08-27T23:25:19.284Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "date": "2026-07-22",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:25:19.284Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "hours": 6,
+      "id": "234f44c6-e179-4c0f-9e00-4f21af07fa8f",
+      "presenter": "Liam O'Connor",
+      "product": "turbonomic",
+      "title": "GPU Optimization Roundtable",
+      "useCase": "tu-gpu"
+    },
+    {
+      "attendees": 33,
+      "createdAt": "2026-08-27T23:25:48.480Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "date": "2026-07-29",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:25:48.481Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "hours": 9,
+      "id": "a4d5c296-50c5-4c43-a59d-9200707a09fc",
+      "presenter": "Sofia Marchetti",
+      "product": "concert-protect",
+      "title": "Certificate Management Enablement",
+      "useCase": "cp-cert-mgmt"
+    },
+    {
+      "attendees": 47,
+      "createdAt": "2026-08-27T23:26:23.914Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "date": "2026-08-05",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:26:23.914Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "hours": 13,
+      "id": "8328bd5f-35bc-4c71-86b6-d4e61f34bc7f",
+      "presenter": "Kenji Tanaka",
+      "product": "instana",
+      "title": "GenAI Observability Lab",
+      "useCase": "in-genai"
+    },
+    {
+      "attendees": 62,
+      "createdAt": "2026-08-27T23:26:58.088Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "date": "2026-08-11",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:26:58.088Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "hours": 16,
+      "id": "d38799b2-f123-4477-aa32-cde58447b6c3",
+      "presenter": "Rachel Adeyemi",
+      "product": "turbonomic",
+      "title": "VMware Exit Strategy Session",
+      "useCase": "tu-vmware"
+    },
+    {
+      "attendees": 25,
+      "createdAt": "2026-08-27T23:28:09.189Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "date": "2026-08-18",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:28:09.189Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "hours": 7,
+      "id": "6415db97-3bca-4bad-b6dc-6c64feb5c3b9",
+      "presenter": "Tomas Herrera",
+      "product": "concert-protect",
+      "title": "Software Composition Analysis 101",
+      "useCase": "cp-sca"
+    },
+    {
+      "attendees": 39,
+      "createdAt": "2026-08-27T23:28:48.747Z",
+      "createdBy": "Hunain Ejaz Malik",
+      "date": "2026-08-24",
+      "history": [
+        {
+          "action": "added",
+          "at": "2026-08-27T23:28:48.747Z",
+          "by": "Hunain Ejaz Malik"
+        }
+      ],
+      "hours": 11,
+      "id": "ae572996-855d-4baa-a020-a304eba4e95e",
+      "presenter": "Nadia Rahman",
+      "product": "instana",
+      "title": "Incident Investigation War Room",
+      "useCase": "in-incident"
+    }
+  ],
+  "version": 26
 }
