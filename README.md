@@ -2,8 +2,16 @@
 
 A dashboard for a technical enablement team: the enablement sessions the team
 delivers and the customer deals that follow them, side by side, for a sales and
-executive audience. React 19 + Vite + IBM Carbon Design System; hand-rolled SVG
-charts; light and dark themes.
+executive audience — neutrally framed so it never reads as claiming credit for
+sales' deals. A deal is tagged **Outbound touched** when a session on the same
+use case preceded its open date: an association by timing and topic, shown with
+its excluded cases, never an attribution. All narrative sentences (verdicts,
+recommended actions) are generated from the data by a small insights engine —
+strong results read as strong, mixed as mixed, small samples carry a caveat.
+
+React 19 + Vite + IBM Carbon Design System (`white`/`g100` themes); all charts
+are hand-rolled SVG. Product colors are CVD-validated on both themes and every
+color is always paired with a text label.
 
 **Use the live dashboard:** open the
 [latest release](https://github.com/hunain-malik/IBM-Sales-Dashboard/releases)
