@@ -1,57 +1,58 @@
-# Outbound Pipeline View
+# IBM Outbound Pipeline View
 
-A dashboard that tracks the team's **enablement sessions** alongside the **customer
-pipeline**, and shows where the two coincide — neutrally framed so it never reads as
-claiming credit for sales' deals.
+A dashboard for a technical enablement team: the enablement sessions the team
+delivers and the customer deals that follow them, side by side, for a sales and
+executive audience. React 19 + Vite + IBM Carbon Design System; hand-rolled SVG
+charts; light and dark themes.
 
-Built with React and the [IBM Carbon Design System](https://carbondesignsystem.com/)
-(`@carbon/react`); all charts are hand-rolled SVG.
+**Use the live dashboard:** open the
+[latest release](https://github.com/hunain-malik/IBM-Sales-Dashboard/releases)
+and click "Open the Outbound Pipeline View" — no install, no login. Everyone on
+that link reads and writes the same shared live data.
 
-## How it works (v1 — manual input)
+## Working with the source
 
-- **Enablements** — the team logs sessions (title, presenter, use case, date, attendees,
-  hours) via a form or by clicking a day on the month calendar.
-- **Deals** — the team or sales logs customer deals: customer, revenue, use case, open
-  date, stage, owner, and close date once closed. Deals are editable as they progress.
-- **Outbound touch** — a deal is automatically tagged **Outbound touched** when a session on the
-  same use case was delivered on or before the deal's open date. This is an association
-  by timing and topic, not an attribution of credit; deals with no prior session are
-  shown as explicitly not counted.
-- The landing **Pipeline View** shows KPIs, a outbound-touched vs. untouched deal comparison
-  (win rate, average size, cycle length), quarterly outbound-touched pipeline by month,
-  customer demand vs. enablement coverage per use case, and the outbound-touched deals list.
-  The **Deals** tab carries the quarter-scoped session-to-deal timeline.
-- The **Executive Summary** (`/onepager`) is a print/PDF one-pager whose verdict heading
-  and recommended actions are **generated from the data** by a small insights engine
-  (`src/data/insights.js`) — strong results read as strong, mixed as mixed, adverse
-  deltas are stated rather than hidden, and small samples carry a caveat.
-
-Every term and calculation is defined in [`docs/GLOSSARY.md`](docs/GLOSSARY.md), linked
-from the dashboard header and the one-pager footer.
-
-Data is stored in the browser's `localStorage`, seeded with a demo dataset on first load;
-the header has a reset action and a light/dark theme toggle.
-
-## Pages
-
-| Page | Audience | What it shows |
-|---|---|---|
-| Pipeline View (landing) | Sales + executives | KPIs, touched-vs-untouched comparison, quarterly pipeline, demand vs. coverage, outbound-touched deals list |
-| Enablements | Team | Sessions list + month calendar; click a day to log one |
-| Deals | Team + sales | All deals (add/edit) with automatic *Outbound touched* tagging, plus the session-to-deal timeline |
-
-## Run it
-
-```sh
+```bash
 npm install
-npm run dev      # local dev server
-npm run build    # production build in dist/
-npm run preview  # serve the production build
+npm run dev        # local development — standalone mode (demo data,
+                   # browser-local storage; the team's live data is untouched)
 ```
 
-## Notes on the theme
+To run locally against the team's SHARED live store instead (be careful —
+entries you make are real):
 
-The UI uses Carbon's `white` and `g100` themes. Use-case colors are IBM Carbon data-viz
-ramp steps, re-ordered and validated for color-vision-deficiency separation and surface
-contrast on both themes — each use case keeps the same hue everywhere, and every color is
-always paired with a text label.
+```bash
+VITE_API_URL="$(cat server/shared-blob-url.txt)" VITE_API_KIND=blob npm run dev
+```
+
+`npm run build` accepts the same environment variables; the production build is
+made by CI, not by hand (see below).
+
+## How it fits together
+
+- `src/` — the app. Pages: Pipeline View (landing), Enablements, Deals,
+  Products, executive one-pager, Methodology & Glossary.
+- `src/data/store.jsx` — the storage layer. With `VITE_API_URL` set it syncs
+  one shared JSON document (queued mutations, conflict replay, 20 s polling,
+  honest Saved/Saving…/Offline badge); without it, standalone demo mode.
+- `server/shared-blob-url.txt` — the shared document store's URL: a Firebase
+  Realtime Database REST path the team owns. Full setup, trust model, and
+  rotation/recovery procedure: **`server/README-store.md`**.
+- `.github/workflows/` — `deploy.yml` builds and publishes every push to the
+  default branch (static site on the `site` branch, released via a sha-pinned
+  link so stale caches are impossible); `backup-data.yml` snapshots the store
+  into `server/data-backup.json` every 6 hours; `recover-data.yml` restores it.
+- `docs/BOB-MASTER-PROMPT.md` — a self-contained build package: the complete
+  spec and every source file, for rebuilding the dashboard from scratch
+  elsewhere.
+- `server/server.mjs` — an optional self-hosted backend implementing the same
+  document contract with true server-side versioning; not used by the current
+  deployment.
+
+## Deployment
+
+Push to the default branch and CI does the rest: verifies the shared store
+answers (it refuses to deploy against a dead store and never silently creates a
+replacement), builds with the store URL baked in, publishes to the `site`
+branch, and updates the release link. Data safety comes from the 6-hour
+backups plus the recovery workflows — see `server/README-store.md`.
