@@ -45,7 +45,10 @@ const SYNC_LABEL = {
 // asks GitHub what the newest deployed build is, and when they differ it
 // offers a direct link to the fresh copy. Local/dev builds skip the check.
 const BUILD_SHA = import.meta.env.VITE_BUILD_SHA || ''
-const SITE_BRANCH_API = 'https://api.github.com/repos/hunain-malik/IBM-Sales-Dashboard/branches/site'
+// owner/repo is injected by the deploy workflow so copies of this repository
+// self-reference correctly instead of comparing against the original
+const REPO = import.meta.env.VITE_REPO || 'hunain-malik/IBM-Sales-Dashboard'
+const SITE_BRANCH_API = `https://api.github.com/repos/${REPO}/branches/site`
 
 function useLatestBuildUrl() {
   const [latestUrl, setLatestUrl] = useState(null)
@@ -56,7 +59,7 @@ function useLatestBuildUrl() {
       .then((branch) => {
         const built = branch?.commit?.commit?.message?.match(/Deploy dashboard build ([0-9a-f]{40})/)
         if (built && built[1] !== BUILD_SHA) {
-          setLatestUrl(`https://rawcdn.githack.com/hunain-malik/IBM-Sales-Dashboard/${branch.commit.sha}/index.html`)
+          setLatestUrl(`https://rawcdn.githack.com/${REPO}/${branch.commit.sha}/index.html`)
         }
       })
       .catch(() => {}) // no signal, no banner — never block the app on this

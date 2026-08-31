@@ -115,7 +115,7 @@ jobs:
       - name: Build
         # VITE_BUILD_SHA lets a deployed copy recognize when a newer build
         # exists and point visitors of stale sha-pinned links at the fresh one
-        run: VITE_API_URL="$BLOB_URL" VITE_API_KIND=blob VITE_BUILD_SHA="$GITHUB_SHA" npm run build
+        run: VITE_API_URL="$BLOB_URL" VITE_API_KIND=blob VITE_BUILD_SHA="$GITHUB_SHA" VITE_REPO="$GITHUB_REPOSITORY" npm run build
 
       # Publish the static build to a `site` branch. No GitHub Pages / domain /
       # settings needed: raw.githack.com serves those public files as a live page.
